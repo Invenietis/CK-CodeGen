@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\Common\Shared.props" />
+  
+  <PropertyGroup>
+    <TargetFrameworks>netstandard1.4;net451</TargetFrameworks>
+    <Description></Description>
+  </PropertyGroup>
+
+</Project>
