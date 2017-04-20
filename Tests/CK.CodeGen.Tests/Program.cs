@@ -1,10 +1,10 @@
-﻿#if !NET451
+﻿#if !NET46
 using NUnit.Common;
 using NUnitLite;
 using System;
 using System.Reflection;
 
-namespace CK.Text.Tests
+namespace CK.CodeGen.Tests
 {
     public class Program
     {
@@ -17,7 +17,7 @@ namespace CK.Text.Tests
     }
 }
 #else
-namespace CK.Text.Tests
+namespace CK.CodeGen.Tests
 {
     public class Program
     {

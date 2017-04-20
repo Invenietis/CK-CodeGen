@@ -1,24 +1,33 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace CK.CodeGen
 {
-    public class MethodBuilder
+    public class MethodBuilder : MethodBaseBuilder
     {
-        public List<string> Attributes { get; } = new List<string>();
+        internal MethodBuilder(ClassBuilder classBuilder, string frontModifiers, string name)
+            : base(classBuilder, name)
+        {
+            FrontModifiers = new List<string>();
+            if (frontModifiers != null) FrontModifiers.AddRange(frontModifiers.Split(' '));
+        }
 
-        public List<string> FrontModifiers { get; } = new List<string>();
-
-        public string Name { get; set; }
-
-        public string ReturnType { get; set; }
-
-        public List<Parameter> Parameters { get; } = new List<Parameter>();
-
-        public List<GenericConstraint> GenericConstraints { get; set; } = new List<GenericConstraint>();
+        public List<string> FrontModifiers { get; }
 
         public StringBuilder Body { get; } = new StringBuilder();
 
+        protected override void BuildFrontModifiers(StringBuilder sb)
+        {
+            BuildHelpers.BuildFrontModifiers(FrontModifiers, sb);
+        }
 
+        internal override void BuildBody(StringBuilder sb)
+        {
+            if (IsAbstract) sb.Append(";");
+            else BuildHelpers.BuildMethodBody(Body.ToString(), sb);
+        }
+
+        bool IsAbstract => FrontModifiers.Contains("abstract");
     }
 }

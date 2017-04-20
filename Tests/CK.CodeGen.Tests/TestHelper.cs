@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace CK.Text.Tests
+namespace CK.CodeGen.Tests
 {
     static partial class TestHelper
     {
@@ -29,6 +29,8 @@ namespace CK.Text.Tests
             }
         }
 
+        public static string BinFolder => AppContext.BaseDirectory;
+
         static void InitalizePaths()
         {
             _solutionFolder = Path.GetDirectoryName(Path.GetDirectoryName(GetTestProjectPath()));
@@ -36,6 +38,5 @@ namespace CK.Text.Tests
         }
 
         static string GetTestProjectPath([CallerFilePath]string path = null) => Path.GetDirectoryName(path);
-
     }
 }

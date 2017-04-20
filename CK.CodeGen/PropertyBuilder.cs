@@ -1,15 +1,29 @@
-﻿namespace CK.CodeGen
+﻿using System;
+using System.Text;
+
+namespace CK.CodeGen
 {
-    public abstract class PropertyBuilder
+    public class PropertyBuilder : PropertyBaseBuilder
     {
-        public List<string> Attributes { get; } = new List<string>();
+        internal PropertyBuilder(ClassBuilder classBuilder, string type, string name)
+            : base(classBuilder, type, name)
+        {
+            Type = type;
+            Name = name;
+            GetMethod = new PropertyMethodBuilder(this, "get");
+            SetMethod = new PropertyMethodBuilder(this, "set");
+        }
 
-        public List<string> FrontModifiers { get; } = new List<string>();
+        public PropertyMethodBuilder GetMethod { get; }
 
-        public string Type { get; set; }
+        public PropertyMethodBuilder SetMethod { get; }
 
-        public string Name { get; set; }
-
-
+        internal override void BuildMethods(StringBuilder sb)
+        {
+            sb.Append("{");
+            GetMethod.Build(sb);
+            SetMethod.Build(sb);
+            sb.Append("}");
+        }
     }
 }

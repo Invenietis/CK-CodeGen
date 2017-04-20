@@ -1,43 +1,89 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace CK.CodeGen
 {
-    public class TypeBuilder
+    public abstract class TypeBuilder
     {
+        readonly NamespaceBuilder _namespace;
+        readonly string _type;
+
+        internal TypeBuilder(NamespaceBuilder namespaceBuilder, string type, string name)
+        {
+            _namespace = namespaceBuilder;
+            _type = type;
+            Name = name;
+        }
+
         public List<string> Attributes { get; } = new List<string>();
 
         public List<string> FrontModifiers { get; } = new List<string>();
 
         public string Name { get; set; }
 
-        public string BaseType { get; set; }
+        public string FullName => string.Format("{0}.{1}", _namespace.Name, Name);
 
-        public IReadOnlyList<string> Interfaces { get; }
-
-        public List<GenericConstraint> GenericConstraints { get; set; } = new List<GenericConstraint>();
-
-        public IReadOnlyList<FieldBuilder> Fields { get; }
-
-        public FieldBuilder DefineField(string type, string name) => new FieldBuilder(this, type, name);
-
-        public IReadOnlyList<ConstructorBuilder> Constructors { get; }
-
-        public ConstructorBuilder DefineConstructor() => new ConstructorBuilder(this);
-
-        public IReadOnlyList<PropertyBaseBuilder> Properties { get; }
-
-        public PropertyBuilder DefineProperty(string type, string name) => new PropertyBuilder(this, type, name);
-
-        public AutoImplmentedPropertyBuilder DefineProperty(string type, string name) => new AutoImplmentedPropertyBuilder(this, type, name);
-
-        public IReadOnlyList<MethodBuilder> Methods { get; }
-
-        public MethodBuilder DefineMethod(string frontModifiers, string name) => new MethodBuilder(this, frontModifiers, name);
-
-        public MethodBuilder DefineMethod(string name) => DefineMethod(null, name);
+        protected abstract IReadOnlyCollection<string> Parents { get; }
 
         public StringBuilder ExtraBody { get; } = new StringBuilder();
 
+        internal void Build(StringBuilder sb)
+        {
+            BuildHelpers.BuildAttributes(Attributes, sb);
+            BuildHelpers.BuildFrontModifiers(FrontModifiers, sb);
+            BuildType(sb);
+            BuildName(sb);
+            BuildParents(sb);
+            BuildGenericConstraints(sb);
+            sb.Append("{");
+            BuildFields(sb);
+            BuildConstructors(sb);
+            BuildProperties(sb);
+            BuildMethods(sb);
+            BuildExtraBody(sb);
+            sb.Append("}");
+        }
+
+        void BuildType(StringBuilder sb)
+        {
+            sb.AppendWithWhitespace(_type);
+        }
+
+        void BuildName(StringBuilder sb)
+        {
+            sb.Append(Name);
+        }
+
+        void BuildParents(StringBuilder sb)
+        {
+            if (HasParents)
+            {
+                sb.Append(":");
+                sb.Append(string.Join(",", Parents));
+            }
+        }
+
+        protected abstract void BuildGenericConstraints(StringBuilder sb);
+
+        protected abstract void BuildFields(StringBuilder sb);
+
+        protected abstract void BuildConstructors(StringBuilder sb);
+
+        protected abstract void BuildProperties(StringBuilder sb);
+
+        protected abstract void BuildMethods(StringBuilder sb);
+
+        void BuildExtraBody(StringBuilder sb)
+        {
+            if (HasExtraBody)
+            {
+                sb.Append(ExtraBody.ToString());
+            }
+        }
+
+        bool HasExtraBody => ExtraBody.Length > 0;
+
+        bool HasParents => Parents.Count > 0;
     }
 }

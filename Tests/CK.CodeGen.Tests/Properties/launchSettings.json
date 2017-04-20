@@ -3,7 +3,7 @@
     "CK.Text.Tests": {
       "commandName": "Executable",
       "executablePath": "..\\..\\packages\\NUnit.Runners.Net4.2.6.4\\tools\\nunit.exe",
-      "commandLineArgs": "bin\\Debug\\net451\\CK.Text.Tests.exe"
+      "commandLineArgs": "bin\\Debug\\net46\\CK.CodeGen.Tests.exe"
     }
   }
 }
