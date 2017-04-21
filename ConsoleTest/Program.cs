@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Loader;
 
 namespace ConsoleTest
 {
@@ -24,7 +25,7 @@ namespace ConsoleTest
             {
                 typeof(object).GetTypeInfo().Assembly,
                 typeof(Guid).GetTypeInfo().Assembly,
-      //          typeof(System.Diagnostics.Debug).GetTypeInfo().Assembly
+                typeof(System.Diagnostics.Debug).GetTypeInfo().Assembly
             };
             HashSet<Assembly> set = new HashSet<Assembly>(references);
             foreach (var dep in references.SelectMany(a => a.GetReferencedAssemblies().Select(n => Assembly.Load(n))))
@@ -46,8 +47,8 @@ namespace ConsoleTest
             string dllFileName = string.Format("{0}.dll", dllName);
             string dllPath = Path.Combine(AppContext.BaseDirectory, dllFileName);
             EmitResult emitResult = generator.Generate(sourceCode, dllPath, references);
-            dllName = "CK.Text";
-            return Assembly.Load(new AssemblyName(dllName));
+            return AssemblyLoadContext.Default.LoadFromAssemblyPath(dllPath);
+            //return Assembly.Load(new AssemblyName(dllName));
         }
 
         static NamespaceBuilder CreateNamespaceBuilder()

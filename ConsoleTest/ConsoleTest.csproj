@@ -9,4 +9,8 @@
     <ProjectReference Include="..\CK.CodeGen\CK.CodeGen.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
+  </ItemGroup>
+
 </Project>
