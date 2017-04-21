@@ -23,10 +23,6 @@ namespace CK.CodeGen
 
         public ClassBuilder DefineClass(string name) => DefineType(name, n => new ClassBuilder(this, n));
 
-        public ClassBuilder DefineClass(string name, Type parent) => DefineClass(parent.FullName);
-
-        public ClassBuilder DefineClass(string name, ClassBuilder parent) => DefineClass(parent.FullName);
-
         public EnumBuilder DefineEnum(string name) => DefineType(name, n => new EnumBuilder(this, n));
 
         public StructBuilder DefineStruct(string name) => DefineType(name, n => new StructBuilder(this, n));
@@ -50,7 +46,9 @@ namespace CK.CodeGen
 
         void BuildUsings(StringBuilder sb)
         {
-            foreach (string u in Usings) sb.AppendFormat("using {0};", u);
+            foreach (string u in Usings)
+                if (u.StartsWith("using")) sb.Append(u);
+                else sb.AppendFormat("using {0};", u);
         }
 
         void BuildTypes(StringBuilder sb)

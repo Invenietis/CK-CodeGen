@@ -10,7 +10,7 @@ namespace CK.CodeGen
             : base(classBuilder, name)
         {
             FrontModifiers = new List<string>();
-            if (frontModifiers != null) FrontModifiers.AddRange(frontModifiers.Split(' '));
+            if (frontModifiers != null) FrontModifiers.AddRange(frontModifiers.Split(BuildHelpers.OneSpace,StringSplitOptions.RemoveEmptyEntries));
         }
 
         public List<string> FrontModifiers { get; }

@@ -5,13 +5,19 @@ namespace CK.CodeGen
 {
     static class BuildHelpers
     {
+        internal static readonly string[] OneSpace = new[] { " " };
+
         internal static void BuildAttributes(List<string> attributes, StringBuilder sb)
         {
             foreach (string attribute in attributes)
             {
-                if (!attribute.StartsWith("[")) sb.Append("[");
-                sb.Append(attribute);
-                if (!attribute.EndsWith("]")) sb.Append("]");
+                if(attribute == "out" || attribute == "ref" ) sb.AppendWithWhitespace(attribute);
+                else
+                {
+                    if (!attribute.StartsWith("[")) sb.Append("[");
+                    sb.Append(attribute);
+                    if (!attribute.EndsWith("]")) sb.Append("]");
+                }
             }
         }
 

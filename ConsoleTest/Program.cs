@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Emit;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -10,11 +11,50 @@ using System.Runtime.Loader;
 
 namespace ConsoleTest
 {
+    public abstract class Base
+    {
+        public abstract SqlCommand Do(ref int i);
+    }
+
     class Program
     {
         static void Main(string[] args)
         {
-            CompleteTest();
+            WithSqlTest();
+            //CompleteTest();
+        }
+
+        static public void WithSqlTest()
+        {
+            NamespaceBuilder b = new NamespaceBuilder("CK._g");
+            b.Usings.Add("using System; using System.Collections.Generic; using System.Data.SqlClient;" );
+            var c = b.DefineClass("GGGG");
+            c.BaseType = typeof(Base).FullName;
+            var m = c.DefineMethod("public override", "Do");
+            var p = new Parameter() { Type = "int", Name = "i" };
+            p.Attributes.Add("ref");
+            m.Parameters.Add( p );
+            m.ReturnType = "SqlCommand";
+            m.Body.Append(@"
+i *= i;
+var c = new SqlCommand(""p""+i.ToString());
+var p = c.Parameters.AddWithValue(""@i"", i);
+return c;
+");
+            string source = b.CreateSource();
+            Assembly[] references = new[]
+            {
+                typeof(object).GetTypeInfo().Assembly,
+                typeof(System.Diagnostics.Debug).GetTypeInfo().Assembly,
+                typeof(SqlCommand).GetTypeInfo().Assembly,
+                typeof(Base).GetTypeInfo().Assembly
+            };
+            Assembly a = GenerateAssembly(source, references);
+            Type t = a.GetTypes().Single(n => n.Name == "GGGG");
+            Base gotIt = (Base)Activator.CreateInstance(t);
+            int k = 67;
+            SqlCommand cmd = gotIt.Do(ref k);
+
         }
 
         static public void CompleteTest()
@@ -35,6 +75,18 @@ namespace ConsoleTest
             Assembly result = GenerateAssembly(source, set.Select( a => MetadataReference.CreateFromFile(a.Location) ) );
         }
 
+        static Assembly GenerateAssembly(string sourceCode, IEnumerable<Assembly> references)
+        {
+            HashSet<Assembly> set = new HashSet<Assembly>(references);
+            foreach (var dep in references.SelectMany(a => a.GetReferencedAssemblies().Select(n => Assembly.Load(n))))
+            {
+                set.Add(dep);
+            }
+            var metaRefs = set.Select(a => MetadataReference.CreateFromFile(a.Location));
+            return GenerateAssembly(sourceCode, metaRefs);
+        }
+
+
         static IEnumerable<Assembly> Expand(IEnumerable<Assembly> references)
         {
             return references.SelectMany( a => Expand(a.GetReferencedAssemblies().Select(n => Assembly.Load(n))));
@@ -47,8 +99,15 @@ namespace ConsoleTest
             string dllFileName = string.Format("{0}.dll", dllName);
             string dllPath = Path.Combine(AppContext.BaseDirectory, dllFileName);
             EmitResult emitResult = generator.Generate(sourceCode, dllPath, references);
+            if( !emitResult.Success)
+            {
+                foreach( var diag in emitResult.Diagnostics)
+                {
+                    Console.WriteLine(diag.ToString());
+                }
+                Console.ReadLine();
+            }
             return AssemblyLoadContext.Default.LoadFromAssemblyPath(dllPath);
-            //return Assembly.Load(new AssemblyName(dllName));
         }
 
         static NamespaceBuilder CreateNamespaceBuilder()

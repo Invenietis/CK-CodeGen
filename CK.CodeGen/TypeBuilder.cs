@@ -7,12 +7,12 @@ namespace CK.CodeGen
     public abstract class TypeBuilder
     {
         readonly NamespaceBuilder _namespace;
-        readonly string _type;
+        readonly string _kind;
 
-        internal TypeBuilder(NamespaceBuilder namespaceBuilder, string type, string name)
+        internal TypeBuilder(NamespaceBuilder namespaceBuilder, string kind, string name)
         {
             _namespace = namespaceBuilder;
-            _type = type;
+            _kind = kind;
             Name = name;
         }
 
@@ -32,7 +32,7 @@ namespace CK.CodeGen
         {
             BuildHelpers.BuildAttributes(Attributes, sb);
             BuildHelpers.BuildFrontModifiers(FrontModifiers, sb);
-            BuildType(sb);
+            BuildKind(sb);
             BuildName(sb);
             BuildParents(sb);
             BuildGenericConstraints(sb);
@@ -45,9 +45,9 @@ namespace CK.CodeGen
             sb.Append("}");
         }
 
-        void BuildType(StringBuilder sb)
+        void BuildKind(StringBuilder sb)
         {
-            sb.AppendWithWhitespace(_type);
+            sb.AppendWithWhitespace(_kind);
         }
 
         void BuildName(StringBuilder sb)
