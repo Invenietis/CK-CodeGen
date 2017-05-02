@@ -107,7 +107,7 @@ return c;
                 }
                 Console.ReadLine();
             }
-            return AssemblyLoadContext.Default.LoadFromAssemblyPath(dllPath);
+            return System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(dllPath);
         }
 
         static NamespaceBuilder CreateNamespaceBuilder()

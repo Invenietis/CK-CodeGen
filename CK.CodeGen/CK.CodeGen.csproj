@@ -3,7 +3,7 @@
   <Import Project="..\Common\Shared.props" />
   
   <PropertyGroup>
-    <TargetFrameworks>netstandard1.5;net46</TargetFrameworks>
+    <TargetFrameworks>netstandard1.3;net46</TargetFrameworks>
     <Description></Description>
   </PropertyGroup>
   

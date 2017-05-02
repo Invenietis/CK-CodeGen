@@ -101,7 +101,11 @@ namespace CK.CodeGen.Tests
             string dllPath = Path.Combine(TestHelper.BinFolder, dllFileName);
             EmitResult emitResult = generator.Generate(sourceCode, dllPath, references);
             emitResult.Success.Should().BeTrue();
+#if NET46
             return Assembly.Load(new AssemblyName(dllName));
+#else
+            return System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(dllPath);
+#endif
         }
 
         NamespaceBuilder CreateNamespaceBuilder()
