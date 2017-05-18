@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Linq;
+using CK.Core;
 
 namespace CK.CodeGen.Tests
 {
@@ -16,96 +17,89 @@ namespace CK.CodeGen.Tests
         [Test]
         public void SimpleTest()
         {
-            NamespaceBuilder builder = new NamespaceBuilder("Simple.Namespace");
-
+            try
             {
-                InterfaceBuilder simpleInterface = builder.DefineInterface("SimpleInterface");
-                simpleInterface.DefineProperty("int", "P1");
+
+                NamespaceBuilder builder = new NamespaceBuilder("Simple.Namespace");
+
+                {
+                    InterfaceBuilder simpleInterface = builder.DefineInterface("SimpleInterface");
+                    simpleInterface.DefineProperty("int", "P1");
+                }
+
+                {
+                    ClassBuilder simpleClass = builder.DefineClass("SimpleClass");
+                    simpleClass.FrontModifiers.Add("public");
+                    simpleClass.Interfaces.Add("SimpleInterface");
+
+                    FieldBuilder f = simpleClass.DefineField("int", "_x");
+                    f.FrontModifiers.Add("private");
+
+                    ConstructorBuilder c = simpleClass.DefineConstructor();
+                    c.FrontModifiers.Add("internal");
+                    c.Parameters.Add(new Parameter { Type = "int", Name = "x" });
+                    c.Body.Append("_x = x;");
+
+                    MethodBuilder toString = simpleClass.DefineMethod("ToString");
+                    toString.FrontModifiers.AddRange(new[] { "public", "override" });
+                    toString.ReturnType = "string";
+                    toString.Body.Append(@"=> string.Format(""X: {0}"", _x)");
+
+                    PropertyBuilder p = simpleClass.DefineProperty("int", "P1");
+                    p.FrontModifiers.Add("public");
+                    p.GetMethod.Body.AppendLine("return _x;");
+                    p.SetMethod.Body.AppendLine("_x = value;");
+                }
+
+                ClassBuilder factoryBuilder;
+                {
+                    factoryBuilder = builder.DefineClass("SimpleFactory");
+                    factoryBuilder.FrontModifiers.AddRange(new[] { "public", "static" });
+                    MethodBuilder mb = factoryBuilder.DefineMethod("Create");
+                    mb.FrontModifiers.AddRange(new[] { "public", "static" });
+                    mb.ReturnType = "SimpleClass";
+                    mb.Parameters.Add(new Parameter { Type = "int", Name = "n" });
+                    mb.Body.Append("=> new SimpleClass(n)");
+                }
+
+                Assembly[] references = new[]
+                {
+                    typeof(object).GetTypeInfo().Assembly
+                };
+                Assembly assembly = TestHelper.CreateAssembly(builder.CreateSource(), references);
+
+                {
+                    Type factory = assembly.GetType(factoryBuilder.FullName);
+                    dynamic instance = factory.GetMethod("Create").Invoke(null, new object[] { 25 });
+                    int currentP1 = instance.P1;
+                    currentP1.Should().Be(25);
+
+                    instance.P1 = 12;
+                    currentP1 = instance.P1;
+                    currentP1.Should().Be(12);
+
+                    string s = instance.ToString();
+                    s.Should().Be("X: 12");
+                }
             }
-
+            catch (Exception ex)
             {
-                ClassBuilder simpleClass = builder.DefineClass("SimpleClass");
-                simpleClass.FrontModifiers.Add("public");
-                simpleClass.Interfaces.Add("SimpleInterface");
-
-                FieldBuilder f = simpleClass.DefineField("int", "_x");
-                f.FrontModifiers.Add("private");
-
-                ConstructorBuilder c = simpleClass.DefineConstructor();
-                c.FrontModifiers.Add("internal");
-                c.Parameters.Add(new Parameter { Type = "int", Name = "x" });
-                c.Body.Append("_x = x;");
-
-                MethodBuilder toString = simpleClass.DefineMethod("ToString");
-                toString.FrontModifiers.AddRange(new[] { "public", "override" });
-                toString.ReturnType = "string";
-                toString.Body.Append(@"=> string.Format(""X: {0}"", _x)");
-
-                PropertyBuilder p = simpleClass.DefineProperty("int", "P1");
-                p.FrontModifiers.Add("public");
-                p.GetMethod.Body.AppendLine("return _x;");
-                p.SetMethod.Body.AppendLine("_x = value;");
-            }
-
-            ClassBuilder factoryBuilder;
-            {
-                factoryBuilder = builder.DefineClass("SimpleFactory");
-                factoryBuilder.FrontModifiers.AddRange(new[] { "public", "static" });
-                MethodBuilder mb = factoryBuilder.DefineMethod("Create");
-                mb.FrontModifiers.AddRange(new[] { "public", "static" });
-                mb.ReturnType = "SimpleClass";
-                mb.Parameters.Add(new Parameter { Type = "int", Name = "n" });
-                mb.Body.Append("=> new SimpleClass(n)");
-            }
-
-            MetadataReference[] references = new[]
-            {
-                MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location)
-            };
-            Assembly assembly = GenerateAssembly(builder.CreateSource(), references);
-
-            {
-                Type factory = assembly.GetType(factoryBuilder.FullName);
-                dynamic instance = factory.GetMethod("Create").Invoke(null, new object[] { 25 });
-                int currentP1 = instance.P1;
-                currentP1.Should().Be(25);
-
-                instance.P1 = 12;
-                currentP1 = instance.P1;
-                currentP1.Should().Be(12);
-
-                string s = instance.ToString();
-                s.Should().Be("X: 12");
+                TestHelper.Monitor.Error().Send(ex);
             }
         }
-        
+
         [Test]
         public void CompleteTest()
         {
             NamespaceBuilder sut = CreateNamespaceBuilder();
             string source = sut.CreateSource();
-            MetadataReference[] references = new[]
+            Assembly[] references = new[]
             {
-                MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(System.Diagnostics.Debug).GetTypeInfo().Assembly.Location)
+                typeof(object).GetTypeInfo().Assembly,
+                typeof(System.Diagnostics.Debug).GetTypeInfo().Assembly
             };
-            Assembly a = GenerateAssembly(source, references);
+            Assembly a = TestHelper.CreateAssembly(source, references);
             a.Invoking(x => x.GetType("Class2")).ShouldNotThrow();
-        }
-
-        Assembly GenerateAssembly(string sourceCode, IEnumerable<MetadataReference> references)
-        {
-            CodeGenerator generator = new CodeGenerator();
-            string dllName = RandomDllName();
-            string dllFileName = string.Format("{0}.dll", dllName);
-            string dllPath = Path.Combine(TestHelper.BinFolder, dllFileName);
-            EmitResult emitResult = generator.Generate(sourceCode, dllPath, references);
-            emitResult.Success.Should().BeTrue();
-#if NET46
-            return Assembly.Load(new AssemblyName(dllName));
-#else
-            return System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath(dllPath);
-#endif
         }
 
         NamespaceBuilder CreateNamespaceBuilder()

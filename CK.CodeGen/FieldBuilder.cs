@@ -27,11 +27,11 @@ namespace CK.CodeGen
 
         internal void Build(StringBuilder sb)
         {
-            BuildHelpers.BuildAttributes(Attributes, sb);
-            BuildHelpers.BuildFrontModifiers(FrontModifiers, sb);
+            BuildHelpers.BuildAttributes(sb, Attributes);
+            BuildHelpers.BuildFrontModifiers(sb, FrontModifiers);
             sb.AppendFormat("{0} {1}", Type, Name);
             if (HasInitialValue) sb.AppendFormat("={0}", InitialValue);
-            sb.Append(";");
+            sb.AppendLine(";");
         }
 
         bool HasInitialValue => !string.IsNullOrEmpty(InitialValue);

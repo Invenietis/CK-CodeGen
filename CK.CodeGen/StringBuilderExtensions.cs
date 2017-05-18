@@ -4,6 +4,6 @@ namespace CK.CodeGen
 {
     static class StringBuilderExtensions
     {
-        internal static StringBuilder AppendWithWhitespace(this StringBuilder @this, object arg) => @this.AppendFormat("{0} ", arg);
+        internal static StringBuilder AppendWithWhitespace(this StringBuilder @this, object arg) => @this.Append(arg).Append( ' ' );
     }
 }

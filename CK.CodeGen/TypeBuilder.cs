@@ -28,21 +28,22 @@ namespace CK.CodeGen
 
         public StringBuilder ExtraBody { get; } = new StringBuilder();
 
-        internal void Build(StringBuilder sb)
+        internal void Build(StringBuilder b)
         {
-            BuildHelpers.BuildAttributes(Attributes, sb);
-            BuildHelpers.BuildFrontModifiers(FrontModifiers, sb);
-            BuildKind(sb);
-            BuildName(sb);
-            BuildParents(sb);
-            BuildGenericConstraints(sb);
-            sb.Append("{");
-            BuildFields(sb);
-            BuildConstructors(sb);
-            BuildProperties(sb);
-            BuildMethods(sb);
-            BuildExtraBody(sb);
-            sb.Append("}");
+            BuildHelpers.BuildAttributes(b, Attributes);
+            BuildHelpers.BuildFrontModifiers(b, FrontModifiers);
+            BuildKind(b);
+            BuildName(b);
+            BuildParents(b);
+            b.AppendLine();
+            BuildGenericConstraints(b);
+            b.AppendLine("{");
+            BuildFields(b);
+            BuildConstructors(b);
+            BuildProperties(b);
+            BuildMethods(b);
+            BuildExtraBody(b);
+            b.AppendLine("}");
         }
 
         void BuildKind(StringBuilder sb)

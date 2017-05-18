@@ -19,13 +19,13 @@ namespace CK.CodeGen
 
         protected override void BuildFrontModifiers(StringBuilder sb)
         {
-            BuildHelpers.BuildFrontModifiers(FrontModifiers, sb);
+            BuildHelpers.BuildFrontModifiers(sb, FrontModifiers);
         }
 
         internal override void BuildBody(StringBuilder sb)
         {
             if (IsAbstract) sb.Append(";");
-            else BuildHelpers.BuildMethodBody(Body.ToString(), sb);
+            else BuildHelpers.BuildMethodBody(sb, Body.ToString());
         }
 
         bool IsAbstract => FrontModifiers.Contains("abstract");

@@ -3,7 +3,7 @@
   <Import Project="..\..\Common\Shared.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp1.1;net46</TargetFrameworks>
+    <TargetFrameworks>netcoreapp1.1;net462</TargetFrameworks>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
@@ -13,17 +13,20 @@
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="4.19.2" />
+    <PackageReference Include="CK.ActivityMonitor.StandardSender" Version="7.0.1" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
     <PackageReference Include="nunitlite" Version="3.6.1" />
     <PackageReference Include="NUnit" Version="3.6.1" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
     <PackageReference Include="NUnit" Version="[2.6.4]" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
   </ItemGroup>
 
   <ItemGroup>

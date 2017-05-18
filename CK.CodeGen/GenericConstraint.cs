@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using CK.Text;
 
 namespace CK.CodeGen
 {
@@ -10,9 +11,13 @@ namespace CK.CodeGen
 
         public List<string> Constraints { get; } = new List<string>();
 
-        internal void Build(StringBuilder sb)
+        internal void Build(StringBuilder b)
         {
-            sb.AppendFormat(" where {0}:{1}", GenericParameterName, string.Join(",", Constraints));
+            b.Append("where ")
+            .Append(GenericParameterName)
+            .Append(":")
+            .AppendStrings(Constraints)
+            .AppendLine();
         }
     }
 }

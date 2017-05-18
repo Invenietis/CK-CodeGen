@@ -25,8 +25,8 @@ namespace CK.CodeGen
 
         internal void Build(StringBuilder sb)
         {
-            BuildHelpers.BuildAttributes(Attributes, sb);
-            BuildHelpers.BuildFrontModifiers(FrontModifiers, sb);
+            BuildHelpers.BuildAttributes(sb, Attributes);
+            BuildHelpers.BuildFrontModifiers(sb, FrontModifiers);
             BuildType(sb);
             BuildName(sb);
             BuildMethods(sb);

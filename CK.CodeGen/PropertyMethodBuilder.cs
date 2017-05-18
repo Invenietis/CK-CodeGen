@@ -23,7 +23,7 @@ namespace CK.CodeGen
             {
                 if (HasFrontModifier) sb.AppendWithWhitespace(FrontModifier);
                 sb.AppendWithWhitespace(_type);
-                BuildHelpers.BuildMethodBody(Body.ToString(), sb);
+                BuildHelpers.BuildMethodBody(sb, Body.ToString());
             }
         }
 

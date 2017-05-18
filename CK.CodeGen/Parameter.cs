@@ -15,7 +15,7 @@ namespace CK.CodeGen
 
         internal void Build(StringBuilder sb)
         {
-            BuildHelpers.BuildAttributes(Attributes, sb);
+            BuildHelpers.BuildAttributes(sb, Attributes);
             sb.AppendFormat("{0} {1}", Type, Name);
             if (HasDefaultValue) sb.AppendFormat("={0}", DefaultValue);
         }

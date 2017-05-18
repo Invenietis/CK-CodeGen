@@ -26,7 +26,6 @@ namespace CK.CodeGen
             {
                 if (isFirst) isFirst = false;
                 else sb.Append(',');
-
                 value.Build(sb);
             }
         }

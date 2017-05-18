@@ -36,19 +36,19 @@ namespace CK.CodeGen
 
         public string CreateSource()
         {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("namespace {0}", Name).Append("{");
-            BuildUsings(sb);
-            BuildTypes(sb);
-            sb.Append("}");
-            return sb.ToString();
+            StringBuilder b = new StringBuilder();
+            b.AppendFormat("namespace {0}", Name).AppendLine("{");
+            BuildUsings(b);
+            BuildTypes(b);
+            b.Append("}");
+            return b.ToString();
         }
 
         void BuildUsings(StringBuilder sb)
         {
             foreach (string u in Usings)
-                if (u.StartsWith("using")) sb.Append(u);
-                else sb.AppendFormat("using {0};", u);
+                if (u.StartsWith("using")) sb.AppendLine(u);
+                else sb.Append("using " ).Append( u ).AppendLine(";");
         }
 
         void BuildTypes(StringBuilder sb)

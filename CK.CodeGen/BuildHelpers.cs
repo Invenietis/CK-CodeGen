@@ -7,50 +7,51 @@ namespace CK.CodeGen
     {
         internal static readonly string[] OneSpace = new[] { " " };
 
-        internal static void BuildAttributes(List<string> attributes, StringBuilder sb)
+        internal static void BuildAttributes(StringBuilder b, List<string> attributes)
         {
             foreach (string attribute in attributes)
             {
-                if(attribute == "out" || attribute == "ref" ) sb.AppendWithWhitespace(attribute);
+                if(attribute == "out" || attribute == "ref" ) b.AppendWithWhitespace(attribute);
                 else
                 {
-                    if (!attribute.StartsWith("[")) sb.Append("[");
-                    sb.Append(attribute);
-                    if (!attribute.EndsWith("]")) sb.Append("]");
+                    if (!attribute.StartsWith("[")) b.Append("[");
+                    b.Append(attribute);
+                    if (!attribute.EndsWith("]")) b.Append("]");
+                    b.AppendLine();
                 }
             }
         }
 
-        internal static void BuildFrontModifiers(List<string> modifiers, StringBuilder sb)
+        internal static void BuildFrontModifiers(StringBuilder b, IEnumerable<string> modifiers)
         {
-            foreach (string modifier in modifiers) sb.AppendWithWhitespace(modifier);
+            foreach (string modifier in modifiers) b.AppendWithWhitespace(modifier);
         }
 
-        internal static void BuildParameters(List<Parameter> parameters, StringBuilder sb)
+        internal static void BuildParameters(StringBuilder b, IEnumerable<Parameter> parameters)
         {
-            sb.Append("(");
+            b.Append("(");
             bool isFirst = true;
             foreach (Parameter parameter in parameters)
             {
                 if (isFirst) isFirst = false;
-                else sb.Append(", ");
-                parameter.Build(sb);
+                else b.Append(", ");
+                parameter.Build(b);
             }
-            sb.Append(")");
+            b.Append(")");
         }
 
-        internal static void BuildMethodBody(string body, StringBuilder sb)
+        internal static void BuildMethodBody(StringBuilder b, string body)
         {
             body = body.ToString().Trim();
             bool isLambda = body.StartsWith("=>");
             if (isLambda)
             {
-                sb.Append(body);
-                if (!body.EndsWith(";")) sb.Append(";");
+                b.Append(body);
+                if (!body.EndsWith(";")) b.AppendLine(";");
             }
             else
             {
-                sb.Append("{").Append(body).Append("}");
+                b.Append("{").Append(body).AppendLine("}");
             }
         }
     }

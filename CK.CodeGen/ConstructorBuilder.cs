@@ -26,10 +26,10 @@ namespace CK.CodeGen
 
         internal void Build(StringBuilder sb)
         {
-            BuildHelpers.BuildAttributes(Attributes, sb);
-            BuildHelpers.BuildFrontModifiers(FrontModifiers, sb);
+            BuildHelpers.BuildAttributes(sb, Attributes);
+            BuildHelpers.BuildFrontModifiers(sb, FrontModifiers);
             BuildName(sb);
-            BuildHelpers.BuildParameters(Parameters, sb);
+            BuildHelpers.BuildParameters(sb, Parameters);
             BuildInitializer(sb);
             BuildBody(sb);
         }
