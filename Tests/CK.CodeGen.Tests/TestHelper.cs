@@ -46,44 +46,10 @@ namespace CK.CodeGen.Tests
             return HandleCreateResult(
                 sourceCode,
                 new CodeGenerator().Generate(sourceCode, TestHelper.RandomDllPath,
-                                                Expand(references).Select( a => a.Location ), 
+                                                references, DefaultAssemblyResolver.Default, 
                                                 GetAssemblyLoader()));
         }
 
-        static IEnumerable<Assembly> Expand(IEnumerable<Assembly> references )
-        {
-            HashSet<Assembly> all = new HashSet<Assembly>();
-            DoExpand(references, all);
-            return all;
-        }
-
-        static void DoExpand(IEnumerable<Assembly> references, HashSet<Assembly> all )
-        {
-            foreach( var a in references)
-            {
-                if (all.Add(a)) DoExpand(a.GetReferencedAssemblies().Select( n => SafeLoad(n)).Where( x => x != null ), all);
-            }
-        }
-
-        static Assembly SafeLoad( AssemblyName n )
-        {
-            Assembly a = null;
-            try
-            {
-                a = Assembly.Load(n);
-            }
-            catch( Exception )
-            {
-                try
-                {
-                    a = Assembly.Load(new AssemblyName(n.Name));
-                }
-                catch (Exception)   
-                {
-                }
-            }
-            return a;
-        }
 
         public static Assembly CreateAssembly(string sourceCode, IEnumerable<string> references)
         {
@@ -99,23 +65,44 @@ namespace CK.CodeGen.Tests
                 new CodeGenerator().Generate(sourceCode, TestHelper.RandomDllPath, references, GetAssemblyLoader()));
         }
 
-        private static Assembly HandleCreateResult(string sourceCode, GenerateResult result)
+        static Assembly HandleCreateResult(string sourceCode, GenerateResult result)
         {
-            if (!result.Success)
+            using (Monitor.OpenInfo().Send("Code Generation information."))
             {
-                Console.WriteLine(sourceCode);
-                Console.WriteLine();
-                if (!result.EmitResult.Success)
+                if( result.LoadFailures.Count > 0 )
                 {
-                    foreach (var diag in result.EmitResult.Diagnostics)
+                    using (Monitor.OpenWarn().Send($"{result.LoadFailures.Count} assembly load failure(s)."))
+                        foreach (var e in result.LoadFailures)
+                            if (e.SuccessfulWeakFallback != null) Monitor.Warn().Send($"'{e.Name}' load failed, used '{e.SuccessfulWeakFallback}' instead.");
+                            else Monitor.Error().Send($"'{e.Name}' load failed.");
+                }
+                if (!result.Success)
+                {
+                    using (Monitor.OpenError().Send("Generation failed."))
                     {
-                        Console.WriteLine(diag.ToString());
+                        if( result.EmitError != null )
+                        {
+                            Monitor.Error().Send(result.EmitError);
+                        }
+                        if (!result.EmitResult.Success && !result.EmitResult.Diagnostics.IsEmpty)
+                        {
+                            using (Monitor.OpenError().Send("Compilation diagnostics."))
+                            {
+                                foreach (var diag in result.EmitResult.Diagnostics)
+                                {
+                                    Monitor.Trace().Send(diag.ToString());
+                                }
+                            }
+                        }
                     }
-                    Console.WriteLine();
                 }
                 if (result.AssemblyLoadError != null)
                 {
-                    Console.WriteLine(result.AssemblyLoadError.Message);
+                    Monitor.Error().Send(result.AssemblyLoadError, "Generated assembly load failed." );
+                }
+                else if(result.Assembly != null)
+                {
+                    Monitor.Trace().Send("Generated assembly successfuly loaded.");
                 }
             }
             result.Success.Should().BeTrue();

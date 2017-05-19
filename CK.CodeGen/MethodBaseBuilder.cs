@@ -3,15 +3,15 @@ using System.Text;
 
 namespace CK.CodeGen
 {
-    public abstract class MethodBaseBuilder
+    public abstract class MethodBaseBuilder : TypeMemberBuilder
     {
-        readonly TypeBuilder _type;
-
         internal MethodBaseBuilder(TypeBuilder typeBuilder, string name)
+            : base( typeBuilder )
         {
-            _type = typeBuilder;
             Name = name;
         }
+
+        public new TypeBuilder TypeBuilder => base.TypeBuilder;
 
         public List<string> Attributes { get; } = new List<string>();
 
@@ -19,7 +19,7 @@ namespace CK.CodeGen
 
         public string ReturnType { get; set; }
 
-        public List<Parameter> Parameters { get; } = new List<Parameter>();
+        public List<ParameterBuilder> Parameters { get; } = new List<ParameterBuilder>();
 
         public List<GenericConstraint> GenericConstraints { get; set; } = new List<GenericConstraint>();
 

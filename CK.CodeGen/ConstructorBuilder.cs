@@ -18,7 +18,7 @@ namespace CK.CodeGen
 
         public List<string> FrontModifiers { get; } = new List<string>();
 
-        public List<Parameter> Parameters { get; } = new List<Parameter>();
+        public List<ParameterBuilder> Parameters { get; } = new List<ParameterBuilder>();
 
         public string Initializer { get; set; }
 

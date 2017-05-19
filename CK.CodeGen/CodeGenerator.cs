@@ -25,26 +25,56 @@ namespace CK.CodeGen
         }
 
         /// <summary>
-        /// Generates an assembly from a source code and a list of absolute path to required reference assemblies.
+        /// Generates an assembly from a source, a minimal list of required reference assemblies and, with the help 
+        /// of the <paramref name="resolver"/>, computes all required dependencies.
         /// </summary>
         /// <param name="sourceCode">The source code. Must be vali C# code.</param>
         /// <param name="assemblyPath">The full final assemblt path (including the .dll extension).</param>
-        /// <param name="refAssemblyPaths">List of full paths to reference assemblies.</param>
-        /// <param name="loader">Optional loader function.</param>
+        /// <param name="someReferences">List of reference assemblies that can be a subset of the actual dependencies.</param>
+        /// <param name="resolver">Must load an assembly from its name.</param>
+        /// <param name="loader">Optional loader function to load the final emitted assembly.</param>
         /// <returns>Encapsulation of the result.</returns>
-        public GenerateResult Generate(string sourceCode, string assemblyPath, IEnumerable<string> refAssemblyPaths, Func<string, Assembly> loader = null)
+        public GenerateResult Generate(string sourceCode, string assemblyPath, IEnumerable<Assembly> someReferences, IAssemblyResolver resolver, Func<string, Assembly> loader = null)
+        {
+            if (someReferences == null) throw new ArgumentNullException(nameof(someReferences));
+            if (resolver == null) throw new ArgumentNullException(nameof(resolver));
+            var closureResult = resolver.GetAssembliesClosure(someReferences);
+            return Generate(
+                    sourceCode, 
+                    assemblyPath, 
+                    closureResult.AllAssemblies.Select(a => MetadataReference.CreateFromFile(resolver.GetPath(a))), 
+                    loader).WithLoadFailures( closureResult.LoadFailures );
+        }
+
+        /// <summary>
+        /// Generates an assembly from a source code and a list of absolute path to required reference assemblies.
+        /// </summary>
+        /// <param name="sourceCode">The source code. Must be valid C# code.</param>
+        /// <param name="assemblyPath">The full final assemblt path (including the .dll extension).</param>
+        /// <param name="allRefAssemblyPaths">List of full paths to reference assemblies.</param>
+        /// <param name="loader">Optional loader function to load the final emitted assembly.</param>
+        /// <returns>Encapsulation of the result.</returns>
+        public GenerateResult Generate(string sourceCode, string assemblyPath, IEnumerable<string> allRefAssemblyPaths, Func<string, Assembly> loader = null)
         {
             try
             {
-                return Generate(sourceCode, assemblyPath, refAssemblyPaths.Select(p => MetadataReference.CreateFromFile(p)), loader);
+                return Generate(sourceCode, assemblyPath, allRefAssemblyPaths.Select(p => MetadataReference.CreateFromFile(p)), loader);
             }
             catch( Exception ex )
             {
-                return new GenerateResult(ex, null, null, null);
+                return new GenerateResult(ex, null, null, null, null);
             }
         }
 
-        public GenerateResult Generate(string sourceCode, string assemblyPath, IEnumerable<MetadataReference> references, Func<string, Assembly> loader = null)
+        /// <summary>
+        /// Generates an assembly from a source code and a list of Roselyn <see cref="MetadataReference"/> required reference assemblies.
+        /// </summary>
+        /// <param name="sourceCode">The source code. Must be vali C# code.</param>
+        /// <param name="assemblyPath">The full final assemblt path (including the .dll extension).</param>
+        /// <param name="allReferences">List of assemblies' references.</param>
+        /// <param name="loader">Optional loader function to load the final emitted assembly.</param>
+        /// <returns>Encapsulation of the result.</returns>
+        public GenerateResult Generate(string sourceCode, string assemblyPath, IEnumerable<MetadataReference> allReferences, Func<string, Assembly> loader = null)
         {
             try
             {
@@ -53,7 +83,7 @@ namespace CK.CodeGen
                 CSharpCompilation compilation = CSharpCompilation.Create(
                     Path.GetFileNameWithoutExtension(assemblyPath),
                     new[] { tree },
-                    references,
+                    allReferences,
                     option);
 
                 var r = compilation.Emit(assemblyPath);
@@ -61,18 +91,18 @@ namespace CK.CodeGen
                 {
                     try
                     {
-                        return new GenerateResult(null, r, loader(assemblyPath), null);
+                        return new GenerateResult(null, r, loader(assemblyPath), null, null);
                     }
                     catch (Exception ex)
                     {
-                        return new GenerateResult(null, r, null, ex);
+                        return new GenerateResult(null, r, null, ex, null);
                     }
                 }
-                return new GenerateResult(null, r, null, null);
+                return new GenerateResult(null, r, null, null, null);
             }
             catch (Exception ex)
             {
-                return new GenerateResult(ex, null, null, null);
+                return new GenerateResult(ex, null, null, null, null);
             }
         }
     }

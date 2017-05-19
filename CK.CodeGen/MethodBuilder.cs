@@ -13,6 +13,8 @@ namespace CK.CodeGen
             if (frontModifiers != null) FrontModifiers.AddRange(frontModifiers.Split(BuildHelpers.OneSpace,StringSplitOptions.RemoveEmptyEntries));
         }
 
+        public new ClassBuilder TypeBuilder => (ClassBuilder)base.TypeBuilder;
+
         public List<string> FrontModifiers { get; }
 
         public StringBuilder Body { get; } = new StringBuilder();

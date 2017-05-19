@@ -9,28 +9,6 @@ using FluentAssertions;
 
 namespace CK.CodeGen.Tests
 {
-    public class ListModifier<T>
-    {
-        public ListModifier( IList<T> list ) => List = list;
-        public IList<T> List { get; }
-    }
-
-    public static class CollectionExtensions
-    {
-        public static ListModifier<T> Build<T>(this IList<T> @this ) => new ListModifier<T>(@this);
-
-        public static ListModifier<T> Add<T>(this ListModifier<T> @this, T val)
-        {
-            @this.List.Add(val);
-            return @this;
-        }
-        public static ListModifier<T> Remove<T>(this ListModifier<T> @this, T val)
-        {
-            @this.List.Remove(val);
-            return @this;
-        }
-    }
-
     public abstract class SimpleBase
     {
         public abstract SqlCommand Do(ref int i);
@@ -48,7 +26,7 @@ namespace CK.CodeGen.Tests
             var c = b.DefineClass("GGGG");
             c.BaseType = typeof(SimpleBase).FullName;
             var m = c.DefineMethod("public override", "Do");
-            var p = new Parameter() { Type = "int", Name = "i" };
+            var p = new ParameterBuilder() { ParameterType = "int", Name = "i" };
             p.Attributes.Add("ref");
             m.Parameters.Add(p);
             m.ReturnType = "SqlCommand";

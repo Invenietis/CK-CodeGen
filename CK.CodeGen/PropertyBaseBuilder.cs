@@ -4,44 +4,44 @@ using System.Text;
 
 namespace CK.CodeGen
 {
-    public abstract class PropertyBaseBuilder
+    public abstract class PropertyBaseBuilder : TypeMemberBuilder
     {
-        readonly TypeBuilder _type;
-
         protected PropertyBaseBuilder(TypeBuilder typeBuilder, string type, string name)
+            : base( typeBuilder )
         {
-            _type = typeBuilder;
-            Type = type;
+            PropertyType = type;
             Name = name;
         }
+
+        public new TypeBuilder TypeBuilder => base.TypeBuilder;
 
         public List<string> Attributes { get; } = new List<string>();
 
         public List<string> FrontModifiers { get; } = new List<string>();
 
-        public string Type { get; set; }
+        public string PropertyType { get; set; }
 
         public string Name { get; set; }
 
-        internal void Build(StringBuilder sb)
+        internal void Build(StringBuilder b)
         {
-            BuildHelpers.BuildAttributes(sb, Attributes);
-            BuildHelpers.BuildFrontModifiers(sb, FrontModifiers);
-            BuildType(sb);
-            BuildName(sb);
-            BuildMethods(sb);
+            BuildHelpers.BuildAttributes(b, Attributes);
+            BuildHelpers.BuildFrontModifiers(b, FrontModifiers);
+            BuildType(b);
+            BuildName(b);
+            BuildMethods(b);
         }
 
-        void BuildType(StringBuilder sb)
+        void BuildType(StringBuilder b)
         {
-            sb.AppendWithWhitespace(Type);
+            b.AppendWithWhitespace(PropertyType);
         }
 
-        void BuildName(StringBuilder sb)
+        void BuildName(StringBuilder b)
         {
-            sb.Append(Name);
+            b.Append(Name);
         }
 
-        internal abstract void BuildMethods(StringBuilder sb);
+        internal abstract void BuildMethods(StringBuilder b);
     }
 }

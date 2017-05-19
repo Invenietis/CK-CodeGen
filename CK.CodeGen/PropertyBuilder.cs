@@ -9,7 +9,7 @@ namespace CK.CodeGen
         internal PropertyBuilder(ClassBuilder classBuilder, string type, string name)
             : base(classBuilder, type, name)
         {
-            Type = type;
+            PropertyType = type;
             Name = name;
             GetMethod = new PropertyMethodBuilder(this, "get");
             SetMethod = new PropertyMethodBuilder(this, "set");

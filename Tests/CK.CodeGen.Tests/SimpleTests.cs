@@ -17,74 +17,65 @@ namespace CK.CodeGen.Tests
         [Test]
         public void SimpleTest()
         {
-            try
+            NamespaceBuilder builder = new NamespaceBuilder("Simple.Namespace");
             {
-
-                NamespaceBuilder builder = new NamespaceBuilder("Simple.Namespace");
-
-                {
-                    InterfaceBuilder simpleInterface = builder.DefineInterface("SimpleInterface");
-                    simpleInterface.DefineProperty("int", "P1");
-                }
-
-                {
-                    ClassBuilder simpleClass = builder.DefineClass("SimpleClass");
-                    simpleClass.FrontModifiers.Add("public");
-                    simpleClass.Interfaces.Add("SimpleInterface");
-
-                    FieldBuilder f = simpleClass.DefineField("int", "_x");
-                    f.FrontModifiers.Add("private");
-
-                    ConstructorBuilder c = simpleClass.DefineConstructor();
-                    c.FrontModifiers.Add("internal");
-                    c.Parameters.Add(new Parameter { Type = "int", Name = "x" });
-                    c.Body.Append("_x = x;");
-
-                    MethodBuilder toString = simpleClass.DefineMethod("ToString");
-                    toString.FrontModifiers.AddRange(new[] { "public", "override" });
-                    toString.ReturnType = "string";
-                    toString.Body.Append(@"=> string.Format(""X: {0}"", _x)");
-
-                    PropertyBuilder p = simpleClass.DefineProperty("int", "P1");
-                    p.FrontModifiers.Add("public");
-                    p.GetMethod.Body.AppendLine("return _x;");
-                    p.SetMethod.Body.AppendLine("_x = value;");
-                }
-
-                ClassBuilder factoryBuilder;
-                {
-                    factoryBuilder = builder.DefineClass("SimpleFactory");
-                    factoryBuilder.FrontModifiers.AddRange(new[] { "public", "static" });
-                    MethodBuilder mb = factoryBuilder.DefineMethod("Create");
-                    mb.FrontModifiers.AddRange(new[] { "public", "static" });
-                    mb.ReturnType = "SimpleClass";
-                    mb.Parameters.Add(new Parameter { Type = "int", Name = "n" });
-                    mb.Body.Append("=> new SimpleClass(n)");
-                }
-
-                Assembly[] references = new[]
-                {
-                    typeof(object).GetTypeInfo().Assembly
-                };
-                Assembly assembly = TestHelper.CreateAssembly(builder.CreateSource(), references);
-
-                {
-                    Type factory = assembly.GetType(factoryBuilder.FullName);
-                    dynamic instance = factory.GetMethod("Create").Invoke(null, new object[] { 25 });
-                    int currentP1 = instance.P1;
-                    currentP1.Should().Be(25);
-
-                    instance.P1 = 12;
-                    currentP1 = instance.P1;
-                    currentP1.Should().Be(12);
-
-                    string s = instance.ToString();
-                    s.Should().Be("X: 12");
-                }
+                InterfaceBuilder simpleInterface = builder.DefineInterface("SimpleInterface");
+                simpleInterface.DefineProperty("int", "P1");
             }
-            catch (Exception ex)
+
             {
-                TestHelper.Monitor.Error().Send(ex);
+                ClassBuilder simpleClass = builder.DefineClass("SimpleClass");
+                simpleClass.FrontModifiers.Add("public");
+                simpleClass.Interfaces.Add("SimpleInterface");
+
+                FieldBuilder f = simpleClass.DefineField("int", "_x");
+                f.FrontModifiers.Add("private");
+
+                ConstructorBuilder c = simpleClass.DefineConstructor();
+                c.FrontModifiers.Add("internal");
+                c.Parameters.Add(new ParameterBuilder { ParameterType = "int", Name = "x" });
+                c.Body.Append("_x = x;");
+
+                MethodBuilder toString = simpleClass.DefineMethod("ToString");
+                toString.FrontModifiers.AddRange(new[] { "public", "override" });
+                toString.ReturnType = "string";
+                toString.Body.Append(@"=> string.Format(""X: {0}"", _x)");
+
+                PropertyBuilder p = simpleClass.DefineProperty("int", "P1");
+                p.FrontModifiers.Add("public");
+                p.GetMethod.Body.AppendLine("return _x;");
+                p.SetMethod.Body.AppendLine("_x = value;");
+            }
+
+            ClassBuilder factoryBuilder;
+            {
+                factoryBuilder = builder.DefineClass("SimpleFactory");
+                factoryBuilder.FrontModifiers.AddRange(new[] { "public", "static" });
+                MethodBuilder mb = factoryBuilder.DefineMethod("Create");
+                mb.FrontModifiers.AddRange(new[] { "public", "static" });
+                mb.ReturnType = "SimpleClass";
+                mb.Parameters.Add(new ParameterBuilder { ParameterType = "int", Name = "n" });
+                mb.Body.Append("=> new SimpleClass(n)");
+            }
+
+            Assembly[] references = new[]
+            {
+                typeof(object).GetTypeInfo().Assembly
+            };
+            Assembly assembly = TestHelper.CreateAssembly(builder.CreateSource(), references);
+
+            {
+                Type factory = assembly.GetType(factoryBuilder.FullName);
+                dynamic instance = factory.GetMethod("Create").Invoke(null, new object[] { 25 });
+                int currentP1 = instance.P1;
+                currentP1.Should().Be(25);
+
+                instance.P1 = 12;
+                currentP1 = instance.P1;
+                currentP1.Should().Be(12);
+
+                string s = instance.ToString();
+                s.Should().Be("X: 12");
             }
         }
 
@@ -137,8 +128,8 @@ namespace CK.CodeGen.Tests
                 ctorBuilder.FrontModifiers.Add("public");
                 ctorBuilder.Parameters.AddRange(new[]
                 {
-                    new Parameter { Type = "int", Name = "x" },
-                    new Parameter { Type = "int", Name = "y" }
+                    new ParameterBuilder { ParameterType = "int", Name = "x" },
+                    new ParameterBuilder { ParameterType = "int", Name = "y" }
                 });
                 ctorBuilder.Body
                     .Append("_x = x;")
@@ -155,7 +146,7 @@ namespace CK.CodeGen.Tests
                 MethodBuilder equalsBuilder = struct1.DefineMethod("Equals");
                 equalsBuilder.FrontModifiers.AddRange(new[] { "public", "override" });
                 equalsBuilder.ReturnType = "bool";
-                equalsBuilder.Parameters.Add(new Parameter { Type = "object", Name = "obj" });
+                equalsBuilder.Parameters.Add(new ParameterBuilder { ParameterType = "object", Name = "obj" });
                 equalsBuilder.Body
                     .Append("if (!(obj is Struct1)) return false;")
                     .Append("Struct1 other = (Struct1)obj;")
@@ -175,13 +166,13 @@ namespace CK.CodeGen.Tests
                 m1Builer.ReturnType = "Struct1";
                 m1Builer.Parameters.AddRange(new[]
                 {
-                    new Parameter { Type = "int", Name = "arg1"},
-                    new Parameter { Type = "Enum1", Name = "arg2"}
+                    new ParameterBuilder { ParameterType = "int", Name = "arg1"},
+                    new ParameterBuilder { ParameterType = "Enum1", Name = "arg2"}
                 });
 
                 var m2Builer = interface1.DefineMethod("M2");
                 m2Builer.ReturnType = "string";
-                m2Builer.Parameters.Add(new Parameter { Type = "string", Name = "arg" });
+                m2Builer.Parameters.Add(new ParameterBuilder { ParameterType = "string", Name = "arg" });
             }
 
             {
@@ -191,7 +182,7 @@ namespace CK.CodeGen.Tests
 
                 var m3Builder = interface2.DefineMethod("M3");
                 m3Builder.ReturnType = "int";
-                m3Builder.Parameters.Add(new Parameter { Type = "string", Name = "arg" });
+                m3Builder.Parameters.Add(new ParameterBuilder { ParameterType = "string", Name = "arg" });
             }
 
             {
@@ -227,7 +218,7 @@ namespace CK.CodeGen.Tests
 
                 ConstructorBuilder ctorBuilder = class1.DefineConstructor();
                 ctorBuilder.FrontModifiers.Add("protected");
-                ctorBuilder.Parameters.Add(new Parameter { Type = "int", Name = "arg" });
+                ctorBuilder.Parameters.Add(new ParameterBuilder { ParameterType = "int", Name = "arg" });
                 ctorBuilder.Body.Append("_f1 = arg;");
 
                 MethodBuilder m5Builder = class1.DefineMethod("M5");
@@ -267,8 +258,8 @@ namespace CK.CodeGen.Tests
                 ctorBuilder.FrontModifiers.Add("public");
                 ctorBuilder.Parameters.AddRange(new[]
                 {
-                    new Parameter { Type = "int", Name = "arg1"},
-                    new Parameter { Type = "string", Name = "arg2", DefaultValue = "null" }
+                    new ParameterBuilder { ParameterType = "int", Name = "arg1"},
+                    new ParameterBuilder { ParameterType = "string", Name = "arg2", DefaultValue = "null" }
                 });
                 ctorBuilder.Initializer = "base(arg1)";
                 ctorBuilder.Body.Append("_f2 = arg2;");
@@ -283,8 +274,8 @@ namespace CK.CodeGen.Tests
                 m1Builder.ReturnType = "Struct1";
                 m1Builder.Parameters.AddRange(new[]
                 {
-                    new Parameter { Type = "int", Name = "arg1" },
-                    new Parameter { Type = "Enum1", Name = "arg2" }
+                    new ParameterBuilder { ParameterType = "int", Name = "arg1" },
+                    new ParameterBuilder { ParameterType = "Enum1", Name = "arg2" }
                 });
                 m1Builder.Body
                     .Append("int x;")
@@ -296,7 +287,7 @@ namespace CK.CodeGen.Tests
                 MethodBuilder m2Builder = class2.DefineMethod("M2");
                 m2Builder.FrontModifiers.Add("public");
                 m2Builder.ReturnType = "string";
-                m2Builder.Parameters.Add(new Parameter { Type = "string", Name = "s", DefaultValue = "null" });
+                m2Builder.Parameters.Add(new ParameterBuilder { ParameterType = "string", Name = "s", DefaultValue = "null" });
                 m2Builder.Body
                     .Append("if (s == null) s = string.Empty;")
                     .Append("return string.Concat(s, s);");
@@ -304,7 +295,7 @@ namespace CK.CodeGen.Tests
                 MethodBuilder m3Builder = class2.DefineMethod("M3");
                 m3Builder.FrontModifiers.Add("public");
                 m3Builder.ReturnType = "int";
-                m3Builder.Parameters.Add(new Parameter { Type = "string", Name = "s" });
+                m3Builder.Parameters.Add(new ParameterBuilder { ParameterType = "string", Name = "s" });
                 m3Builder.Body.Append("=> int.Parse(s)");
 
                 MethodBuilder m4Builder = class2.DefineMethod("M4");
@@ -333,7 +324,7 @@ namespace CK.CodeGen.Tests
                 MethodBuilder m6Builder = class2.DefineMethod("M6<T>");
                 m6Builder.FrontModifiers.AddRange(new[] { "public", "static" });
                 m6Builder.ReturnType = "int";
-                m6Builder.Parameters.Add(new Parameter { Type = "T", Name = "arg" });
+                m6Builder.Parameters.Add(new ParameterBuilder { ParameterType = "T", Name = "arg" });
                 GenericConstraint gc3 = new GenericConstraint { GenericParameterName = "T" };
                 gc3.Constraints.Add("Interface5");
                 m6Builder.GenericConstraints.Add(gc3);

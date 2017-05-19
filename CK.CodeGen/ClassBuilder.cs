@@ -11,6 +11,8 @@ namespace CK.CodeGen
         readonly List<ConstructorBuilder> _constructors;
         readonly List<PropertyBaseBuilder> _properties;
         readonly List<MethodBuilder> _methods;
+        Type _actualBaseType;
+        string _baseType;
 
         internal ClassBuilder(NamespaceBuilder namespaceBuilder, string name)
             : this(namespaceBuilder, "class", name)
@@ -26,7 +28,31 @@ namespace CK.CodeGen
             _methods = new List<MethodBuilder>();
         }
 
-        public string BaseType { get; set; }
+        public Type ActualBaseType
+        {
+            get => _actualBaseType;
+            set
+            {
+                if( _actualBaseType != value )
+                {
+                    _actualBaseType = value;
+                    if (_actualBaseType != null) BaseType = _actualBaseType.FullName;
+                }
+            }
+        }
+
+        public string BaseType
+        {
+            get => _baseType;
+            set
+            {
+                if( _baseType != value)
+                {
+                    _baseType = value;
+                    _actualBaseType = null;
+                }
+            }
+        }
 
         public List<string> Interfaces { get; } = new List<string>();
 

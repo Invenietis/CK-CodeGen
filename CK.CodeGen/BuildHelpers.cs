@@ -27,11 +27,11 @@ namespace CK.CodeGen
             foreach (string modifier in modifiers) b.AppendWithWhitespace(modifier);
         }
 
-        internal static void BuildParameters(StringBuilder b, IEnumerable<Parameter> parameters)
+        internal static void BuildParameters(StringBuilder b, IEnumerable<ParameterBuilder> parameters)
         {
             b.Append("(");
             bool isFirst = true;
-            foreach (Parameter parameter in parameters)
+            foreach (ParameterBuilder parameter in parameters)
             {
                 if (isFirst) isFirst = false;
                 else b.Append(", ");

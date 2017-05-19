@@ -11,7 +11,7 @@ namespace CK.CodeGen
         internal FieldBuilder(ClassBuilder classBuilder, string type, string name)
         {
             _ClassBuilder = classBuilder;
-            Type = type;
+            FieldType = type;
             Name = name;
         }
 
@@ -19,7 +19,7 @@ namespace CK.CodeGen
 
         public List<string> FrontModifiers { get; } = new List<string>();
 
-        public string Type { get; set; }
+        public string FieldType { get; set; }
 
         public string Name { get; set; }
 
@@ -29,7 +29,7 @@ namespace CK.CodeGen
         {
             BuildHelpers.BuildAttributes(sb, Attributes);
             BuildHelpers.BuildFrontModifiers(sb, FrontModifiers);
-            sb.AppendFormat("{0} {1}", Type, Name);
+            sb.AppendFormat("{0} {1}", FieldType, Name);
             if (HasInitialValue) sb.AppendFormat("={0}", InitialValue);
             sb.AppendLine(";");
         }

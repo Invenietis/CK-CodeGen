@@ -8,7 +8,7 @@ namespace CK.CodeGen
         internal AutoImplmentedPropertyBuilder(ClassBuilder classBuilder, string type, string name)
             : base(classBuilder, type, name)
         {
-            Type = type;
+            PropertyType = type;
             Name = name;
             Getter = new AutoImplmentedPropertyMethodBuilder(this, "get");
             Setter = new AutoImplmentedPropertyMethodBuilder(this, "set");

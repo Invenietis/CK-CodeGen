@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CK.Text;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -15,6 +16,8 @@ namespace CK.CodeGen
             _kind = kind;
             Name = name;
         }
+
+        public NamespaceBuilder NamespaceBuilder => _namespace;
 
         public List<string> Attributes { get; } = new List<string>();
 
@@ -46,22 +49,21 @@ namespace CK.CodeGen
             b.AppendLine("}");
         }
 
-        void BuildKind(StringBuilder sb)
+        void BuildKind(StringBuilder b)
         {
-            sb.AppendWithWhitespace(_kind);
+            b.AppendWithWhitespace(_kind);
         }
 
-        void BuildName(StringBuilder sb)
+        void BuildName(StringBuilder b)
         {
-            sb.Append(Name);
+            b.Append(Name);
         }
 
-        void BuildParents(StringBuilder sb)
+        void BuildParents(StringBuilder b)
         {
             if (HasParents)
             {
-                sb.Append(":");
-                sb.Append(string.Join(",", Parents));
+                b.Append(":").AppendStrings(Parents);
             }
         }
 

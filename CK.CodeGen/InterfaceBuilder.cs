@@ -38,25 +38,25 @@ namespace CK.CodeGen
             return method;
         }
 
-        protected override void BuildFields(StringBuilder sb)
+        protected override void BuildFields(StringBuilder b)
         {
         }
 
-        protected override void BuildConstructors(StringBuilder sb)
+        protected override void BuildConstructors(StringBuilder b)
         {
         }
 
-        protected override void BuildProperties(StringBuilder sb)
+        protected override void BuildProperties(StringBuilder b)
         {
-            foreach (PropertyDeclarationBuilder property in _properties) property.Build(sb);
+            foreach (PropertyDeclarationBuilder property in _properties) property.Build(b);
         }
 
-        protected override void BuildMethods(StringBuilder sb)
+        protected override void BuildMethods(StringBuilder b)
         {
-            foreach (MethodDeclarationBuilder method in _methods) method.Build(sb);
+            foreach (MethodDeclarationBuilder method in _methods) method.Build(b);
         }
 
-        protected override void BuildGenericConstraints(StringBuilder sb)
+        protected override void BuildGenericConstraints(StringBuilder b)
         {
         }
     }
