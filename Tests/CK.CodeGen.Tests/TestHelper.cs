@@ -112,7 +112,7 @@ namespace CK.CodeGen.Tests
         private static Func<string, Assembly> GetAssemblyLoader()
         {
             Func<string, Assembly> loader;
-#if NET462
+#if NET461
             loader = Assembly.LoadFrom;
 #else
             loader = System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath;

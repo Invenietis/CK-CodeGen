@@ -3,7 +3,7 @@
   <Import Project="..\..\Common\Shared.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp1.1;net462</TargetFrameworks>
+    <TargetFrameworks>netcoreapp1.1;net461</TargetFrameworks>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
 
@@ -22,7 +22,7 @@
     <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <PackageReference Include="NUnit" Version="[2.6.4]" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />

@@ -135,7 +135,7 @@ namespace CodeCake
                             {
                                 ProjectPath = p.Path.GetDirectory(),
                                 NetCoreAppDll = p.Path.GetDirectory().CombineWithFilePath("bin/" + configuration + "/netcoreapp1.1/" + p.Name + ".dll"),
-                                Net451Exe = p.Path.GetDirectory().CombineWithFilePath("bin/" + configuration + "/net451/" + p.Name + ".exe"),
+                                Net451Exe = p.Path.GetDirectory().CombineWithFilePath("bin/" + configuration + "/net461/" + p.Name + ".exe"),
                             });
 
                     foreach (var test in testDlls)
@@ -146,7 +146,7 @@ namespace CodeCake
                             Cake.NUnit(test.Net451Exe.FullPath, new NUnitSettings()
                             {
                                 Framework = "v4.5",
-                                ResultsFile = test.ProjectPath.CombineWithFilePath("TestResult.Net451.xml")
+                                ResultsFile = test.ProjectPath.CombineWithFilePath("TestResult.Net461.xml")
                             });
                             Cake.Information("Testing: {0}", test.NetCoreAppDll);
                             Cake.DotNetCoreExecute(test.NetCoreAppDll);
