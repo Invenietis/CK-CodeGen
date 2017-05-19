@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using CK.Text;
 
 namespace CK.CodeGen
 {
@@ -11,7 +13,7 @@ namespace CK.CodeGen
         readonly List<ConstructorBuilder> _constructors;
         readonly List<PropertyBaseBuilder> _properties;
         readonly List<MethodBuilder> _methods;
-        Type _actualBaseType;
+        BaseType _actualBaseType;
         string _baseType;
 
         internal ClassBuilder(NamespaceBuilder namespaceBuilder, string name)
@@ -28,7 +30,7 @@ namespace CK.CodeGen
             _methods = new List<MethodBuilder>();
         }
 
-        public Type ActualBaseType
+        public BaseType ActualBaseType
         {
             get => _actualBaseType;
             set
@@ -36,7 +38,7 @@ namespace CK.CodeGen
                 if( _actualBaseType != value )
                 {
                     _actualBaseType = value;
-                    if (_actualBaseType != null) BaseType = _actualBaseType.FullName;
+                    if (_actualBaseType != null) BaseType = _actualBaseType.BuildFullName();
                 }
             }
         }

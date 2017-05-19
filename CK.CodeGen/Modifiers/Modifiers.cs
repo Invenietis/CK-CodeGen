@@ -34,9 +34,9 @@ namespace CK.CodeGen.Modifiers
         public ClassBuilder(CK.CodeGen.ClassBuilder c) => Target = c;
         public CK.CodeGen.ClassBuilder Target { get; }
 
-        public ClassBuilder SetBase(Type baseType)
+        public ClassBuilder SetBase(Type baseType, params string[] genericParams)
         {
-            Target.ActualBaseType = baseType;
+            Target.ActualBaseType = new BaseType(baseType, genericParams);
             return this;
         }
 
@@ -46,14 +46,14 @@ namespace CK.CodeGen.Modifiers
             return this;
         }
 
-        public ClassBuilder DefineOverrideMethod(MethodInfo baseMethod, Action<StringBuilder> bodyBuilder = null )
+        public ClassBuilder DefineOverrideMethod(MethodInfo baseMethod, Action<StringBuilder> bodyBuilder = null)
         {
             if (baseMethod == null) throw new ArgumentNullException(nameof(baseMethod));
             string name = baseMethod.Name;
-            if( baseMethod.ContainsGenericParameters )
+            if (baseMethod.ContainsGenericParameters)
             {
                 name += '<';
-                name += baseMethod.GetGenericArguments().Select( a => a.Name ).Concatenate();
+                name += baseMethod.GetGenericArguments().Select(a => a.Name).Concatenate();
                 name += '>';
             }
             MethodBuilder mB = new MethodBuilder(Target.DefineMethod(name));
@@ -71,8 +71,8 @@ namespace CK.CodeGen.Modifiers
                 mB.Target.FrontModifiers.Add("protected");
             }
             mB.Target.FrontModifiers.Add("override");
-            mB.Target.ReturnType = baseMethod.ReturnType.FullName;
-            foreach( var p in baseMethod.GetParameters())
+            mB.Target.ReturnType = baseMethod.ReturnType.CompleteName();
+            foreach (var p in baseMethod.GetParameters())
             {
                 mB.AddParameter(p);
             }
@@ -87,25 +87,24 @@ namespace CK.CodeGen.Modifiers
 
         public CK.CodeGen.MethodBuilder Target { get; }
 
-        public MethodBuilder Body( Action<StringBuilder> c )
+        public MethodBuilder Body(Action<StringBuilder> c)
         {
             c(Target.Body);
             return this;
         }
 
-        public MethodBuilder AddParameter( ParameterInfo p )
+        public MethodBuilder AddParameter(ParameterInfo p)
         {
             var pB = new ParameterBuilder();
             pB.Name = p.Name;
             if (p.IsOut) pB.Attributes.Add("out");
-            else if ( p.ParameterType.IsByRef ) pB.Attributes.Add("ref");
-            pB.ParameterType = p.ParameterType.IsByRef 
-                                ? p.ParameterType.GetElementType().FullName
-                                : p.ParameterType.FullName;
+            else if (p.ParameterType.IsByRef) pB.Attributes.Add("ref");
+            pB.ParameterType = p.ParameterType.IsByRef
+                                ? p.ParameterType.GetElementType().CompleteName()
+                                : p.ParameterType.CompleteName();
             Target.Parameters.Add(pB);
             return this;
         }
-
     }
 
 }

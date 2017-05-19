@@ -20,6 +20,16 @@ namespace CK.CodeGen.Tests
 
     }
 
+    public abstract class ContainsGenericMethods<T>
+    {
+        public abstract TResult Simple1<TResult>(T arg);
+
+        public virtual bool Simple2<T1, T2>(T1 arg1, T2 arg2)
+        {
+            return false;
+        }
+    }
+
     [TestFixture]
     public class OverrideTests
     {
@@ -62,6 +72,38 @@ namespace CK.CodeGen.Tests
             gotIt.Simple3(out s, ref g, 9).Should().BeSameAs(gotIt);
             s.Should().Be("Hello World!YES-"+g.ToString());
             g.Should().NotBeEmpty();
+        }
+
+        [Test]
+        public void BuildGenericMethods()
+        {
+            NamespaceBuilder b = new NamespaceBuilder("CK._g");
+            Type t = typeof(ContainsGenericMethods<>);
+
+            b.Usings.Build().Add(t.Namespace);
+            var c = b.DefineClass("Specialized<T>")
+                        .Build()
+                        .SetBase(t, "T")
+                        .DefineOverrideMethod(t.GetMethod("Simple1"), body =>
+                        {
+                            body.Append("if (arg.Equals(default(T))) throw new System.ArgumentException();")
+                                .Append("return default(TResult);");
+                        })
+                        .DefineOverrideMethod(t.GetMethod("Simple2"), body =>
+                        {
+                            body.Append("=> arg2 is T1");
+                        });
+            string source = b.CreateSource();
+            Assembly[] references = new[]
+            {
+                typeof(object).GetTypeInfo().Assembly,
+                typeof(ContainsGenericMethods<>).GetTypeInfo().Assembly
+            };
+            Assembly a = TestHelper.CreateAssembly(source, references);
+            Type tC = a.GetTypes().Single(n => n.Name == "Specialized`1").MakeGenericType(typeof(int));
+            ContainsGenericMethods<int> gotIt = (ContainsGenericMethods<int>)Activator.CreateInstance(tC);
+            gotIt.Simple1<bool>(25).Should().BeFalse();
+            gotIt.Simple2(new object(), "test").Should().BeTrue();
         }
     }
 }
