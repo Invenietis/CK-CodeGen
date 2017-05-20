@@ -42,7 +42,7 @@ namespace CK.CodeGen
             return Generate(
                     sourceCode, 
                     assemblyPath, 
-                    closureResult.AllAssemblies.Select(a => MetadataReference.CreateFromFile(resolver.GetPath(a))), 
+                    closureResult.AllAssemblies.Select(a => MetadataReference.CreateFromFile(resolver.GetAssemblyFilePath(a))), 
                     loader).WithLoadFailures( closureResult.LoadFailures );
         }
 

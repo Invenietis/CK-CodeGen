@@ -9,7 +9,7 @@ namespace CK.CodeGen.Tests
     {
         static public readonly DefaultAssemblyResolver Default = new DefaultAssemblyResolver();
 
-        public string GetPath(Assembly a) => a.Location;
+        public string GetAssemblyFilePath(Assembly a) => new Uri(a.CodeBase).LocalPath;
 
         public IEnumerable<AssemblyName> GetReferencedAssemblies(Assembly a) => a.GetReferencedAssemblies();
 

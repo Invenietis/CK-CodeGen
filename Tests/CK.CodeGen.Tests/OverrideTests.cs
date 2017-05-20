@@ -60,7 +60,6 @@ namespace CK.CodeGen.Tests
             string source = b.CreateSource();
             Assembly[] references = new[]
             {
-                typeof(object).GetTypeInfo().Assembly,
                 typeof(BaseToBeOverridden).GetTypeInfo().Assembly
             };
             Assembly a = TestHelper.CreateAssembly(source, references);
@@ -96,7 +95,6 @@ namespace CK.CodeGen.Tests
             string source = b.CreateSource();
             Assembly[] references = new[]
             {
-                typeof(object).GetTypeInfo().Assembly,
                 typeof(ContainsGenericMethods<>).GetTypeInfo().Assembly
             };
             Assembly a = TestHelper.CreateAssembly(source, references);
