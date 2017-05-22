@@ -57,6 +57,7 @@ namespace CK.CodeGen.Modifiers
                 name += '>';
             }
             MethodBuilder mB = new MethodBuilder(Target.DefineMethod(name));
+            mB.Target.BaseMethod = baseMethod;
             if (baseMethod.IsPublic) mB.Target.FrontModifiers.Add("public");
             else if (baseMethod.IsFamily) mB.Target.FrontModifiers.Add("protected");
             else if (baseMethod.IsFamilyAndAssembly)

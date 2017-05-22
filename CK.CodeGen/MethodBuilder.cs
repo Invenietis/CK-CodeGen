@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 
 namespace CK.CodeGen
@@ -14,6 +15,12 @@ namespace CK.CodeGen
         }
 
         public new ClassBuilder TypeBuilder => (ClassBuilder)base.TypeBuilder;
+
+
+        /// <summary>
+        /// Gets or sets a method info associated to this <see cref="MethodBuilder"/>.
+        /// </summary>
+        public MethodInfo BaseMethod { get; set; }
 
         public List<string> FrontModifiers { get; }
 
