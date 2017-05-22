@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace CK.CodeGen
@@ -6,6 +7,12 @@ namespace CK.CodeGen
     static class BuildHelpers
     {
         internal static readonly string[] OneSpace = new[] { " " };
+
+        internal static string CheckValidFullName(string n)
+        {
+            if (string.IsNullOrWhiteSpace(n) || n[n.Length - 1] == '.') throw new ArgumentException($"Invalid name '{n}'. Must not be empty nor ends with a dot.");
+            return n;
+        }
 
         internal static void BuildAttributes(StringBuilder b, List<string> attributes)
         {

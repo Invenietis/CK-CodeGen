@@ -10,7 +10,7 @@ namespace CK.CodeGen
 
         public NamespaceBuilder(string ns)
         {
-            Name = ns;
+            Name = BuildHelpers.CheckValidFullName(ns);
         }
 
         public List<string> Usings { get; } = new List<string>();

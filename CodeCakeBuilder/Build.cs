@@ -67,7 +67,7 @@ namespace CodeCake
             SimpleRepositoryInfo gitInfo = Cake.GetSimpleRepositoryInfo();
 
             // Configuration is either "Debug" or "Release".
-            string configuration = null;
+            string configuration = "Debug";
 
             Task( "Check-Repository" )
                 .Does( () =>
@@ -82,10 +82,11 @@ namespace CodeCake
                         else if(!Cake.AppVeyor().IsRunningOnAppVeyor) throw new Exception("Repository is not ready to be published.");
                     }
 
-                    configuration = gitInfo.IsValidRelease 
-                                    && (gitInfo.PreReleaseName.Length == 0 || gitInfo.PreReleaseName == "rc") 
-                                    ? "Release" 
-                                    : "Debug";
+                    if( gitInfo.IsValidRelease 
+                                    && (gitInfo.PreReleaseName.Length == 0 || gitInfo.PreReleaseName == "rc") )
+                    {
+                        configuration = "Release";
+                    }
 
                     Cake.Information( "Publishing {0} projects with version={1} and configuration={2}: {3}",
                         projectsToPublish.Count(),
@@ -135,19 +136,21 @@ namespace CodeCake
                             {
                                 ProjectPath = p.Path.GetDirectory(),
                                 NetCoreAppDll = p.Path.GetDirectory().CombineWithFilePath("bin/" + configuration + "/netcoreapp1.1/" + p.Name + ".dll"),
-                                Net461Exe = p.Path.GetDirectory().CombineWithFilePath("bin/" + configuration + "/net461/" + p.Name + ".exe"),
+                                Net461Dll = p.Path.GetDirectory().CombineWithFilePath("bin/" + configuration + "/net461/" + p.Name + ".dll"),
                             });
 
                     foreach (var test in testDlls)
                     {
-                        using (Cake.Environment.SetWorkingDirectory(test.ProjectPath))
+                        if (System.IO.File.Exists(test.Net461Dll.FullPath))
                         {
-                            Cake.Information("Testing: {0}", test.Net461Exe);
-                            Cake.NUnit(test.Net461Exe.FullPath, new NUnitSettings()
+                            Cake.Information("Testing: {0}", test.Net461Dll);
+                            Cake.NUnit(test.Net461Dll.FullPath, new NUnitSettings()
                             {
-                                Framework = "v4.5",
-                                ResultsFile = test.ProjectPath.CombineWithFilePath("TestResult.Net461.xml")
+                                Framework = "v4.5"
                             });
+                        }
+                        if (System.IO.File.Exists(test.NetCoreAppDll.FullPath))
+                        {
                             Cake.Information("Testing: {0}", test.NetCoreAppDll);
                             Cake.DotNetCoreExecute(test.NetCoreAppDll);
                         }
@@ -162,7 +165,6 @@ namespace CodeCake
                     Cake.CreateDirectory( releasesDir );
                     foreach( SolutionProject p in projectsToPublish )
                     {
-                        Cake.Warning(p.Path.GetDirectory().FullPath);
                         var s = new DotNetCorePackSettings();
                         s.ArgumentCustomization = args => args.Append("--include-symbols");
                         s.NoBuild = true;
@@ -213,7 +215,7 @@ namespace CodeCake
                     }
                     if (Cake.AppVeyor().IsRunningOnAppVeyor)
                     {
-                        Cake.AppVeyor().UpdateBuildVersion(gitInfo.SemVer);
+                        Cake.AppVeyor().UpdateBuildVersion(gitInfo.NuGetVersion);
                     }
                 });
 

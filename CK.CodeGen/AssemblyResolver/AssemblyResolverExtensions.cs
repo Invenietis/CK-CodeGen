@@ -44,15 +44,19 @@ namespace CK.CodeGen
                 }
                 catch 
                 {
-                    var uName = new AssemblyName(n.Name);
-                    try
+                    if( n.Version != null )
                     {
-                        a = Assembly.Load(uName);
-                        _failures.Add(new AssemblyLoadFailure(n, a.GetName()));
-                    }
-                    catch
-                    {
-                        _failures.Add( new AssemblyLoadFailure(n, null));
+                        var uName = new AssemblyName(n.Name);
+                        try
+                        {
+                            a = Assembly.Load(uName);
+                            _failures.Add(new AssemblyLoadFailure(n, a.GetName()));
+                            return a;
+                        }
+                        catch
+                        {
+                        }
+                        _failures.Add(new AssemblyLoadFailure(n, null));
                     }
                 }
                 return a;

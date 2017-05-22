@@ -1,12 +1,9 @@
 {
   "profiles": {
-    "net46": {
+    "net461": {
       "commandName": "Executable",
       "executablePath": "..\\..\\packages\\NUnit.Runners.Net4.2.6.4\\tools\\nunit.exe",
-      "commandLineArgs": "bin\\Debug\\net461\\CK.CodeGen.Tests.exe"
-    },
-    "netcore": {
-      "commandName": "Project"
+      "commandLineArgs": "bin\\Debug\\net461\\CK.CodeGen.Tests.dll"
     }
   }
 }

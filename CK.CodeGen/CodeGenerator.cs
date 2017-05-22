@@ -13,6 +13,10 @@ namespace CK.CodeGen
     {
         readonly CSharpCompilationOptions _options;
 
+        static CodeGenerator()
+        {
+        }
+
         public CodeGenerator()
             : this(null)
         {
@@ -74,8 +78,16 @@ namespace CK.CodeGen
         /// <param name="allReferences">List of assemblies' references.</param>
         /// <param name="loader">Optional loader function to load the final emitted assembly.</param>
         /// <returns>Encapsulation of the result.</returns>
-        public GenerateResult Generate(string sourceCode, string assemblyPath, IEnumerable<MetadataReference> allReferences, Func<string, Assembly> loader = null)
+        public GenerateResult Generate(
+            string sourceCode, 
+            string assemblyPath, 
+            IEnumerable<MetadataReference> allReferences, 
+            Func<string, Assembly> loader = null)
         {
+#if NET461
+            using( CK.Core.WeakAssemblyNameResolver.TempInstall())
+            {
+#endif
             try
             {
                 SyntaxTree tree = SyntaxFactory.ParseSyntaxTree(sourceCode);
@@ -104,6 +116,9 @@ namespace CK.CodeGen
             {
                 return new GenerateResult(ex, null, null, null, null);
             }
+#if NET461
+            }
+#endif
         }
     }
 }
