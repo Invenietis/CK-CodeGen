@@ -42,12 +42,19 @@ namespace CK.CodeGen
         {
             if (someReferences == null) throw new ArgumentNullException(nameof(someReferences));
             if (resolver == null) throw new ArgumentNullException(nameof(resolver));
+#if NET461
+            using( CK.Core.WeakAssemblyNameResolver.TempInstall())
+            {
+#endif
             var closureResult = resolver.GetAssembliesClosure(someReferences);
             return Generate(
                     sourceCode, 
                     assemblyPath, 
                     closureResult.AllAssemblies.Select(a => MetadataReference.CreateFromFile(resolver.GetAssemblyFilePath(a))), 
                     loader).WithLoadFailures( closureResult.LoadFailures );
+#if NET461
+            }
+#endif
         }
 
         /// <summary>
@@ -58,16 +65,23 @@ namespace CK.CodeGen
         /// <param name="allRefAssemblyPaths">List of full paths to reference assemblies.</param>
         /// <param name="loader">Optional loader function to load the final emitted assembly.</param>
         /// <returns>Encapsulation of the result.</returns>
-        public GenerateResult Generate(string sourceCode, string assemblyPath, IEnumerable<string> allRefAssemblyPaths, Func<string, Assembly> loader = null)
+        public GenerateResult Generate( string sourceCode, string assemblyPath, IEnumerable<string> allRefAssemblyPaths, Func<string, Assembly> loader = null )
         {
+#if NET461
+            using( CK.Core.WeakAssemblyNameResolver.TempInstall())
+            {
+#endif
             try
             {
-                return Generate(sourceCode, assemblyPath, allRefAssemblyPaths.Select(p => MetadataReference.CreateFromFile(p)), loader);
+                return Generate( sourceCode, assemblyPath, allRefAssemblyPaths.Select( p => MetadataReference.CreateFromFile( p ) ), loader );
             }
             catch( Exception ex )
             {
-                return new GenerateResult(ex, null, null, null, null);
+                return new GenerateResult( ex, null, null, null, null );
             }
+#if NET461
+            }
+#endif
         }
 
         /// <summary>

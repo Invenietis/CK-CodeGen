@@ -84,13 +84,16 @@ namespace CK.CodeGen.Tests
                         {
                             Monitor.Error().Send(result.EmitError);
                         }
-                        if (!result.EmitResult.Success && !result.EmitResult.Diagnostics.IsEmpty)
+                        if( result.EmitResult != null )
                         {
-                            using (Monitor.OpenError().Send("Compilation diagnostics."))
+                            if( !result.EmitResult.Success && !result.EmitResult.Diagnostics.IsEmpty )
                             {
-                                foreach (var diag in result.EmitResult.Diagnostics)
+                                using( Monitor.OpenError().Send( "Compilation diagnostics." ) )
                                 {
-                                    Monitor.Trace().Send(diag.ToString());
+                                    foreach( var diag in result.EmitResult.Diagnostics )
+                                    {
+                                        Monitor.Trace().Send( diag.ToString() );
+                                    }
                                 }
                             }
                         }
