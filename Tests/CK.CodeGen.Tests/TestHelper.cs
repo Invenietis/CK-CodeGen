@@ -88,12 +88,13 @@ namespace CK.CodeGen.Tests
                         {
                             if( !result.EmitResult.Success && !result.EmitResult.Diagnostics.IsEmpty )
                             {
-                                using( Monitor.OpenError().Send( "Compilation diagnostics." ) )
+                                using( Monitor.OpenError().Send( "Compilation diagnostics & Source." ) )
                                 {
                                     foreach( var diag in result.EmitResult.Diagnostics )
                                     {
                                         Monitor.Trace().Send( diag.ToString() );
                                     }
+                                    Monitor.Trace().Send( sourceCode );
                                 }
                             }
                         }

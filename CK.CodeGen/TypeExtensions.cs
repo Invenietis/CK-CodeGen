@@ -6,6 +6,6 @@ namespace CK.CodeGen
 {
     internal static class TypeExtensions
     {
-        internal static string CompleteName(this Type @this) => @this.IsGenericParameter ? @this.Name : @this.FullName;
+        internal static string GetSourceName(this Type @this) => @this.IsGenericParameter ? @this.Name : @this.FullName;
     }
 }

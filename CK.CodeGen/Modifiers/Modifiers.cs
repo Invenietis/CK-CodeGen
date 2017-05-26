@@ -34,15 +34,48 @@ namespace CK.CodeGen.Modifiers
         public ClassBuilder(CK.CodeGen.ClassBuilder c) => Target = c;
         public CK.CodeGen.ClassBuilder Target { get; }
 
-        public ClassBuilder SetBase(Type baseType, params string[] genericParams)
+        public ClassBuilder SetBase(Type baseType)
         {
-            Target.ActualBaseType = new BaseType(baseType, genericParams);
+            Target.ActualBaseType = new BaseType(baseType);
             return this;
         }
 
         public ClassBuilder SetBase(string baseType)
         {
             Target.BaseType = baseType;
+            return this;
+        }
+
+        public ClassBuilder AddFrontModifiers(params string[] frontModifiers)
+        {
+            Target.FrontModifiers.AddRange( frontModifiers );
+            return this;
+        }
+
+        /// <summary>
+        /// Creates constructors that relay calls to public and protected constructors in the base class.
+        /// <see cref="SetBase(Type)"/> must have been called before.
+        /// </summary> 
+        /// <param name="baseConstructorfilter">
+        /// Optional predicate used to filter constructors that must be implemented.
+        /// When null, all public and protected constructors are public.
+        /// Returning a null string prevents implementation, otherwise the string is the front modifier of the constructor.
+        /// </param>
+        public ClassBuilder DefinePassThroughConstructors( Func<ConstructorInfo, string> baseConstructorfilter = null)
+        {
+            foreach (var baseCtor in Target.ActualBaseType.Type.GetTypeInfo().DeclaredConstructors.Where(c => c.IsPublic || c.IsFamily || c.IsFamilyOrAssembly))
+            {
+                string frontModifiers = "public";
+                if (baseConstructorfilter != null && (frontModifiers = baseConstructorfilter(baseCtor)) == null) continue;
+                var parameters = baseCtor.GetParameters();
+                if (parameters.Length == 0) Target.DefineConstructor(frontModifiers);
+                else
+                {
+                    ConstructorBuilder ccB = Target.DefineConstructor(frontModifiers);
+                    ccB.Parameters.AddParameters(parameters);
+                    ccB.Initializer = "base(" + ccB.Parameters.Select(p => p.Name).Concatenate() + ")";
+                }
+            }
             return this;
         }
 
@@ -56,54 +89,13 @@ namespace CK.CodeGen.Modifiers
                 name += baseMethod.GetGenericArguments().Select(a => a.Name).Concatenate();
                 name += '>';
             }
-            MethodBuilder mB = new MethodBuilder(Target.DefineMethod(name));
-            mB.Target.BaseMethod = baseMethod;
-            if (baseMethod.IsPublic) mB.Target.FrontModifiers.Add("public");
-            else if (baseMethod.IsFamily) mB.Target.FrontModifiers.Add("protected");
-            else if (baseMethod.IsFamilyAndAssembly)
-            {
-                // This is invalid since we are in another assembly!
-                mB.Target.FrontModifiers.Add("private protected");
-            }
-            else if (baseMethod.IsFamilyOrAssembly)
-            {
-                // Should be "internal protected" but since we are in another assembly,
-                // "internal" changes the protection. 
-                mB.Target.FrontModifiers.Add("protected");
-            }
-            mB.Target.FrontModifiers.Add("override");
-            mB.Target.ReturnType = baseMethod.ReturnType.CompleteName();
-            foreach (var p in baseMethod.GetParameters())
-            {
-                mB.AddParameter(p);
-            }
-            bodyBuilder?.Invoke(mB.Target.Body);
-            return this;
-        }
-    }
-
-    public struct MethodBuilder
-    {
-        public MethodBuilder(CK.CodeGen.MethodBuilder c) => Target = c;
-
-        public CK.CodeGen.MethodBuilder Target { get; }
-
-        public MethodBuilder Body(Action<StringBuilder> c)
-        {
-            c(Target.Body);
-            return this;
-        }
-
-        public MethodBuilder AddParameter(ParameterInfo p)
-        {
-            var pB = new ParameterBuilder();
-            pB.Name = p.Name;
-            if (p.IsOut) pB.Attributes.Add("out");
-            else if (p.ParameterType.IsByRef) pB.Attributes.Add("ref");
-            pB.ParameterType = p.ParameterType.IsByRef
-                                ? p.ParameterType.GetElementType().CompleteName()
-                                : p.ParameterType.CompleteName();
-            Target.Parameters.Add(pB);
+            MethodBuilder mB = Target.DefineMethod(name);
+            mB.BaseMethod = baseMethod;
+            ModifierHelper.AddFrontMofifiersProtection(baseMethod, mB.FrontModifiers);
+            mB.FrontModifiers.Add("override");
+            mB.ReturnType = baseMethod.ReturnType.GetSourceName();
+            mB.Parameters.AddParameters(baseMethod);
+            bodyBuilder?.Invoke(mB.Body);
             return this;
         }
     }

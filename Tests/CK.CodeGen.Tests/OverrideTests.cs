@@ -12,6 +12,13 @@ namespace CK.CodeGen.Tests
 {
     public abstract class BaseToBeOverridden
     {
+        protected BaseToBeOverridden( int val )
+        {
+            ValFromCtor = val;
+        }
+
+        public int ValFromCtor {get;}
+
         public abstract int Simple1();
 
         protected abstract string Simple2(string x, Guid g);
@@ -43,6 +50,7 @@ namespace CK.CodeGen.Tests
             var c = b.DefineClass("Specialized")
                         .Build()
                         .SetBase( t )
+                        .DefinePassThroughConstructors()
                         .DefineOverrideMethod( t.GetMethod("Simple1"), body =>
                         {
                             body.Append( "=> 3712" );
@@ -64,7 +72,8 @@ namespace CK.CodeGen.Tests
             };
             Assembly a = TestHelper.CreateAssembly(source, references);
             Type tC = a.GetTypes().Single(n => n.Name == "Specialized");
-            BaseToBeOverridden gotIt = (BaseToBeOverridden)Activator.CreateInstance(tC);
+            BaseToBeOverridden gotIt = (BaseToBeOverridden)Activator.CreateInstance(tC, new object[] { 3712*3712 } );
+            gotIt.ValFromCtor.Should().Be( 3712 * 3712 );
             gotIt.Simple1().Should().Be(3712);
             string s;
             Guid g = Guid.Empty;
@@ -82,7 +91,7 @@ namespace CK.CodeGen.Tests
             b.Usings.Build().Add(t.Namespace);
             var c = b.DefineClass("Specialized<T>")
                         .Build()
-                        .SetBase(t, "T")
+                        .SetBase(t)
                         .DefineOverrideMethod(t.GetMethod("Simple1"), body =>
                         {
                             body.Append("if (arg.Equals(default(T))) throw new System.ArgumentException();")

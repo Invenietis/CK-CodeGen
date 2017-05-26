@@ -38,7 +38,7 @@ namespace CK.CodeGen
                 if( _actualBaseType != value )
                 {
                     _actualBaseType = value;
-                    if (_actualBaseType != null) BaseType = _actualBaseType.BuildFullName();
+                    if (_actualBaseType != null) _baseType = _actualBaseType.BuildFullName();
                 }
             }
         }
@@ -82,10 +82,11 @@ namespace CK.CodeGen
 
         public IReadOnlyList<ConstructorBuilder> Constructors => _constructors;
 
-        public ConstructorBuilder DefineConstructor()
+        public ConstructorBuilder DefineConstructor( string frontModifiers = "public" )
         {
             ConstructorBuilder constructor = new ConstructorBuilder(this);
             _constructors.Add(constructor);
+            constructor.FrontModifiers.Add( frontModifiers );
             return constructor;
         }
 

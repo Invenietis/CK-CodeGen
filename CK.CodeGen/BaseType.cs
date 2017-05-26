@@ -2,15 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using CK.Text;
+using System.Reflection;
 
 namespace CK.CodeGen
 {
     public class BaseType
     {
-        public BaseType(Type type, IReadOnlyCollection<string> genericParams)
+        public BaseType( Type type )
         {
             Type = type;
-            GenericParams = genericParams ?? new string[0];
+            if( type.GetTypeInfo().IsGenericTypeDefinition )
+            {
+                GenericParams = type.GetTypeInfo().GenericTypeParameters.Select( a => a.Name ).ToList();
+            }
+            else GenericParams = Array.Empty<string>();
         }
 
         public Type Type { get; }
@@ -20,10 +25,7 @@ namespace CK.CodeGen
         internal string BuildFullName()
         {
             if (!HasGenericParam) return Type.FullName;
-            return string.Format(
-                "{0}<{1}>",
-                Type.FullName.Split('`')[0],
-                GenericParams.Concatenate());
+            return $"{Type.FullName.Split( '`' )[0]}<{GenericParams.Concatenate()}>";
         }
 
         bool HasGenericParam => GenericParams.Count > 0;

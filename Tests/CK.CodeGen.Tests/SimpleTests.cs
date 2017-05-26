@@ -41,8 +41,7 @@ namespace CK.CodeGen.Tests
                 FieldBuilder f = simpleClass.DefineField("int", "_x");
                 f.FrontModifiers.Add("private");
 
-                ConstructorBuilder c = simpleClass.DefineConstructor();
-                c.FrontModifiers.Add("internal");
+                ConstructorBuilder c = simpleClass.DefineConstructor( "internal" );
                 c.Parameters.Add(new ParameterBuilder { ParameterType = "int", Name = "x" });
                 c.Body.Append("_x = x;");
 
@@ -135,7 +134,6 @@ namespace CK.CodeGen.Tests
                 yBuilder.FrontModifiers.AddRange(new[] { "private", "readonly" });
 
                 ConstructorBuilder ctorBuilder = struct1.DefineConstructor();
-                ctorBuilder.FrontModifiers.Add("public");
                 ctorBuilder.Parameters.AddRange(new[]
                 {
                     new ParameterBuilder { ParameterType = "int", Name = "x" },
@@ -226,8 +224,7 @@ namespace CK.CodeGen.Tests
 
                 class1.DefineField("int", "_f1");
 
-                ConstructorBuilder ctorBuilder = class1.DefineConstructor();
-                ctorBuilder.FrontModifiers.Add("protected");
+                ConstructorBuilder ctorBuilder = class1.DefineConstructor( "protected" );
                 ctorBuilder.Parameters.Add(new ParameterBuilder { ParameterType = "int", Name = "arg" });
                 ctorBuilder.Body.Append("_f1 = arg;");
 
@@ -243,7 +240,7 @@ namespace CK.CodeGen.Tests
             }
 
             {
-                ClassBuilder class2 = nsBuilder.DefineClass("Class2<T1, T2>");
+                ClassBuilder class2 = nsBuilder.DefineClass("Class2<T1,T2>");
                 class2.FrontModifiers.AddRange(new[] { "public", "sealed" });
                 class2.BaseType = "Class1";
                 class2.Interfaces.AddRange(new[] { "Interface3", "Interface5" });
@@ -265,7 +262,6 @@ namespace CK.CodeGen.Tests
                 f4Builder.InitialValue = "new T2()";
 
                 ConstructorBuilder ctorBuilder = class2.DefineConstructor();
-                ctorBuilder.FrontModifiers.Add("public");
                 ctorBuilder.Parameters.AddRange(new[]
                 {
                     new ParameterBuilder { ParameterType = "int", Name = "arg1"},
