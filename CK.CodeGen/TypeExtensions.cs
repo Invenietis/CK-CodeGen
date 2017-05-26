@@ -4,8 +4,8 @@ using System.Text;
 
 namespace CK.CodeGen
 {
-    internal static class TypeExtensions
+    public static class TypeExtensions
     {
-        internal static string GetSourceName(this Type @this) => @this.IsGenericParameter ? @this.Name : @this.FullName;
+        public static string GetSourceName(this Type @this) => @this.IsGenericParameter ? @this.Name : @this.FullName.Replace("+",".");
     }
 }

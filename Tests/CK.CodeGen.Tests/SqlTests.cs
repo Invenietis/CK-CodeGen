@@ -24,7 +24,7 @@ namespace CK.CodeGen.Tests
             b.Usings.Build().Add("System").Add("System.Collections.Generic").Add("System.Data.SqlClient");
 
             var c = b.DefineClass("GGGG");
-            c.BaseType = typeof(SimpleBase).FullName;
+            c.BaseType = typeof(SimpleBase).GetSourceName();
             var m = c.DefineMethod("public override", "Do");
             var p = new ParameterBuilder() { ParameterType = "int", Name = "i" };
             p.Attributes.Add("ref");

@@ -24,8 +24,8 @@ namespace CK.CodeGen
 
         internal string BuildFullName()
         {
-            if (!HasGenericParam) return Type.FullName;
-            return $"{Type.FullName.Split( '`' )[0]}<{GenericParams.Concatenate()}>";
+            if (!HasGenericParam) return Type.GetSourceName();
+            return $"{Type.GetSourceName().Split( '`' )[0]}<{GenericParams.Concatenate()}>";
         }
 
         bool HasGenericParam => GenericParams.Count > 0;
