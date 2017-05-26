@@ -8,12 +8,22 @@ using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Linq;
 using CK.Core;
+using System.Text;
 
 namespace CK.CodeGen.Tests
 {
     [TestFixture]
     public class NamespaceBuilderTests
     {
+        [TestCase( null, "null" )]
+        [TestCase( new byte[0], "Array.Empty<byte>()" )]
+        [TestCase( new byte[] { 1 }, "new byte[] {1}" )]
+        [TestCase( new byte[] { 8, 78, 211 }, "new byte[] {8,78,211}" )]
+        public void bytes_array_to_source( byte[] b, string result )
+        {
+            b.ToSourceString( new StringBuilder() ).ToString().Should().Be( result );
+        }
+
         [Test]
         public void SimpleTest()
         {

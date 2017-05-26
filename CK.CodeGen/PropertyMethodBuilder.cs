@@ -30,7 +30,5 @@ namespace CK.CodeGen
         bool HasBody => Body.Length > 0;
 
         bool HasFrontModifier => FrontModifier?.Length > 0;
-
-        bool P { get => true; set => throw new System.NotImplementedException(); }
     }
 }

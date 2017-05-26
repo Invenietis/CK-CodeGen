@@ -25,7 +25,7 @@ namespace CK.CodeGen
 
         public string Name { get; set; }
 
-        public string FullName => string.Format("{0}.{1}", _namespace.Name, Name);
+        public string FullName => $"{_namespace.Name}.{Name}";
 
         protected abstract IReadOnlyCollection<string> Parents { get; }
 

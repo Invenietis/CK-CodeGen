@@ -34,14 +34,15 @@ namespace CK.CodeGen
             return builder;
         }
 
-        public string CreateSource()
+        public string CreateSource()  => CreateSource( new StringBuilder()).ToString();
+
+        public StringBuilder CreateSource(StringBuilder b)
         {
-            StringBuilder b = new StringBuilder();
-            b.AppendFormat("namespace {0}", Name).AppendLine("{");
-            BuildUsings(b);
-            BuildTypes(b);
-            b.Append("}");
-            return b.ToString();
+            b.AppendFormat( "namespace {0}", Name ).AppendLine( "{" );
+            BuildUsings( b );
+            BuildTypes( b );
+            b.Append( "}" );
+            return b;
         }
 
         void BuildUsings(StringBuilder sb)
