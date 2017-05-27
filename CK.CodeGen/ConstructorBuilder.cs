@@ -52,7 +52,7 @@ namespace CK.CodeGen
         {
             sb.Append("{");
             sb.Append(Body.ToString());
-            sb.Append("}");
+            sb.AppendLine("}");
         }
 
         bool HasInitializer => !string.IsNullOrEmpty(Initializer);
