@@ -6,11 +6,69 @@ using System.Linq;
 using System.Reflection;
 using System.Collections;
 using System.Globalization;
+using System.Diagnostics;
 
 namespace CK.CodeGen
 {
     public static class CodeGenExtensions
     {
+        public static StringBuilder ToCSharpName( this StringBuilder @this, Type t, bool withGenericParamName = false )
+        {
+            if( t == null ) return @this.Append( "null" );
+            if( t.IsGenericParameter ) return withGenericParamName ? @this.Append( t.Name ) : @this;
+            var pathTypes = new Stack<Type>();
+            pathTypes.Push( t );
+            Type decl = t.DeclaringType;
+            while( decl != null )
+            {
+                pathTypes.Push( decl );
+                decl = decl.DeclaringType;
+            }
+            var tInfo = t.GetTypeInfo();
+            var allGenArgs = new Queue<Type>( tInfo.GenericTypeArguments );
+            foreach( var p in tInfo.GenericTypeParameters ) allGenArgs.Enqueue( p );
+            for( int iType = 0; pathTypes.Count > 0; iType++ )
+            {
+                Type theT = pathTypes.Pop();
+                TypeInfo theTInfo = theT.GetTypeInfo();
+                string n;
+                if( iType == 0 ) n = theT.FullName;
+                else
+                {
+                    n = theT.Name;
+                    @this.Append( '.' );
+                }
+                int idxTick = n.IndexOf( '`' ) + 1;
+                if( idxTick > 0 )
+                {
+                    int endNbParam = idxTick;
+                    while( endNbParam < n.Length && Char.IsDigit( n, endNbParam ) ) endNbParam++;
+                    int nbParams = int.Parse( n.Substring( idxTick, endNbParam - idxTick ), NumberStyles.Integer );
+                    Debug.Assert( nbParams > 0 );
+                    @this.Append( n, 0, idxTick - 1 );
+                    @this.Append( '<' );
+                    for( int iGen = 0; iGen < nbParams; ++iGen )
+                    {
+                        if( iGen > 0 ) @this.Append( ',' );
+                        ToCSharpName( @this, allGenArgs.Dequeue(), withGenericParamName );
+                    }
+                    @this.Append( '>' );
+                }
+                else @this.Append( n );
+            }
+            return @this;
+        }
+
+        public static string ToCSharpName( this Type @this, bool withGenericParamName = false )
+        {
+            return @this == null ? "null" : ToCSharpName( new StringBuilder(), @this, withGenericParamName ).ToString();
+        }
+
+        static public string ToGetTypeSourceString( this Type @this )
+        {
+            return @this == null ? "null" : "Type.GetType(" + @this.AssemblyQualifiedName.ToSourceString() + ')';
+        }
+
         static public string ToSourceString( this string @this )
         {
             return @this == null ? "null" : $"@\"{@this.Replace( "\"", "\"\"" )}\"";
