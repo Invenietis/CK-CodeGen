@@ -12,7 +12,7 @@ namespace CK.CodeGen
 {
     public static class CodeGenExtensions
     {
-        public static StringBuilder ToCSharpName( this StringBuilder @this, Type t, bool withGenericParamName = false )
+        public static StringBuilder AppendCSharpName( this StringBuilder @this, Type t, bool withGenericParamName = false )
         {
             if( t == null ) return @this.Append( "null" );
             if( t.IsGenericParameter ) return withGenericParamName ? @this.Append( t.Name ) : @this;
@@ -50,7 +50,7 @@ namespace CK.CodeGen
                     for( int iGen = 0; iGen < nbParams; ++iGen )
                     {
                         if( iGen > 0 ) @this.Append( ',' );
-                        ToCSharpName( @this, allGenArgs.Dequeue(), withGenericParamName );
+                        AppendCSharpName( @this, allGenArgs.Dequeue(), withGenericParamName );
                     }
                     @this.Append( '>' );
                 }
@@ -61,7 +61,7 @@ namespace CK.CodeGen
 
         public static string ToCSharpName( this Type @this, bool withGenericParamName = false )
         {
-            return @this == null ? "null" : ToCSharpName( new StringBuilder(), @this, withGenericParamName ).ToString();
+            return @this == null ? "null" : AppendCSharpName( new StringBuilder(), @this, withGenericParamName ).ToString();
         }
 
         static public string ToGetTypeSourceString( this Type @this )
@@ -69,99 +69,140 @@ namespace CK.CodeGen
             return @this == null ? "null" : "Type.GetType(" + @this.AssemblyQualifiedName.ToSourceString() + ')';
         }
 
-        static public string ToSourceString( this string @this )
-        {
-            return @this == null ? "null" : $"@\"{@this.Replace( "\"", "\"\"" )}\"";
-        }
+        static public string ToSourceString( this string @this ) => @this == null ? "null" : $"@\"{@this.Replace( "\"", "\"\"" )}\"";
 
-        static public string ToSourceString( this bool @this )
-        {
-            return @this ? "true" : "false";
-        }
+        static public string ToSourceString( this bool @this ) => @this ? "true" : "false";
 
-        static public StringBuilder ToSourceString(this byte[] @this, StringBuilder b)
-        {
-            if (@this == null) return b.Append("null");
-            if (@this.Length == 0) return b.Append("Array.Empty<byte>()");
-            return b.Append("new byte[] {").AppendStrings(@this.Select(x => x.ToString()),",").Append('}');
-        }
+        static public StringBuilder AppendSourceString( this StringBuilder @this, bool b ) => @this.Append( b ? "true" : "false" );
 
-        static public StringBuilder ToSourceString( this object o, StringBuilder b )
+        static public StringBuilder AppendSourceString<T>( this StringBuilder @this, IEnumerable<T> e )
         {
-            if( o == null ) return b.Append( "null" );
-            if( o == System.Type.Missing ) return  b.Append( "System.Type.Missing" );
-            Type oT = o.GetType();
-            if( oT.GetTypeInfo().IsValueType )
+            if( e == null ) return @this.Append( "null" );
+            if( !e.Any() ) return @this.Append( "Array.Empty<").AppendCSharpName(typeof(T)).Append( ">()" );
+            @this.Append( "new " ).AppendCSharpName(typeof(T)).Append("[]{" );
+            bool already = false;
+            foreach( var x in e )
             {
-                if( o is bool ) return b.Append( (bool)o ? "true" : "false" );
-                if( o is int ) return b.Append( (int)o );
-                if( o is long ) return b.Append("(long)").Append( (long)o );
-                if( o is short ) return b.Append("(short)").Append( (short)o );
-                if( o is sbyte ) return b.Append( "(sbyte)" ).Append( (sbyte)o );
-                if( o is uint ) return b.Append("(uint)").Append( (uint)o );
-                if( o is ulong ) return b.Append( "(ulong)" ).Append( (ulong)o );
-                if( o is ushort ) return b.Append( "(ushort)" ).Append( (ushort)o );
-                if( o is byte ) return b.Append( "(byte)" ).Append( (byte)o );
-                if( o is Guid ) return b.Append( "new Guid(\"" ).Append( ((Guid)o).ToString() ).Append( "\")" );
-                if( o is char )
-                {
-                    char c = (char)o;
-                    return c == '\\' ? b.Append( @"'\\'" ) : b.Append( '\'' ).Append( (char)o ).Append( '\'' );
-                }
-                if( o is double ) return b.Append( ((double)o).ToString(CultureInfo.InvariantCulture) );
-                if( o is float ) return b.Append( ((float)o ).ToString( CultureInfo.InvariantCulture ) ).Append('f');
-                if( o is decimal ) return b.Append( ((decimal)o).ToString( CultureInfo.InvariantCulture ) ).Append('m');
-                if( o is DateTime )
-                {
-                    DateTime d = (DateTime)o;
-                    return b.Append( "new DateTime(" ).Append( d.Ticks ).Append( ", DateTimeKind." ).Append( d.Kind ).Append( ')' );
-                }
-                if( o is TimeSpan )
-                {
-                    TimeSpan ts = (TimeSpan)o;
-                    return b.Append( "new TimeSpan(" ).Append( ts.Ticks ).Append( ')' );
-                }
-                if( o is DateTimeOffset )
-                {
-                    DateTimeOffset to = (DateTimeOffset)o;
-                    return b.Append( "new DateTimeOffset(" ).Append( to.Ticks ).Append( ", new TimeSpan(" ).Append( to.Offset.Ticks ).Append( "))" );
-                }
-                throw new ArgumentException( "Unknown value type: " + oT.AssemblyQualifiedName );
+                if( already ) @this.Append( ',' );
+                else already = true;
+                AppendSourceString( @this, x );
             }
-            string s = o as string;
-            if( s != null ) return b.Append( s.ToSourceString() );
-            Type t = o as Type;
-            if( t != null ) return b.Append( "Type.GetType(" ).Append( t.AssemblyQualifiedName.ToSourceString() ).Append(')');
-            byte[] bA = o as byte[];
-            if( bA != null ) return bA.ToSourceString( b );
-            // TODO: Handle IEnumerable<T> to generate typed array.
-            // Last try: mere IEnumerable.
-            IEnumerable e = o as IEnumerable;
-            if( e != null )
-            {
-                var i = e.GetEnumerator();
-                bool any = i.MoveNext();
-                (i as IDisposable)?.Dispose();
-                if( any )
-                {
-                    b.Append( "new object[] {" );
-                    bool existing = false;
-                    foreach( var x in e )
-                    {
-                        if( existing ) b.Append( ',' );
-                        else existing = true;
-                        ToSourceString( x, b );
-                    }
-                    return b.Append( '}' );
-                }
-                return b.Append( "Array.Empty<object>()" );
-            }
-            else throw new ArgumentException( "Unknown type: " + oT.AssemblyQualifiedName );
+            return @this.Append( '}' );
         }
 
-        static public StringBuilder AppendSourceString(this StringBuilder @this, byte[] b) => ToSourceString(b, @this);
+        static public StringBuilder AppendSourceString( this StringBuilder @this, char c )
+        {
+            return c == '\\' ? @this.Append( @"'\\'" ) : @this.Append( '\'' ).Append( c ).Append( '\'' );
+        }
+
+        static public StringBuilder AppendSourceString( this StringBuilder @this, int i ) => @this.Append( i );
+
+        static public StringBuilder AppendSourceString( this StringBuilder @this, long i ) => @this.Append( "(long)" ).Append( i );
+
+        static public StringBuilder AppendSourceString( this StringBuilder @this, ulong i ) => @this.Append( "(ulong)" ).Append( i );
+
+        static public StringBuilder AppendSourceString( this StringBuilder @this, short i ) => @this.Append( "(short)" ).Append( i );
+
+        static public StringBuilder AppendSourceString( this StringBuilder @this, ushort i ) => @this.Append( "(ushort)" ).Append( i );
+
+        static public StringBuilder AppendSourceString( this StringBuilder @this, sbyte i ) => @this.Append( "(sbyte)" ).Append( i );
+
+        static public StringBuilder AppendSourceString( this StringBuilder @this, byte i ) => @this.Append( "(byte)" ).Append( i );
+
+        static public StringBuilder AppendSourceString( this StringBuilder @this, uint i ) => @this.Append( "(uint)" ).Append( i );
+
+        static public StringBuilder AppendSourceString( this StringBuilder @this, Guid g ) => @this.Append( "new Guid(\"" ).Append( g.ToString() ).Append( "\")" );
+
+        static public StringBuilder AppendSourceString( this StringBuilder @this, double d ) => @this.Append( d.ToString( CultureInfo.InvariantCulture ) );
+
+        static public StringBuilder AppendSourceString( this StringBuilder @this, float f ) => @this.Append( f.ToString( CultureInfo.InvariantCulture ) ).Append( 'f' );
+
+        static public StringBuilder AppendSourceString( this StringBuilder @this, decimal d ) => @this.Append( d.ToString( CultureInfo.InvariantCulture ) ).Append( 'm' );
+
+        static public StringBuilder AppendSourceString( this StringBuilder @this, DateTime d )
+        {
+            return @this.Append( "new DateTime(" ).Append( d.Ticks ).Append( ", DateTimeKind." ).Append( d.Kind ).Append( ')' );
+        }
+
+        static public StringBuilder AppendSourceString( this StringBuilder @this, TimeSpan ts )
+        {
+            return @this.Append( "new TimeSpan(" ).Append( ts.Ticks ).Append( ')' );
+        }
+
+        static public StringBuilder AppendSourceString( this StringBuilder @this, DateTimeOffset to )
+        {
+            return @this.Append( "new DateTimeOffset(" ).Append( to.Ticks ).Append( ", new TimeSpan(" ).Append( to.Offset.Ticks ).Append( "))" );
+        }
+
+        static public StringBuilder AppendSourceString( this StringBuilder @this, IEnumerable e )
+        {
+            if( e == null ) return @this.Append( "null" );
+            Type type = typeof(object);
+            var eI = e.GetType()
+                        .GetTypeInfo()
+                        .ImplementedInterfaces
+                        .FirstOrDefault( iT => iT.GetTypeInfo().IsGenericType && iT.GetGenericTypeDefinition() == typeof( IEnumerable<> ) );
+            if( eI != null )
+            {
+                var arg = eI.GetTypeInfo().GenericTypeArguments;
+                if( arg.Length == 1 ) type = arg[0];
+            }
+            var i = e.GetEnumerator();
+            bool any = i.MoveNext();
+            (i as IDisposable)?.Dispose();
+            if( any )
+            {
+                @this.Append( "new " ).AppendCSharpName( type ).Append( "[]{" );
+                bool existing = false;
+                foreach( var x in e )
+                {
+                    if( existing ) @this.Append( ',' );
+                    else existing = true;
+                    AppendSourceString( @this, x );
+                }
+                return @this.Append( '}' );
+            }
+            return @this.Append( "Array.Empty<" ).AppendCSharpName( type ).Append( ">()" );
+        }
 
         static public StringBuilder AppendSourceString(this StringBuilder @this, string s) => @this.Append(ToSourceString(s));
+
+        static public StringBuilder AppendSourceString( this StringBuilder @this, object o )
+        {
+            if( o == null ) return @this.Append( "null" );
+            if( o == System.Type.Missing ) return @this.Append( "System.Type.Missing" );
+            TypeInfo oT = o.GetType().GetTypeInfo();
+            if( oT.IsValueType )
+            {
+                if( o is bool ) return AppendSourceString( @this, (bool)o );
+                if( o is int ) return AppendSourceString( @this, (int)o );
+                if( o is long ) return AppendSourceString( @this, (long)o );
+                if( o is short ) return AppendSourceString( @this, (short)o );
+                if( o is ushort ) return AppendSourceString( @this, (ushort)o );
+                if( o is sbyte ) return AppendSourceString( @this, (sbyte)o );
+                if( o is uint ) return AppendSourceString( @this, (uint)o );
+                if( o is ulong ) return AppendSourceString( @this, (ulong)o );
+                if( o is byte ) return AppendSourceString( @this, (byte)o );
+                if( o is Guid ) return AppendSourceString( @this, (Guid)o );
+                if( o is char ) return AppendSourceString( @this, (char)o );
+                if( o is double ) return AppendSourceString( @this, (double)o );
+                if( o is float ) return AppendSourceString( @this, (float)o );
+                if( o is decimal ) return AppendSourceString( @this, (decimal)o );
+                if( o is DateTime ) return AppendSourceString( @this, (DateTime)o );
+                if( o is TimeSpan ) return AppendSourceString( @this, (TimeSpan)o );
+                if( o is DateTimeOffset ) return AppendSourceString( @this, (DateTimeOffset)o );
+            }
+            else
+            {
+                string s = o as string;
+                if( s != null ) return @this.Append( s.ToSourceString() );
+                Type t = o as Type;
+                if( t != null ) return @this.Append( "Type.GetType(" ).Append( t.AssemblyQualifiedName.ToSourceString() ).Append( ')' );
+                IEnumerable e = o as IEnumerable;
+                if( e != null ) return AppendSourceString( @this, e );
+            }
+            throw new ArgumentException( "Unknown type: " + oT.AssemblyQualifiedName );
+        }
 
     }
 

@@ -82,9 +82,7 @@ namespace CK.CodeGen.Tests
                 System.Type.Missing,
                 typeof(Dictionary<string,int>),
             }; " );
-            b.Append( $"var rewrite = " );
-            array.ToSourceString( b );
-            b.AppendLine( ";" );
+            b.Append( $"var rewrite = " ).AppendSourceString( array ).AppendLine( ";" );
             b.AppendLine( @"
             var diff = array
                         .Select( ( o, idx ) => new { O = o, T = rewrite[idx], I = idx } )
@@ -112,7 +110,7 @@ namespace CK.CodeGen.Tests
         [Test]
         public void writing_an_unknown_typed_object_is_an_error()
         {
-            Assert.Throws<ArgumentException>( () => this.ToSourceString( new StringBuilder() ) );
+            Assert.Throws<ArgumentException>( () => new StringBuilder().AppendSourceString( this ) );
         }
     }
 }

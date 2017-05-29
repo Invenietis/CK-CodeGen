@@ -16,12 +16,31 @@ namespace CK.CodeGen.Tests
     public class NamespaceBuilderTests
     {
         [TestCase( null, "null" )]
-        [TestCase( new byte[0], "Array.Empty<byte>()" )]
-        [TestCase( new byte[] { 1 }, "new byte[] {1}" )]
-        [TestCase( new byte[] { 8, 78, 211 }, "new byte[] {8,78,211}" )]
-        public void bytes_array_to_source( byte[] b, string result )
+        [TestCase( new string[0], "Array.Empty<System.Object>()" )]
+        [TestCase( new string[] { "a" }, "new System.Object[]{@\"a\"}" )]
+        [TestCase( new string[] { "b", "c", "d" }, "new System.Object[]{@\"b\",@\"c\",@\"d\"}" )]
+        public void string_array_as_object_array_to_source( string[] b, string result )
         {
-            b.ToSourceString( new StringBuilder() ).ToString().Should().Be( result );
+            object[] oB = b;
+            new StringBuilder().AppendSourceString( oB ).ToString().Should().Be( result );
+        }
+
+        [TestCase( null, "null" )]
+        [TestCase( new string[0], "Array.Empty<System.String>()" )]
+        [TestCase( new string[] { "a" }, "new System.String[]{@\"a\"}" )]
+        [TestCase( new string[] { "b", "c", "d" }, "new System.String[]{@\"b\",@\"c\",@\"d\"}" )]
+        public void string_array_as_object_to_source( string[] b, string result )
+        {
+            new StringBuilder().AppendSourceString( (object)b ).ToString().Should().Be( result );
+        }
+
+        [TestCase( null, "null" )]
+        [TestCase( new byte[0], "Array.Empty<System.Byte>()" )]
+        [TestCase( new byte[] { 1 }, "new System.Byte[]{(byte)1}" )]
+        [TestCase( new byte[] { 8, 78, 211 }, "new System.Byte[]{(byte)8,(byte)78,(byte)211}" )]
+        public void typed_bytes_array_to_source( byte[] b, string result )
+        {
+            new StringBuilder().AppendSourceString( b ).ToString().Should().Be( result );
         }
 
         [Test]
