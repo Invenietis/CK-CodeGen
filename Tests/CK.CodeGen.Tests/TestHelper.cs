@@ -41,13 +41,15 @@ namespace CK.CodeGen.Tests
 
         public static string RandomDllPath => Path.Combine(BinFolder, $"Test-{Guid.NewGuid().ToString().Substring(0, 8)}.dll" );
 
-        public static Assembly CreateAssembly(string sourceCode, IEnumerable<Assembly> references)
+        public static Assembly CreateAssembly(string sourceCode, IEnumerable<Assembly> references, params ICodeGeneratorModule[] modules )
         {
+            var g = new CodeGenerator();
+            g.Modules.AddRange( modules );
             return HandleCreateResult(
                 sourceCode,
-                new CodeGenerator().Generate(sourceCode, TestHelper.RandomDllPath,
-                                                references, DefaultAssemblyResolver.Default, 
-                                                GetAssemblyLoader()));
+                g.Generate(sourceCode, TestHelper.RandomDllPath,
+                            references, DefaultAssemblyResolver.Default, 
+                            GetAssemblyLoader()));
         }
 
 

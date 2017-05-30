@@ -201,6 +201,7 @@ namespace CK.CodeGen
                 IEnumerable e = o as IEnumerable;
                 if( e != null ) return AppendSourceString( @this, e );
             }
+
             throw new ArgumentException( "Unknown type: " + oT.AssemblyQualifiedName );
         }
 

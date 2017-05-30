@@ -6,6 +6,9 @@ using System.Data.SqlClient;
 using System.Reflection;
 using System.Linq;
 using FluentAssertions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CK.CodeGen.Tests
 {
@@ -17,6 +20,47 @@ namespace CK.CodeGen.Tests
     [TestFixture]
     public class SqlTests
     {
+
+#if !NET461
+        class FixDBNull : ICodeGeneratorModule
+        {
+            class DBNullToCKFixRewriter : CSharpSyntaxRewriter
+            {
+                public override SyntaxNode VisitIdentifierName( IdentifierNameSyntax node )
+                {
+                    if( node.Identifier.Text == "DBNull")
+                    {
+                        return node.WithIdentifier( SyntaxFactory.Identifier( "CKFixDBNull" ) );
+                    }
+                    return node;
+                }
+
+                public static SyntaxTree Run( SyntaxTree t )
+                {
+                    var root = t.GetRoot();
+                    var newRoot = new DBNullToCKFixRewriter().Visit( root );
+                    return root == newRoot ? t : t.WithRootAndOptions( newRoot, t.Options );
+                }
+            }
+
+            public IEnumerable<Assembly> RequiredAssemblies => new[] { typeof( System.Reflection.TypeInfo ).GetTypeInfo().Assembly };
+
+            public void AppendSource( StringBuilder b ) 
+            {
+                b.AppendLine( @"namespace System 
+                { 
+                    using System.Reflection; 
+                    public static class CKFixDBNull
+                    { 
+                        public static object Value = typeof( object ).GetTypeInfo().Assembly.GetType( ""System.DBNull"" ).GetField(""Value"").GetValue(null);
+                    }
+                }" );
+            }
+
+            public SyntaxTree PostProcess( SyntaxTree t ) => DBNullToCKFixRewriter.Run( t );
+        }
+#endif
+
         [Test]
         public void SqlTest()
         {
@@ -40,12 +84,16 @@ namespace CK.CodeGen.Tests
             string source = b.CreateSource();
             Assembly[] references = new[]
             {
-                typeof(object).GetTypeInfo().Assembly,
-                typeof(System.Diagnostics.Debug).GetTypeInfo().Assembly,
-                typeof(SqlCommand).GetTypeInfo().Assembly,
+                //typeof(object).GetTypeInfo().Assembly,
+                //typeof(System.Diagnostics.Debug).GetTypeInfo().Assembly,
+                //typeof(SqlCommand).GetTypeInfo().Assembly,
                 typeof(SimpleBase).GetTypeInfo().Assembly
             };
-            Assembly a = TestHelper.CreateAssembly(source, references);
+#if NET461
+            Assembly a = TestHelper.CreateAssembly(source, references );
+#else
+            Assembly a = TestHelper.CreateAssembly(source, references, new FixDBNull() );
+#endif
             Type t = a.GetTypes().Single(n => n.Name == "GGGG");
             SimpleBase gotIt = (SimpleBase)Activator.CreateInstance(t);
             int? k = 67;

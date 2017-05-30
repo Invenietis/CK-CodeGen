@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using System;
+using System.Text;
 
 namespace CK.CodeGen
 {
@@ -21,6 +22,9 @@ namespace CK.CodeGen
             : this(null)
         {
         }
+
+        public List<ICodeGeneratorModule> Modules { get; } = new List<ICodeGeneratorModule>();
+
 
         public CodeGenerator(CSharpCompilationOptions options)
         {
@@ -46,7 +50,8 @@ namespace CK.CodeGen
             using( CK.Core.WeakAssemblyNameResolver.TempInstall())
             {
 #endif
-            var closureResult = resolver.GetAssembliesClosure(someReferences);
+            var fromModules = Modules.SelectMany( m => m.RequiredAssemblies );
+            var closureResult = resolver.GetAssembliesClosure( someReferences.Concat( fromModules ) );
             return Generate(
                     sourceCode, 
                     assemblyPath, 
@@ -104,11 +109,21 @@ namespace CK.CodeGen
 #endif
             try
             {
-                SyntaxTree tree = SyntaxFactory.ParseSyntaxTree(sourceCode);
+                SyntaxTree tree = SyntaxFactory.ParseSyntaxTree( sourceCode );
+                var trees = new List<SyntaxTree>();
+                trees.Add( tree );
+                StringBuilder bSource = new StringBuilder();
+                foreach( var m in Modules)
+                {
+                    m.AppendSource( bSource );
+                    trees.Add( SyntaxFactory.ParseSyntaxTree( bSource.ToString() ) );
+                    // temporary: allow process of the main (first module) only.
+                    trees[0] = m.PostProcess( trees[0] );
+                }
                 var option = _options.WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default);
                 CSharpCompilation compilation = CSharpCompilation.Create(
                     Path.GetFileNameWithoutExtension(assemblyPath),
-                    new[] { tree },
+                    trees,
                     allReferences,
                     option);
 
