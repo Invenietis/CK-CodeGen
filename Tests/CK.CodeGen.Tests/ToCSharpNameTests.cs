@@ -13,6 +13,7 @@ namespace CK.CodeGen.Tests
 
         public class Above<T1>
         {
+            // This triggers a warning: same generic parameter name.
             public class Below<T1>
             {
             }

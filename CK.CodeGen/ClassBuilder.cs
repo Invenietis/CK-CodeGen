@@ -38,7 +38,7 @@ namespace CK.CodeGen
                 if( _actualBaseType != value )
                 {
                     _actualBaseType = value;
-                    if (_actualBaseType != null) _baseType = _actualBaseType.BuildFullName();
+                    if (_actualBaseType != null) _baseType = _actualBaseType.Type.ToCSharpName(true);
                 }
             }
         }

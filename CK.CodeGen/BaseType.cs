@@ -22,12 +22,6 @@ namespace CK.CodeGen
 
         public IReadOnlyCollection<string> GenericParams { get; }
 
-        internal string BuildFullName()
-        {
-            if (!HasGenericParam) return Type.GetSourceName();
-            return $"{Type.GetSourceName().Split( '`' )[0]}<{GenericParams.Concatenate()}>";
-        }
-
         bool HasGenericParam => GenericParams.Count > 0;
 
         public override bool Equals(object obj)

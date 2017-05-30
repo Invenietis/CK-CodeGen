@@ -7,7 +7,7 @@ namespace CK.CodeGen
 {
     class ModifierHelper
     {
-        public static void AddFrontMofifiersProtection( MethodInfo baseMethod, List<string> front )
+        public static void AddFrontModifiersProtection( MethodInfo baseMethod, List<string> front )
         {
             if( baseMethod.IsPublic ) front.Add( "public" );
             else if( baseMethod.IsFamily ) front.Add( "protected" );

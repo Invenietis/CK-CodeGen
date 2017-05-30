@@ -11,7 +11,7 @@ namespace CK.CodeGen.Tests
 {
     public abstract class SimpleBase
     {
-        public abstract SqlCommand Do(ref int i);
+        public abstract SqlCommand Do(ref int? i);
     }
 
     [TestFixture]
@@ -23,19 +23,20 @@ namespace CK.CodeGen.Tests
             NamespaceBuilder b = new NamespaceBuilder("CK._g");
             b.Usings.Build().Add("System").Add("System.Collections.Generic").Add("System.Data.SqlClient");
 
-            var c = b.DefineClass("GGGG");
-            c.BaseType = typeof(SimpleBase).GetSourceName();
-            var m = c.DefineMethod("public override", "Do");
-            var p = new ParameterBuilder() { ParameterType = "int", Name = "i" };
-            p.Attributes.Add("ref");
-            m.Parameters.Add(p);
-            m.ReturnType = "SqlCommand";
-            m.Body.Append(@"
-i *= i;
-var c = new SqlCommand(""p""+i.ToString());
-var p = c.Parameters.AddWithValue(""@i"", i);
-return c;
-");
+            var c = b.DefineClass("GGGG").Build()
+                        .SetBase( typeof( SimpleBase ) )
+                        .DefineOverrideMethod( typeof( SimpleBase ).GetMethod( "Do" ), body =>
+                        {
+                            body.Append( @"
+                            if( i.HasValue )
+                            {
+                                i *= i;
+                            }
+                            var c = new SqlCommand(""p""+i.ToString());
+                            var p = c.Parameters.AddWithValue(""@i"", (object)i ?? DBNull.Value);
+                            return c;
+                            " );
+                        } );
             string source = b.CreateSource();
             Assembly[] references = new[]
             {
@@ -47,7 +48,7 @@ return c;
             Assembly a = TestHelper.CreateAssembly(source, references);
             Type t = a.GetTypes().Single(n => n.Name == "GGGG");
             SimpleBase gotIt = (SimpleBase)Activator.CreateInstance(t);
-            int k = 67;
+            int? k = 67;
             SqlCommand cmd = gotIt.Do(ref k);
             k.Should().Be(67 * 67);
             cmd.CommandText.Should().Be("p" + k);

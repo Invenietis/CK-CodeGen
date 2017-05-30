@@ -91,9 +91,9 @@ namespace CK.CodeGen.Modifiers
             }
             MethodBuilder mB = Target.DefineMethod(name);
             mB.BaseMethod = baseMethod;
-            ModifierHelper.AddFrontMofifiersProtection(baseMethod, mB.FrontModifiers);
+            ModifierHelper.AddFrontModifiersProtection(baseMethod, mB.FrontModifiers);
             mB.FrontModifiers.Add("override");
-            mB.ReturnType = baseMethod.ReturnType.GetSourceName();
+            mB.ReturnType = baseMethod.ReturnType.ToCSharpName( true );
             mB.Parameters.AddParameters(baseMethod);
             bodyBuilder?.Invoke(mB.Body);
             return this;

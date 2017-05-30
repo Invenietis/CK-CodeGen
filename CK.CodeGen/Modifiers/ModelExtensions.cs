@@ -18,8 +18,8 @@ namespace CK.CodeGen
             if( p.IsOut ) pB.Attributes.Add( "out" );
             else if( p.ParameterType.IsByRef ) pB.Attributes.Add( "ref" );
             pB.ParameterType = p.ParameterType.IsByRef
-                                ? p.ParameterType.GetElementType().GetSourceName()
-                                : p.ParameterType.GetSourceName();
+                                ? p.ParameterType.GetElementType().ToCSharpName( true )
+                                : p.ParameterType.ToCSharpName( true );
             @this.Add( pB );
         }
 
