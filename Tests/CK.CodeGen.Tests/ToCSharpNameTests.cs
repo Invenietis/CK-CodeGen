@@ -42,7 +42,7 @@ namespace CK.CodeGen.Tests
         [TestCase( typeof( A<int>.C<string> ), "CK.CodeGen.Tests.ToCSharpNameTests.A<System.Int32>.C<System.String>" )]
         public void ToCSharpName_tests( Type type, string expected )
         {
-            string actual = type.ToCSharpName();
+            string actual = type.ToCSharpName( false );
             Assert.AreEqual( expected, actual );
         }
 

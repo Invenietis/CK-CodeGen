@@ -37,9 +37,7 @@ namespace CK.CodeGen.Tests
 
                 public static SyntaxTree Run( SyntaxTree t )
                 {
-                    var root = t.GetRoot();
-                    var newRoot = new DBNullToCKFixRewriter().Visit( root );
-                    return root == newRoot ? t : t.WithRootAndOptions( newRoot, t.Options );
+                    return t.WithRootAndOptions( new DBNullToCKFixRewriter().Visit( t.GetRoot() ), t.Options );
                 }
             }
 

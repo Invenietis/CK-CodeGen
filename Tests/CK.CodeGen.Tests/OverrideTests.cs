@@ -21,6 +21,8 @@ namespace CK.CodeGen.Tests
 
         public abstract int Simple1();
 
+        public abstract void VoidMethod();
+
         protected abstract string Simple2(string x, Guid g);
 
         internal protected abstract BaseToBeOverridden Simple3(out string x, ref Guid g, int p);
@@ -51,10 +53,13 @@ namespace CK.CodeGen.Tests
                         .Build()
                         .SetBase( t )
                         .DefinePassThroughConstructors()
-                        .DefineOverrideMethod( t.GetMethod("Simple1"), body =>
+                        .DefineOverrideMethod( t.GetMethod( "Simple1" ), body =>
                         {
                             body.Append( "=> 3712" );
-                        })
+                        } )
+                        .DefineOverrideMethod( t.GetMethod( "VoidMethod" ), body => 
+                        {
+                        } )
                         .DefineOverrideMethod(t.GetMethod("Simple2", BindingFlags.Instance | BindingFlags.NonPublic), body =>
                         {
                             body.Append("return x + '-' + g.ToString();");

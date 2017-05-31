@@ -12,10 +12,11 @@ namespace CK.CodeGen
 {
     public static class CodeGenExtensions
     {
-        public static StringBuilder AppendCSharpName( this StringBuilder @this, Type t, bool withGenericParamName = false )
+        public static StringBuilder AppendCSharpName( this StringBuilder @this, Type t, bool typeDeclaration = true )
         {
             if( t == null ) return @this.Append( "null" );
-            if( t.IsGenericParameter ) return withGenericParamName ? @this.Append( t.Name ) : @this;
+            if( t == typeof(void) ) return @this.Append( typeDeclaration ? "void" : "typeof(void)" );
+            if( t.IsGenericParameter ) return typeDeclaration ? @this.Append( t.Name ) : @this;
             var pathTypes = new Stack<Type>();
             pathTypes.Push( t );
             Type decl = t.DeclaringType;
@@ -50,7 +51,7 @@ namespace CK.CodeGen
                     for( int iGen = 0; iGen < nbParams; ++iGen )
                     {
                         if( iGen > 0 ) @this.Append( ',' );
-                        AppendCSharpName( @this, allGenArgs.Dequeue(), withGenericParamName );
+                        AppendCSharpName( @this, allGenArgs.Dequeue(), typeDeclaration );
                     }
                     @this.Append( '>' );
                 }
@@ -59,14 +60,18 @@ namespace CK.CodeGen
             return @this;
         }
 
-        public static string ToCSharpName( this Type @this, bool withGenericParamName = false )
+        public static string ToCSharpName( this Type @this, bool typeDeclaration = true )
         {
-            return @this == null ? "null" : AppendCSharpName( new StringBuilder(), @this, withGenericParamName ).ToString();
+            return @this == null ? "null" : AppendCSharpName( new StringBuilder(), @this, typeDeclaration ).ToString();
         }
 
         static public string ToGetTypeSourceString( this Type @this )
         {
-            return @this == null ? "null" : "Type.GetType(" + @this.AssemblyQualifiedName.ToSourceString() + ')';
+            return @this == null 
+                    ? "null" 
+                    : (@this != typeof(void)
+                        ? "Type.GetType(" + @this.AssemblyQualifiedName.ToSourceString() + ')'
+                        : "typeof(void)");
         }
 
         static public string ToSourceString( this string @this ) => @this == null ? "null" : $"@\"{@this.Replace( "\"", "\"\"" )}\"";
@@ -78,8 +83,8 @@ namespace CK.CodeGen
         static public StringBuilder AppendSourceString<T>( this StringBuilder @this, IEnumerable<T> e )
         {
             if( e == null ) return @this.Append( "null" );
-            if( !e.Any() ) return @this.Append( "Array.Empty<").AppendCSharpName(typeof(T)).Append( ">()" );
-            @this.Append( "new " ).AppendCSharpName(typeof(T)).Append("[]{" );
+            if( !e.Any() ) return @this.Append( "Array.Empty<").AppendCSharpName(typeof(T),false).Append( ">()" );
+            @this.Append( "new " ).AppendCSharpName(typeof(T),false).Append("[]{" );
             bool already = false;
             foreach( var x in e )
             {
@@ -152,7 +157,7 @@ namespace CK.CodeGen
             (i as IDisposable)?.Dispose();
             if( any )
             {
-                @this.Append( "new " ).AppendCSharpName( type ).Append( "[]{" );
+                @this.Append( "new " ).AppendCSharpName( type, false ).Append( "[]{" );
                 bool existing = false;
                 foreach( var x in e )
                 {
@@ -162,7 +167,7 @@ namespace CK.CodeGen
                 }
                 return @this.Append( '}' );
             }
-            return @this.Append( "Array.Empty<" ).AppendCSharpName( type ).Append( ">()" );
+            return @this.Append( "Array.Empty<" ).AppendCSharpName( type, false ).Append( ">()" );
         }
 
         static public StringBuilder AppendSourceString(this StringBuilder @this, string s) => @this.Append(ToSourceString(s));
@@ -197,7 +202,9 @@ namespace CK.CodeGen
                 string s = o as string;
                 if( s != null ) return @this.Append( s.ToSourceString() );
                 Type t = o as Type;
-                if( t != null ) return @this.Append( "Type.GetType(" ).Append( t.AssemblyQualifiedName.ToSourceString() ).Append( ')' );
+                if( t != null ) return t == typeof(void) 
+                                        ? @this.Append( "typeof(void)" ) 
+                                        : @this.Append( "Type.GetType(" ).Append( t.AssemblyQualifiedName.ToSourceString() ).Append( ')' );
                 IEnumerable e = o as IEnumerable;
                 if( e != null ) return AppendSourceString( @this, e );
             }
