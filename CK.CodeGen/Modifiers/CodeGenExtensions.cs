@@ -15,7 +15,7 @@ namespace CK.CodeGen
         public static StringBuilder AppendCSharpName( this StringBuilder @this, Type t, bool typeDeclaration = true )
         {
             if( t == null ) return @this.Append( "null" );
-            if( t == typeof(void) ) return @this.Append( typeDeclaration ? "void" : "typeof(void)" );
+            if( t == typeof(void) ) return @this.Append( "void" );
             if( t.IsGenericParameter ) return typeDeclaration ? @this.Append( t.Name ) : @this;
             var pathTypes = new Stack<Type>();
             pathTypes.Push( t );
