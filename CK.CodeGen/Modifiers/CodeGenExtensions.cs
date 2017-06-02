@@ -12,11 +12,39 @@ namespace CK.CodeGen
 {
     public static class CodeGenExtensions
     {
+        static readonly Dictionary<Type, string> _typeAliases;
+
+        static CodeGenExtensions()
+        {
+            _typeAliases = new Dictionary<Type, string>();
+            _typeAliases.Add( typeof( void ), "void" );
+            _typeAliases.Add( typeof( bool ), "bool" );
+            _typeAliases.Add( typeof( int ), "int" );
+            _typeAliases.Add( typeof( long ), "long" );
+            _typeAliases.Add( typeof( short ), "short" );
+            _typeAliases.Add( typeof( ushort ), "ushort" );
+            _typeAliases.Add( typeof( sbyte ), "sbyte" );
+            _typeAliases.Add( typeof( uint ), "uint" );
+            _typeAliases.Add( typeof( ulong ), "ulong" );
+            _typeAliases.Add( typeof( byte ), "byte" );
+            _typeAliases.Add( typeof( char ), "char" );
+            _typeAliases.Add( typeof( double ), "double" );
+            _typeAliases.Add( typeof( float ), "float" );
+            _typeAliases.Add( typeof( decimal ), "decimal" );
+            _typeAliases.Add( typeof( string ), "string" );
+            _typeAliases.Add( typeof( object ), "object" );
+        }
+
         public static StringBuilder AppendCSharpName( this StringBuilder @this, Type t, bool typeDeclaration = true )
         {
             if( t == null ) return @this.Append( "null" );
-            if( t == typeof(void) ) return @this.Append( "void" );
             if( t.IsGenericParameter ) return typeDeclaration ? @this.Append( t.Name ) : @this;
+            string alias;
+            if( _typeAliases.TryGetValue(t,out alias))
+            {
+                return @this.Append( alias );
+            }
+            if( t == typeof(void) ) return @this.Append( "void" );
             var pathTypes = new Stack<Type>();
             pathTypes.Push( t );
             Type decl = t.DeclaringType;
@@ -202,9 +230,7 @@ namespace CK.CodeGen
                 string s = o as string;
                 if( s != null ) return @this.Append( s.ToSourceString() );
                 Type t = o as Type;
-                if( t != null ) return t == typeof(void) 
-                                        ? @this.Append( "typeof(void)" ) 
-                                        : @this.Append( "Type.GetType(" ).Append( t.AssemblyQualifiedName.ToSourceString() ).Append( ')' );
+                if( t != null ) return @this.Append( "typeof(" ).AppendCSharpName( t, false ).Append( ')' ); 
                 IEnumerable e = o as IEnumerable;
                 if( e != null ) return AppendSourceString( @this, e );
             }
