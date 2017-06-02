@@ -69,48 +69,7 @@ namespace CK.CodeGen.Tests
 
         static Assembly HandleCreateResult(string sourceCode, GenerateResult result)
         {
-            using (Monitor.OpenInfo().Send("Code Generation information."))
-            {
-                if( result.LoadFailures.Count > 0 )
-                {
-                    using (Monitor.OpenWarn().Send($"{result.LoadFailures.Count} assembly load failure(s)."))
-                        foreach (var e in result.LoadFailures)
-                            if (e.SuccessfulWeakFallback != null) Monitor.Warn().Send($"'{e.Name}' load failed, used '{e.SuccessfulWeakFallback}' instead.");
-                            else Monitor.Error().Send($"'{e.Name}' load failed.");
-                }
-                if (!result.Success)
-                {
-                    using (Monitor.OpenError().Send("Generation failed."))
-                    {
-                        if( result.EmitError != null )
-                        {
-                            Monitor.Error().Send(result.EmitError);
-                        }
-                        if( result.EmitResult != null )
-                        {
-                            if( !result.EmitResult.Success && !result.EmitResult.Diagnostics.IsEmpty )
-                            {
-                                using( Monitor.OpenError().Send( "Compilation diagnostics & Source." ) )
-                                {
-                                    foreach( var diag in result.EmitResult.Diagnostics )
-                                    {
-                                        Monitor.Trace().Send( diag.ToString() );
-                                    }
-                                    Monitor.Trace().Send( sourceCode );
-                                }
-                            }
-                        }
-                    }
-                }
-                if (result.AssemblyLoadError != null)
-                {
-                    Monitor.Error().Send(result.AssemblyLoadError, "Generated assembly load failed." );
-                }
-                else if(result.Assembly != null)
-                {
-                    Monitor.Trace().Send("Generated assembly successfuly loaded.");
-                }
-            }
+            result.LogResult( TestHelper.Monitor );
             result.Success.Should().BeTrue();
             return result.Assembly;
         }

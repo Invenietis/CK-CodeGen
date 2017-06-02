@@ -82,7 +82,7 @@ namespace CK.CodeGen
             }
             catch( Exception ex )
             {
-                return new GenerateResult( ex, null, null, null, null );
+                return new GenerateResult(ex, null, null, null, null, null);
             }
 #if NET461
             }
@@ -117,6 +117,7 @@ namespace CK.CodeGen
                 {
                     m.AppendSource( bSource );
                     trees.Add( SyntaxFactory.ParseSyntaxTree( bSource.ToString() ) );
+                    bSource.Clear();
                     // temporary: allow process of the main (first module) only.
                     trees[0] = m.PostProcess( trees[0] );
                 }
@@ -132,18 +133,18 @@ namespace CK.CodeGen
                 {
                     try
                     {
-                        return new GenerateResult(null, r, loader(assemblyPath), null, null);
+                        return new GenerateResult(null, trees, r, loader(assemblyPath), null, null);
                     }
                     catch (Exception ex)
                     {
-                        return new GenerateResult(null, r, null, ex, null);
+                        return new GenerateResult(null, trees, r, null, ex, null);
                     }
                 }
-                return new GenerateResult(null, r, null, null, null);
+                return new GenerateResult(null, trees, r, null, null, null);
             }
             catch (Exception ex)
             {
-                return new GenerateResult(ex, null, null, null, null);
+                return new GenerateResult(ex, null, null, null, null, null);
             }
 #if NET461
             }
