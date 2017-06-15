@@ -54,7 +54,7 @@ namespace CK.Core
         static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
             var failed = new AssemblyName(args.Name);
-            return failed.Version != null
+            return failed.Version != null && failed.CultureName == null
                     ? Assembly.Load(new AssemblyName(failed.Name))
                     : null;
         }
