@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using CK.CodeGen.Abstractions;
 
 namespace CK.CodeGen
@@ -12,7 +11,7 @@ namespace CK.CodeGen
         internal NamespaceScopeImpl( INamespaceScope parent, string ns )
             : base( parent )
         {
-            Debug.Assert( !string.IsNullOrWhiteSpace( ns ) );
+            if( ns == null ) ns = string.Empty;
             _namespaces = new Dictionary<string, NamespaceScopeImpl>();
             LocalName = ns;
             string[] parts = ns.Split( '.' );
