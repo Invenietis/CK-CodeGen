@@ -9,9 +9,13 @@ namespace CK.CodeGen.Abstractions
 
         string Name { get; }
 
-        ITypeScope CreateType( Action<ICodeWriter> header );
+        string FullName { get; }
 
-        IReadOnlyList<ITypeScope> TypeScopes { get; }
+        ITypeScope CreateType( Action<ICodeScope> header );
+
+        ITypeScope FindType( string name );
+
+        IReadOnlyList<ITypeScope> Types { get; }
 
         void AddUsing( string ns );
 

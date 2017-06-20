@@ -6,6 +6,8 @@ namespace CK.CodeGen.Abstractions
     {
         new INamespaceScope Parent { get; }
 
-        INamespaceScope CreateNamespace( string name );
+        INamespaceScope FindOrCreateNamespace( string ns );
+
+        IReadOnlyCollection<INamespaceScope> Namespaces { get; }
     }
 }

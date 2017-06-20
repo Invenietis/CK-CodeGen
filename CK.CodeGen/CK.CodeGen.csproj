@@ -13,4 +13,8 @@
     <PackageReference Include="CK.ActivityMonitor.StandardSender" Version="7.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CK.CodeGen.Abstractions\CK.CodeGen.Abstractions.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -20,9 +20,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.CodeGen.Tests", "Tests\C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeCakeBuilder", "CodeCakeBuilder\CodeCakeBuilder.csproj", "{FD4817B6-3CD7-4E74-AA10-7CA95FDFCF2D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.CodeGen.NetCore.Tests", "Tests\CK.CodeGen.NetCore.Tests\CK.CodeGen.NetCore.Tests.csproj", "{38AB5ADD-0BDF-4AD7-B2D6-70DF959865E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.CodeGen.NetCore.Tests", "Tests\CK.CodeGen.NetCore.Tests\CK.CodeGen.NetCore.Tests.csproj", "{38AB5ADD-0BDF-4AD7-B2D6-70DF959865E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.CodeGen.Abstractions", "CK.CodeGen.Abstractions\CK.CodeGen.Abstractions.csproj", "{5A38CA78-0AF5-4CB2-9C9D-13B556D5C8D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.CodeGen.Abstractions", "CK.CodeGen.Abstractions\CK.CodeGen.Abstractions.csproj", "{5A38CA78-0AF5-4CB2-9C9D-13B556D5C8D2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.CodeGen.Abstractions.Tests", "Tests\CK.CodeGen.Abstractions.Tests\CK.CodeGen.Abstractions.Tests.csproj", "{1DD53F9C-7449-4C29-B008-00D4DFC25A78}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,6 +52,10 @@ Global
 		{5A38CA78-0AF5-4CB2-9C9D-13B556D5C8D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A38CA78-0AF5-4CB2-9C9D-13B556D5C8D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5A38CA78-0AF5-4CB2-9C9D-13B556D5C8D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DD53F9C-7449-4C29-B008-00D4DFC25A78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DD53F9C-7449-4C29-B008-00D4DFC25A78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DD53F9C-7449-4C29-B008-00D4DFC25A78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DD53F9C-7449-4C29-B008-00D4DFC25A78}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -57,5 +63,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{00CAF176-BF0D-4544-A72E-C4F595ACD565} = {24E13C0A-5D83-4E5A-8E43-67F3996CD903}
 		{38AB5ADD-0BDF-4AD7-B2D6-70DF959865E1} = {24E13C0A-5D83-4E5A-8E43-67F3996CD903}
+		{1DD53F9C-7449-4C29-B008-00D4DFC25A78} = {24E13C0A-5D83-4E5A-8E43-67F3996CD903}
 	EndGlobalSection
 EndGlobal
