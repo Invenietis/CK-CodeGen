@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+VisualStudioVersion = 15.0.26430.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{95EC7837-0507-4DA9-8EBB-C10D316B7A4A}"
 	ProjectSection(SolutionItems) = preProject
@@ -21,6 +21,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeCakeBuilder", "CodeCakeBuilder\CodeCakeBuilder.csproj", "{FD4817B6-3CD7-4E74-AA10-7CA95FDFCF2D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.CodeGen.NetCore.Tests", "Tests\CK.CodeGen.NetCore.Tests\CK.CodeGen.NetCore.Tests.csproj", "{38AB5ADD-0BDF-4AD7-B2D6-70DF959865E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.CodeGen.Abstractions", "CK.CodeGen.Abstractions\CK.CodeGen.Abstractions.csproj", "{5A38CA78-0AF5-4CB2-9C9D-13B556D5C8D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +46,10 @@ Global
 		{38AB5ADD-0BDF-4AD7-B2D6-70DF959865E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{38AB5ADD-0BDF-4AD7-B2D6-70DF959865E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{38AB5ADD-0BDF-4AD7-B2D6-70DF959865E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A38CA78-0AF5-4CB2-9C9D-13B556D5C8D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A38CA78-0AF5-4CB2-9C9D-13B556D5C8D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A38CA78-0AF5-4CB2-9C9D-13B556D5C8D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A38CA78-0AF5-4CB2-9C9D-13B556D5C8D2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
