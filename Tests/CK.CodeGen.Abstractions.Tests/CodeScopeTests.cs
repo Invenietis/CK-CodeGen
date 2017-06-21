@@ -35,6 +35,33 @@ namespace CK.CodeGen.Abstractions.Tests
                      .ShouldThrow<InvalidOperationException>();
         }
 
+        [Test]
+        public void obtain_created_types()
+        {
+            ICodeScope sut = CreateCodeScope();
+            ITypeScope t1 = sut.CreateType( s => s.Builder.Append( "public class C1" ) );
+            ITypeScope t2 = sut.CreateType( s => s.Builder.Append( "public class C2" ) );
+
+            sut.Types.Should().BeEquivalentTo( t1, t2 );
+        }
+
+        [Test]
+        public void find_type()
+        {
+            ICodeScope sut = CreateCodeScope();
+            ITypeScope t = sut.CreateType( s => s.Builder.Append( "public class C" ) );
+
+            sut.FindType( "C" ).Should().BeSameAs( t );
+        }
+
+        [Test]
+        public void create_existing_type_again()
+        {
+            ICodeScope codeScope = CreateCodeScope();
+            codeScope.CreateType( s => s.Builder.Append( "public class C" ) );
+            codeScope.Invoking( sut => sut.CreateType( s => s.Builder.Append( "public class C" ) ) ).ShouldThrow<ArgumentException>();
+        }
+
         protected abstract ICodeScope CreateCodeScope();
     }
 }

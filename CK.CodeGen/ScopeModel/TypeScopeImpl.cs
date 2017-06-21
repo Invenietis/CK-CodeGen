@@ -25,8 +25,6 @@ namespace CK.CodeGen
 
         protected override string LocalName => Name;
 
-        public override IReadOnlyList<ITypeScope> Types => throw new NotImplementedException();
-
         public override void EnsureUsing( string ns )
         {
             Parent.EnsureUsing( ns );

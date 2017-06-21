@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using CK.CodeGen.Abstractions;
@@ -90,7 +91,7 @@ namespace CK.CodeGen
             return result;
         }
 
-        public abstract IReadOnlyList<ITypeScope> Types { get; }
+        public IReadOnlyList<ITypeScope> Types => _types.Values.ToList();
 
         public abstract void EnsureUsing( string ns );
     }

@@ -13,6 +13,7 @@ namespace CK.CodeGen
         {
             if( ns == null ) ns = string.Empty;
             _namespaces = new Dictionary<string, NamespaceScopeImpl>();
+            _usings = new HashSet<string>();
             LocalName = ns;
             string[] parts = ns.Split( '.' );
             Name = parts[parts.Length - 1];
@@ -21,8 +22,6 @@ namespace CK.CodeGen
         public override string Name { get; }
 
         protected override string LocalName { get; }
-
-        public override IReadOnlyList<ITypeScope> Types => new ITypeScope[0];
 
         INamespaceScope INamespaceScope.Parent => (INamespaceScope)Parent;
 
