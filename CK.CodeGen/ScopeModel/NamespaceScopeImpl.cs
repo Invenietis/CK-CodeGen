@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using CK.CodeGen.Abstractions;
 
 namespace CK.CodeGen
@@ -7,6 +6,7 @@ namespace CK.CodeGen
     sealed class NamespaceScopeImpl : CodeScopeImpl, INamespaceScope
     {
         readonly Dictionary<string, NamespaceScopeImpl> _namespaces;
+        readonly HashSet<string> _usings;
 
         internal NamespaceScopeImpl( INamespaceScope parent, string ns )
             : base( parent )
@@ -26,16 +26,19 @@ namespace CK.CodeGen
 
         INamespaceScope INamespaceScope.Parent => (INamespaceScope)Parent;
 
-        public override void AddUsing( string ns )
+        public override void EnsureUsing( string ns )
         {
-            throw new NotImplementedException();
+            _usings.Add( ns );
         }
-
-        public override IReadOnlyList<string> Usings => new string[0];
 
         public INamespaceScope FindOrCreateNamespace( string ns )
         {
-            throw new NotImplementedException();
+            NamespaceScopeImpl result;
+            if( !_namespaces.TryGetValue( ns, out result ) )
+            {
+                _namespaces[ns] = result = new NamespaceScopeImpl( this, ns );
+            }
+            return result;
         }
 
         public IReadOnlyCollection<INamespaceScope> Namespaces => _namespaces.Values;

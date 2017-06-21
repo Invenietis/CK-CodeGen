@@ -17,8 +17,6 @@ namespace CK.CodeGen.Abstractions
 
         IReadOnlyList<ITypeScope> Types { get; }
 
-        void AddUsing( string ns );
-
-        IReadOnlyList<string> Usings { get; }
+        void EnsureUsing( string ns );
     }
 }

@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using CK.CodeGen.Abstractions;
 
 namespace CK.CodeGen
 {
-    abstract class CodeScopeImpl : ICodeScope
+    public abstract class CodeScopeImpl : ICodeScope
     {
+        readonly Dictionary<string, TypeScopeImpl> _types;
+
         protected CodeScopeImpl( ICodeScope parent )
         {
+            _types = new Dictionary<string, TypeScopeImpl>();
             Parent = parent;
             Builder = new StringBuilder();
         }
@@ -21,22 +25,67 @@ namespace CK.CodeGen
 
         protected abstract string LocalName { get; }
 
-        public string FullName => Parent != null ? string.Format( "{0}.{1}", Parent.FullName, LocalName ) : LocalName;
+        public string FullName
+        {
+            get
+            {
+                if( Parent == null ) return string.Empty;
+                if( Parent.Parent == null ) return LocalName;
+                return string.Format( "{0}.{1}", Parent.FullName, LocalName );
+            }
+        }
 
         public ITypeScope CreateType( Action<ICodeScope> header )
         {
-            throw new NotImplementedException();
+            TypeScopeImpl typeScope = new TypeScopeImpl( this );
+            header( typeScope );
+            string typeName = GetTypeName( typeScope );
+            typeScope.Initialize( typeName );
+            _types.Add( typeName, typeScope );
+            return typeScope;
+        }
+
+        public static string GetTypeName( ICodeWriter codeWriter )
+        {
+            string decl = codeWriter.Builder.ToString();
+            string kind;
+            int startIndex = IndexOfAny( decl, new[] { "class", "interface", "enum", "struct" }, out kind );
+            if(startIndex < 0) throw new InvalidOperationException( string.Format( @"The kind of type is missing. Code written: ""{0}"".", decl ) );
+            startIndex += kind.Length + 1;
+            if( startIndex >= decl.Length ) throw new InvalidOperationException( string.Format( @"The type name is missing. Code written: ""{0}"".", decl ) );
+            int curr = startIndex + 1;
+            while( curr < decl.Length && decl[curr] != '{' && decl[curr] != ':' ) curr++;
+            int length = curr - startIndex;
+
+            return Regex.Replace( decl.Substring( startIndex, length ), @"(?<!out|in)\s", string.Empty );
+        }
+
+        static int IndexOfAny( string s, IEnumerable<string> values, out string found )
+        {
+            found = null;
+
+            foreach( string value in values )
+            {
+                int idx = s.IndexOf( value );
+                if( idx >= 0 )
+                {
+                    found = value;
+                    return idx;
+                }
+            }
+
+            return -1;
         }
 
         public ITypeScope FindType( string name )
         {
-            throw new NotImplementedException();
+            TypeScopeImpl result;
+            _types.TryGetValue( name, out result );
+            return result;
         }
 
         public abstract IReadOnlyList<ITypeScope> Types { get; }
 
-        public abstract IReadOnlyList<string> Usings { get; }
-
-        public abstract void AddUsing( string ns );
+        public abstract void EnsureUsing( string ns );
     }
 }
