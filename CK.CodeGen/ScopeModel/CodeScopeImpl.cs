@@ -8,6 +8,9 @@ namespace CK.CodeGen
 {
     public abstract class CodeScopeImpl : ICodeScope
     {
+        readonly static string TypeKindMissingExFormat = @"The kind of type is missing. Code written: ""{0}"".";
+        readonly static string TypeNameMissingExFormat = @"The type name is missing. Code written: ""{0}"".";
+
         readonly Dictionary<string, TypeScopeImpl> _types;
 
         protected CodeScopeImpl( ICodeScope parent )
@@ -50,14 +53,17 @@ namespace CK.CodeGen
             string decl = codeWriter.Builder.ToString();
             string kind;
             int startIndex = IndexOfAny( decl, new[] { "class", "interface", "enum", "struct" }, out kind );
-            if(startIndex < 0) throw new InvalidOperationException( string.Format( @"The kind of type is missing. Code written: ""{0}"".", decl ) );
+            if( startIndex < 0 ) throw new InvalidOperationException( string.Format( TypeKindMissingExFormat, decl ) );
             startIndex += kind.Length + 1;
-            if( startIndex >= decl.Length ) throw new InvalidOperationException( string.Format( @"The type name is missing. Code written: ""{0}"".", decl ) );
-            int curr = startIndex + 1;
+            if( startIndex >= decl.Length ) throw new InvalidOperationException( string.Format( TypeNameMissingExFormat, decl ) );
+            int curr = startIndex;
             while( curr < decl.Length && decl[curr] != '{' && decl[curr] != ':' ) curr++;
             int length = curr - startIndex;
+            if( length == 0 ) throw new InvalidOperationException( string.Format( TypeNameMissingExFormat, decl ) );
+            string typeName = Regex.Replace( decl.Substring( startIndex, length ), @"(?<!out|in)\s", string.Empty );
+            if( typeName == string.Empty ) throw new InvalidOperationException( string.Format( TypeNameMissingExFormat, decl ) );
 
-            return Regex.Replace( decl.Substring( startIndex, length ), @"(?<!out|in)\s", string.Empty );
+            return typeName;
         }
 
         static int IndexOfAny( string s, IEnumerable<string> values, out string found )

@@ -24,12 +24,16 @@ namespace CK.CodeGen.Abstractions.Tests
             sut.Name.Should().Be( typeName );
         }
 
-        [Test]
-        public void missing_type_kind()
+        [TestCase( "public sealed MissingKind" )]
+        [TestCase( "public sealed class { // missing type name" )]
+        [TestCase( "public sealed class : BaseClass // missing type name" )]
+        [TestCase( "public sealed class  " )]
+        [TestCase( "public sealed class" )]
+        public void invalid_header( string header )
         {
             INamespaceScope global = CreateGlobalNamespace();
             INamespaceScope ns = global.FindOrCreateNamespace( "X.Y.Z" );
-            ns.Invoking( s => s.CreateType( h => h.Builder.Append( "public sealed ClassName" ) ) ).ShouldThrow<InvalidOperationException>();
+            ns.Invoking( s => s.CreateType( h => h.Builder.Append( header ) ) ).ShouldThrow<InvalidOperationException>();
         }
 
         protected abstract INamespaceScope CreateGlobalNamespace();
