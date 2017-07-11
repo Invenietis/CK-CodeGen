@@ -13,15 +13,14 @@ namespace CK.CodeGen
         readonly static string TypeNameMissingExFormat = @"The type name is missing. Code written: ""{0}"".";
 
         readonly Dictionary<string, TypeScopeImpl> _types;
+        readonly List<string> _code;
 
         protected CodeScopeImpl( ICodeScope parent )
         {
             _types = new Dictionary<string, TypeScopeImpl>();
+            _code = new List<string>();
             Parent = parent;
-            Builder = new StringBuilder();
         }
-
-        public StringBuilder Builder { get; }
 
         public ICodeScope Parent { get; }
 
@@ -49,9 +48,9 @@ namespace CK.CodeGen
             return typeScope;
         }
 
-        public static string GetTypeName( ICodeWriter codeWriter )
+        static string GetTypeName( TypeScopeImpl typeScope )
         {
-            string decl = codeWriter.Builder.ToString();
+            string decl = BuildCode( typeScope );
             string kind;
             int startIndex = IndexOfAny( decl, new[] { "class", "interface", "enum", "struct" }, out kind );
             if( startIndex < 0 ) throw new InvalidOperationException( string.Format( TypeKindMissingExFormat, decl ) );
@@ -65,6 +64,17 @@ namespace CK.CodeGen
             if( typeName == string.Empty ) throw new InvalidOperationException( string.Format( TypeNameMissingExFormat, decl ) );
 
             return typeName;
+        }
+
+        static string BuildCode( TypeScopeImpl typeScope )
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach( string s in typeScope._code )
+            {
+                sb.Append( s );
+                if( !char.IsWhiteSpace( s[s.Length - 1] ) ) sb.Append( " " );
+            }
+            return sb.ToString();
         }
 
         static int IndexOfAny( string s, IEnumerable<string> values, out string found )
@@ -94,5 +104,14 @@ namespace CK.CodeGen
         public IReadOnlyList<ITypeScope> Types => _types.Values.ToList();
 
         public abstract void EnsureUsing( string ns );
+
+        public abstract void EnsurePackageReference( string name, string version );
+
+        public abstract void EnsureAssemblyReference( string name, string version );
+
+        public void RawAppend( string code )
+        {
+            _code.Add( code );
+        }
     }
 }

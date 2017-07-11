@@ -30,6 +30,16 @@ namespace CK.CodeGen
             Parent.EnsureUsing( ns );
         }
 
+        public override void EnsurePackageReference( string name, string version )
+        {
+            Parent.EnsurePackageReference( name, version );
+        }
+
+        public override void EnsureAssemblyReference( string name, string version )
+        {
+            Parent.EnsureAssemblyReference( name, version );
+        }
+
         internal void Initialize( string name )
         {
             Debug.Assert( _name == null );

@@ -18,5 +18,9 @@ namespace CK.CodeGen.Abstractions
         IReadOnlyList<ITypeScope> Types { get; }
 
         void EnsureUsing( string ns );
+
+        void EnsurePackageReference(string name, string version);
+
+        void EnsureAssemblyReference(string name, string version);
     }
 }

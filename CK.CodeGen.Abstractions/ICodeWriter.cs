@@ -1,9 +1,7 @@
-﻿using System.Text;
-
-namespace CK.CodeGen.Abstractions
+﻿namespace CK.CodeGen.Abstractions
 {
     public interface ICodeWriter
     {
-        StringBuilder Builder { get; }
+        void RawAppend( string code );
     }
 }

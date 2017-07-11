@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using CK.CodeGen.Abstractions;
 
 namespace CK.CodeGen
@@ -7,6 +8,8 @@ namespace CK.CodeGen
     {
         readonly Dictionary<string, NamespaceScopeImpl> _namespaces;
         readonly HashSet<string> _usings;
+        readonly HashSet<VersionedReference> _packageReferences;
+        readonly HashSet<VersionedReference> _assemblyReferences;
 
         internal NamespaceScopeImpl( INamespaceScope parent, string ns )
             : base( parent )
@@ -14,6 +17,8 @@ namespace CK.CodeGen
             if( ns == null ) ns = string.Empty;
             _namespaces = new Dictionary<string, NamespaceScopeImpl>();
             _usings = new HashSet<string>();
+            _packageReferences = new HashSet<VersionedReference>();
+            _assemblyReferences = new HashSet<VersionedReference>();
             LocalName = ns;
             string[] parts = ns.Split( '.' );
             Name = parts[parts.Length - 1];
@@ -41,5 +46,41 @@ namespace CK.CodeGen
         }
 
         public IReadOnlyCollection<INamespaceScope> Namespaces => _namespaces.Values;
+
+        public override void EnsurePackageReference( string name, string version )
+        {
+            _packageReferences.Add( new VersionedReference( name, version ) );
+        }
+
+        public override void EnsureAssemblyReference( string name, string version )
+        {
+            _assemblyReferences.Add( new VersionedReference( name, version ) );
+        }
+
+        class VersionedReference
+        {
+            internal VersionedReference( string name, string version )
+            {
+                Name = name;
+                Version = version;
+            }
+
+            internal readonly string Name;
+
+            internal readonly string Version;
+
+            public override bool Equals( object obj )
+            {
+                VersionedReference other = obj as VersionedReference;
+                return other != null
+                    && other.Name == Name
+                    && other.Version == Version;
+            }
+
+            public override int GetHashCode()
+            {
+                return Name.GetHashCode() << 7 ^ Version.GetHashCode();
+            }
+        }
     }
 }
