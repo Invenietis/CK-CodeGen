@@ -51,11 +51,16 @@ namespace CK.Core
             return new Auto();
         }
 
-        static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        static Assembly CurrentDomain_AssemblyResolve( object sender, ResolveEventArgs args )
         {
-            var failed = new AssemblyName(args.Name);
+            var failed = new AssemblyName( args.Name );
+            //This does not work either.
+            //if( failed.Name == "System.IO.FileSystem" && failed.Version == new Version( 4, 0, 1, 0 ) )
+            //{
+            //    return typeof( System.IO.FileStream ).Assembly;
+            //}
             return failed.Version != null && failed.CultureName == null
-                    ? Assembly.Load(new AssemblyName(failed.Name))
+                    ? Assembly.Load( new AssemblyName( failed.Name ) )
                     : null;
         }
     }
