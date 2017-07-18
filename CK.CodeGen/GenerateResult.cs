@@ -71,37 +71,37 @@ namespace CK.CodeGen
 
         public void LogResult( IActivityMonitor monitor )
         {
-            using( monitor.OpenInfo().Send( "Code Generation information." ) )
+            using( monitor.OpenInfo( "Code Generation information." ) )
             {
                 if( LoadFailures.Count > 0 )
                 {
-                    using( monitor.OpenWarn().Send( $"{LoadFailures.Count} assembly load failure(s)." ) )
+                    using( monitor.OpenWarn( $"{LoadFailures.Count} assembly load failure(s)." ) )
                         foreach( var e in LoadFailures )
-                            if( e.SuccessfulWeakFallback != null ) monitor.Warn().Send( $"'{e.Name}' load failed, used '{e.SuccessfulWeakFallback}' instead." );
-                            else monitor.Error().Send( $"'{e.Name}' load failed." );
+                            if( e.SuccessfulWeakFallback != null ) monitor.Warn( $"'{e.Name}' load failed, used '{e.SuccessfulWeakFallback}' instead." );
+                            else monitor.Error( $"'{e.Name}' load failed." );
                 }
                 if( Success )
                 {
-                    monitor.Info().Send( "Source code generation and compilation succeeded." );
+                    monitor.Info( "Source code generation and compilation succeeded." );
                     DumpDebugSource( monitor );
                 }
                 else
                 {
-                    using( monitor.OpenError().Send( "Generation failed." ) )
+                    using( monitor.OpenError( "Generation failed." ) )
                     {
                         if( EmitError != null )
                         {
-                            monitor.Error().Send( EmitError );
+                            monitor.Error( EmitError );
                         }
                         if( EmitResult != null )
                         {
                             if( !EmitResult.Success )
                             {
-                                using( monitor.OpenInfo().Send( $"{EmitResult.Diagnostics.Count()} Compilation diagnostics & Source code." ) )
+                                using( monitor.OpenInfo( $"{EmitResult.Diagnostics.Count()} Compilation diagnostics & Source code." ) )
                                 {
                                     foreach( var diag in EmitResult.Diagnostics )
                                     {
-                                        monitor.Trace().Send( diag.ToString() );
+                                        monitor.Trace( diag.ToString() );
                                     }
                                 }
                             }
@@ -111,11 +111,11 @@ namespace CK.CodeGen
                 }
                 if( AssemblyLoadError != null )
                 {
-                    monitor.Error().Send( AssemblyLoadError, "Generated assembly load failed." );
+                    monitor.Error( "Generated assembly load failed.", AssemblyLoadError );
                 }
                 else if( Assembly != null )
                 {
-                    monitor.Trace().Send( "Generated assembly successfuly loaded." );
+                    monitor.Trace( "Generated assembly successfuly loaded." );
                 }
             }
         }
@@ -124,13 +124,13 @@ namespace CK.CodeGen
         {
             if( Sources != null && Sources.Count > 0 )
             {
-                using( monitor.OpenDebug().Send( $"Processed {Sources.Count} source tree(s):" ) )
+                using( monitor.OpenDebug( $"Processed {Sources.Count} source tree(s):" ) )
                 {
                     for( int i = 0; i < Sources.Count; ++i )
                     {
-                        using( monitor.OpenDebug().Send( $"Source n°{i}" ) )
+                        using( monitor.OpenDebug( $"Source n°{i}" ) )
                         {
-                            monitor.Debug().Send( Sources[i].ToString() );
+                            monitor.Debug( Sources[i].ToString() );
                         }
                     }
                 }
