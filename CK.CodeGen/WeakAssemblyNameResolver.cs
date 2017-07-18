@@ -13,7 +13,7 @@ namespace CK.Core
 
         public static void Install()
         {
-            if( Interlocked.Increment(ref _installCount) == 1 )
+            if( Interlocked.Increment( ref _installCount ) == 1 )
             {
                 AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             }
@@ -21,7 +21,7 @@ namespace CK.Core
 
         public static void Uninstall()
         {
-            if (Interlocked.Decrement(ref _installCount) == 0)
+            if( Interlocked.Decrement( ref _installCount ) == 0 )
             {
                 AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
             }
@@ -54,12 +54,7 @@ namespace CK.Core
         static Assembly CurrentDomain_AssemblyResolve( object sender, ResolveEventArgs args )
         {
             var failed = new AssemblyName( args.Name );
-            //This does not work either.
-            //if( failed.Name == "System.IO.FileSystem" && failed.Version == new Version( 4, 0, 1, 0 ) )
-            //{
-            //    return typeof( System.IO.FileStream ).Assembly;
-            //}
-            return failed.Version != null && failed.CultureName == null
+            return failed.Version != null && string.IsNullOrWhiteSpace( failed.CultureName )
                     ? Assembly.Load( new AssemblyName( failed.Name ) )
                     : null;
         }
