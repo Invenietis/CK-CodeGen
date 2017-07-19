@@ -9,5 +9,7 @@ namespace CK.CodeGen.Abstractions
         INamespaceScope FindOrCreateNamespace( string ns );
 
         IReadOnlyCollection<INamespaceScope> Namespaces { get; }
+
+        bool IsGlobal { get; }
     }
 }

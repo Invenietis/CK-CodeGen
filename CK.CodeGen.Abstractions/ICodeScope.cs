@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace CK.CodeGen.Abstractions
 {
@@ -11,7 +12,7 @@ namespace CK.CodeGen.Abstractions
 
         string FullName { get; }
 
-        ITypeScope CreateType( Action<ICodeScope> header );
+        ITypeScope CreateType( Action<ICodeWriter> header );
 
         ITypeScope FindType( string name );
 
@@ -19,8 +20,10 @@ namespace CK.CodeGen.Abstractions
 
         void EnsureUsing( string ns );
 
-        void EnsurePackageReference(string name, string version);
+        void EnsurePackageReference( string name, string version );
 
-        void EnsureAssemblyReference(string name, string version);
+        void EnsureAssemblyReference( Assembly assembly );
+
+        string Build( bool close );
     }
 }

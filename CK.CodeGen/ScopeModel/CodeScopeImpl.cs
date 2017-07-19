@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using CK.CodeGen.Abstractions;
@@ -9,9 +10,6 @@ namespace CK.CodeGen
 {
     public abstract class CodeScopeImpl : ICodeScope
     {
-        readonly static string TypeKindMissingExFormat = @"The kind of type is missing. Code written: ""{0}"".";
-        readonly static string TypeNameMissingExFormat = @"The type name is missing. Code written: ""{0}"".";
-
         readonly Dictionary<string, TypeScopeImpl> _types;
         readonly List<string> _code;
 
@@ -38,60 +36,13 @@ namespace CK.CodeGen
             }
         }
 
-        public ITypeScope CreateType( Action<ICodeScope> header )
+        public ITypeScope CreateType( Action<ICodeWriter> header )
         {
+            if( header == null ) throw new ArgumentNullException( nameof( header ) );
             TypeScopeImpl typeScope = new TypeScopeImpl( this );
-            header( typeScope );
-            string typeName = GetTypeName( typeScope );
-            typeScope.Initialize( typeName );
-            _types.Add( typeName, typeScope );
+            typeScope.InitializeHeader( header );
+            _types.Add( typeScope.Name, typeScope );
             return typeScope;
-        }
-
-        static string GetTypeName( TypeScopeImpl typeScope )
-        {
-            string decl = BuildCode( typeScope );
-            string kind;
-            int startIndex = IndexOfAny( decl, new[] { "class", "interface", "enum", "struct" }, out kind );
-            if( startIndex < 0 ) throw new InvalidOperationException( string.Format( TypeKindMissingExFormat, decl ) );
-            startIndex += kind.Length + 1;
-            if( startIndex >= decl.Length ) throw new InvalidOperationException( string.Format( TypeNameMissingExFormat, decl ) );
-            int curr = startIndex;
-            while( curr < decl.Length && decl[curr] != '{' && decl[curr] != ':' ) curr++;
-            int length = curr - startIndex;
-            if( length == 0 ) throw new InvalidOperationException( string.Format( TypeNameMissingExFormat, decl ) );
-            string typeName = Regex.Replace( decl.Substring( startIndex, length ), @"(?<!out|in)\s", string.Empty );
-            if( typeName == string.Empty ) throw new InvalidOperationException( string.Format( TypeNameMissingExFormat, decl ) );
-
-            return typeName;
-        }
-
-        static string BuildCode( TypeScopeImpl typeScope )
-        {
-            StringBuilder sb = new StringBuilder();
-            foreach( string s in typeScope._code )
-            {
-                sb.Append( s );
-                if( !char.IsWhiteSpace( s[s.Length - 1] ) ) sb.Append( " " );
-            }
-            return sb.ToString();
-        }
-
-        static int IndexOfAny( string s, IEnumerable<string> values, out string found )
-        {
-            found = null;
-
-            foreach( string value in values )
-            {
-                int idx = s.IndexOf( value );
-                if( idx >= 0 )
-                {
-                    found = value;
-                    return idx;
-                }
-            }
-
-            return -1;
         }
 
         public ITypeScope FindType( string name )
@@ -107,11 +58,15 @@ namespace CK.CodeGen
 
         public abstract void EnsurePackageReference( string name, string version );
 
-        public abstract void EnsureAssemblyReference( string name, string version );
+        public abstract void EnsureAssemblyReference( Assembly assembly );
 
         public void RawAppend( string code )
         {
             _code.Add( code );
         }
+
+        public abstract string Build( bool close );
+
+        protected List<string> Code => _code;
     }
 }

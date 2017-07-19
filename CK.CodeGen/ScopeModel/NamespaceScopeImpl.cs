@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
+using System.Text;
 using CK.CodeGen.Abstractions;
 
 namespace CK.CodeGen
@@ -9,7 +11,7 @@ namespace CK.CodeGen
         readonly Dictionary<string, NamespaceScopeImpl> _namespaces;
         readonly HashSet<string> _usings;
         readonly HashSet<VersionedReference> _packageReferences;
-        readonly HashSet<VersionedReference> _assemblyReferences;
+        readonly HashSet<Assembly> _assemblies;
 
         internal NamespaceScopeImpl( INamespaceScope parent, string ns )
             : base( parent )
@@ -18,7 +20,7 @@ namespace CK.CodeGen
             _namespaces = new Dictionary<string, NamespaceScopeImpl>();
             _usings = new HashSet<string>();
             _packageReferences = new HashSet<VersionedReference>();
-            _assemblyReferences = new HashSet<VersionedReference>();
+            _assemblies = new HashSet<Assembly>();
             LocalName = ns;
             string[] parts = ns.Split( '.' );
             Name = parts[parts.Length - 1];
@@ -52,10 +54,28 @@ namespace CK.CodeGen
             _packageReferences.Add( new VersionedReference( name, version ) );
         }
 
-        public override void EnsureAssemblyReference( string name, string version )
+        public override void EnsureAssemblyReference( Assembly assembly )
         {
-            _assemblyReferences.Add( new VersionedReference( name, version ) );
+            _assemblies.Add( assembly );
         }
+
+        public override string Build( bool close )
+        {
+            StringBuilder sb = new StringBuilder();
+            if( !IsGlobal ) sb.AppendFormat( "namespace {0} {{", Name ).AppendLine();
+
+            foreach( string u in _usings ) sb.AppendFormat( "using {0};", u ).AppendLine();
+            foreach( TypeScopeImpl type in Types )
+            {
+                type.Build( sb, true );
+                sb.AppendLine();
+            }
+
+            if( !IsGlobal && close ) sb.AppendLine( "}" );
+            return sb.ToString();
+        }
+
+        public bool IsGlobal => Parent == null;
 
         class VersionedReference
         {
