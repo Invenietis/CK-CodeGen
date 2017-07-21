@@ -32,9 +32,10 @@ namespace CK.CodeGen
 
         INamespaceScope INamespaceScope.Parent => (INamespaceScope)Parent;
 
-        public override void EnsureUsing( string ns )
+        public override ICodeScope EnsureUsing( string ns )
         {
             _usings.Add( ns );
+            return this;
         }
 
         public INamespaceScope FindOrCreateNamespace( string ns )
@@ -49,14 +50,16 @@ namespace CK.CodeGen
 
         public IReadOnlyCollection<INamespaceScope> Namespaces => _namespaces.Values;
 
-        public override void EnsurePackageReference( string name, string version )
+        public override ICodeScope EnsurePackageReference( string name, string version )
         {
             _packageReferences.Add( new VersionedReference( name, version ) );
+            return this;
         }
 
-        public override void EnsureAssemblyReference( Assembly assembly )
+        public override ICodeScope EnsureAssemblyReference( Assembly assembly )
         {
             _assemblies.Add( assembly );
+            return this;
         }
 
         public override string Build( bool close )

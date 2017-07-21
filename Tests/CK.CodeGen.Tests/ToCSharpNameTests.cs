@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CK.CodeGen.Abstractions;
 
 namespace CK.CodeGen.Tests
 {
@@ -42,8 +43,9 @@ namespace CK.CodeGen.Tests
         [TestCase( typeof( A<int>.C<string> ), "CK.CodeGen.Tests.ToCSharpNameTests.A<int>.C<string>" )]
         public void ToCSharpName_tests( Type type, string expected )
         {
-            string actual = type.ToCSharpName( false );
-            Assert.AreEqual( expected, actual );
+            TestCodeWriter writer = new TestCodeWriter();
+            writer.AppendCSharpName( type, false );
+            Assert.AreEqual( expected, writer.ToString() );
         }
 
 
@@ -57,8 +59,9 @@ namespace CK.CodeGen.Tests
         [TestCase( typeof( A<>.C<> ), "CK.CodeGen.Tests.ToCSharpNameTests.A<TB>.C<TD>" )]
         public void ToCSharpName_tests_with_generic_parameter_names( Type type, string expected )
         {
-            string actual = type.ToCSharpName( true );
-            Assert.AreEqual( expected, actual );
+            TestCodeWriter writer = new TestCodeWriter();
+            writer.AppendCSharpName( type );
+            Assert.AreEqual( expected, writer.ToString() );
         }
 
         public class G<T>
@@ -78,6 +81,4 @@ namespace CK.CodeGen.Tests
             public class I<T3> { }
         }
     }
-
-
 }

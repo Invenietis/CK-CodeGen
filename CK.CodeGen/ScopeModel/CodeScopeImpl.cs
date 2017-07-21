@@ -36,7 +36,7 @@ namespace CK.CodeGen
             }
         }
 
-        public ITypeScope CreateType( Action<ICodeWriter> header )
+        public ITypeScope CreateType( Action<ITypeScope> header )
         {
             if( header == null ) throw new ArgumentNullException( nameof( header ) );
             TypeScopeImpl typeScope = new TypeScopeImpl( this );
@@ -54,15 +54,16 @@ namespace CK.CodeGen
 
         public IReadOnlyList<ITypeScope> Types => _types.Values.ToList();
 
-        public abstract void EnsureUsing( string ns );
+        public abstract ICodeScope EnsureUsing( string ns );
 
-        public abstract void EnsurePackageReference( string name, string version );
+        public abstract ICodeScope EnsurePackageReference( string name, string version );
 
-        public abstract void EnsureAssemblyReference( Assembly assembly );
+        public abstract ICodeScope EnsureAssemblyReference( Assembly assembly );
 
-        public void RawAppend( string code )
+        public ICodeWriter RawAppend( string code )
         {
             _code.Add( code );
+            return this;
         }
 
         public abstract string Build( bool close );

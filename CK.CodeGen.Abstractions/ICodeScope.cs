@@ -12,17 +12,17 @@ namespace CK.CodeGen.Abstractions
 
         string FullName { get; }
 
-        ITypeScope CreateType( Action<ICodeWriter> header );
+        ITypeScope CreateType( Action<ITypeScope> header );
 
         ITypeScope FindType( string name );
 
         IReadOnlyList<ITypeScope> Types { get; }
 
-        void EnsureUsing( string ns );
+        ICodeScope EnsureUsing( string ns );
 
-        void EnsurePackageReference( string name, string version );
+        ICodeScope EnsurePackageReference( string name, string version );
 
-        void EnsureAssemblyReference( Assembly assembly );
+        ICodeScope EnsureAssemblyReference( Assembly assembly );
 
         string Build( bool close );
     }

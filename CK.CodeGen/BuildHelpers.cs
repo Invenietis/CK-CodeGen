@@ -34,19 +34,6 @@ namespace CK.CodeGen
             foreach (string modifier in modifiers) b.AppendWithWhitespace(modifier);
         }
 
-        internal static void BuildParameters(StringBuilder b, IEnumerable<ParameterBuilder> parameters)
-        {
-            b.Append("(");
-            bool isFirst = true;
-            foreach (ParameterBuilder parameter in parameters)
-            {
-                if (isFirst) isFirst = false;
-                else b.Append(", ");
-                parameter.Build(b);
-            }
-            b.Append(")");
-        }
-
         internal static void BuildMethodBody(StringBuilder b, string body)
         {
             body = body.ToString().Trim();

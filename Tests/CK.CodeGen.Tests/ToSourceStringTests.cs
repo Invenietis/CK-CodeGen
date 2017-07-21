@@ -47,11 +47,11 @@ namespace CK.CodeGen.Tests
                 typeof(Dictionary<string,int>),
             };
 
-            StringBuilder b = new StringBuilder();
-            b.AppendLine( "using System; using NUnit.Framework; using CK.Text; using System.Collections.Generic; using System.Linq;" );
-            b.AppendLine( "public class Tester {" );
-            b.AppendLine( "public string Run() {" );
-            b.AppendLine( @"
+            TestCodeWriter w = new TestCodeWriter();
+            w.AppendLine( "using System; using NUnit.Framework; using CK.Text; using System.Collections.Generic; using System.Linq;" );
+            w.AppendLine( "public class Tester {" );
+            w.AppendLine( "public string Run() {" );
+            w.AppendLine( @"
             DateTime tD = new DateTime(2017,5,27,13,47,23,DateTimeKind.Local);
             DateTimeOffset tO = new DateTimeOffset( tD.Ticks, TimeSpan.FromMinutes(42) );
             TimeSpan tT = TimeSpan.FromMilliseconds( 987897689 );
@@ -82,15 +82,15 @@ namespace CK.CodeGen.Tests
                 System.Type.Missing,
                 typeof(Dictionary<string,int>),
             }; " );
-            b.Append( $"var rewrite = " ).AppendSourceString( array ).AppendLine( ";" );
-            b.AppendLine( @"
+            w.Append( $"var rewrite = " ).AppendSourceString( array ).AppendLine( ";" );
+            w.AppendLine( @"
             var diff = array
                         .Select( ( o, idx ) => new { O = o, T = rewrite[idx], I = idx } )
                         .Where( x => (x.O == null && x.T != null) || (x.O != null && !x.O.Equals( x.T )) )
                         .Select( x => $""{x.I} - {x.O} != {x.T}"" )
                         .Concatenate();
             return diff;" );
-            b.AppendLine( "}}" );
+            w.AppendLine( "}}" );
 
             Assembly[] references = new[]
             {
@@ -100,7 +100,7 @@ namespace CK.CodeGen.Tests
                 typeof(System.Linq.Enumerable).GetTypeInfo().Assembly,
                 typeof(TestFixtureAttribute).GetTypeInfo().Assembly
             };
-            Assembly a = TestHelper.CreateAssembly( b.ToString(), references );
+            Assembly a = TestHelper.CreateAssembly( w.ToString(), references );
             object tester = Activator.CreateInstance( a.ExportedTypes.Single( t => t.Name == "Tester" ) );
             string diff = (string)tester.GetType().GetMethod( "Run" ).Invoke( tester, Array.Empty<object>() );
             diff.Should().BeEmpty();
@@ -110,7 +110,7 @@ namespace CK.CodeGen.Tests
         [Test]
         public void writing_an_unknown_typed_object_is_an_error()
         {
-            Assert.Throws<ArgumentException>( () => new StringBuilder().AppendSourceString( this ) );
+            Assert.Throws<ArgumentException>( () => new TestCodeWriter().AppendSourceString( this ) );
         }
     }
 }

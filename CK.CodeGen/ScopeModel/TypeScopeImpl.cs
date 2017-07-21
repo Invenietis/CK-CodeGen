@@ -31,22 +31,25 @@ namespace CK.CodeGen
 
         protected override string LocalName => Name;
 
-        public override void EnsureUsing( string ns )
+        public override ICodeScope EnsureUsing( string ns )
         {
             Parent.EnsureUsing( ns );
+            return this;
         }
 
-        public override void EnsurePackageReference( string name, string version )
+        public override ICodeScope EnsurePackageReference( string name, string version )
         {
             Parent.EnsurePackageReference( name, version );
+            return this;
         }
 
-        public override void EnsureAssemblyReference( Assembly assembly )
+        public override ICodeScope EnsureAssemblyReference( Assembly assembly )
         {
             Parent.EnsureAssemblyReference( assembly );
+            return this;
         }
 
-        internal void InitializeHeader( Action<ICodeWriter> header )
+        internal void InitializeHeader( Action<ITypeScope> header )
         {
             header( this );
             bool hasOpenBrace;

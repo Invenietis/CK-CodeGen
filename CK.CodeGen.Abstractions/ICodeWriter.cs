@@ -2,6 +2,6 @@
 {
     public interface ICodeWriter
     {
-        void RawAppend( string code );
+        ICodeWriter RawAppend( string code );
     }
 }
