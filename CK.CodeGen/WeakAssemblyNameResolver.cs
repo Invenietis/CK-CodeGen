@@ -13,7 +13,7 @@ namespace CK.Core
 
         public static void Install()
         {
-            if( Interlocked.Increment(ref _installCount) == 1 )
+            if( Interlocked.Increment( ref _installCount ) == 1 )
             {
                 AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             }
@@ -21,7 +21,7 @@ namespace CK.Core
 
         public static void Uninstall()
         {
-            if (Interlocked.Decrement(ref _installCount) == 0)
+            if( Interlocked.Decrement( ref _installCount ) == 0 )
             {
                 AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
             }
@@ -51,11 +51,11 @@ namespace CK.Core
             return new Auto();
         }
 
-        static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        static Assembly CurrentDomain_AssemblyResolve( object sender, ResolveEventArgs args )
         {
-            var failed = new AssemblyName(args.Name);
-            return failed.Version != null
-                    ? Assembly.Load(new AssemblyName(failed.Name))
+            var failed = new AssemblyName( args.Name );
+            return failed.Version != null && string.IsNullOrWhiteSpace( failed.CultureName )
+                    ? Assembly.Load( new AssemblyName( failed.Name ) )
                     : null;
         }
     }
