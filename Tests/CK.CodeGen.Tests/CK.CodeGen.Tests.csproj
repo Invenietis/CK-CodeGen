@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\Common\Shared.props" />
-
   <PropertyGroup>
     <TargetFrameworks>net461</TargetFrameworks>
   </PropertyGroup>
+  
+  <Import Project="..\..\Common\Shared.props" />
 
   <ItemGroup>
     <ProjectReference Include="..\..\CK.CodeGen\CK.CodeGen.csproj" />
