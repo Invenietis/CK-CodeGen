@@ -13,8 +13,4 @@
     <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="8.0.0" />
   </ItemGroup>
 
-  <!--<ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
-    <Reference Include="System.Security.Cryptography.Algorithms" />
-  </ItemGroup>-->
-
 </Project>
