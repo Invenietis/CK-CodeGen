@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -19,16 +19,16 @@ namespace CK.CodeGen
         }
 
         public CodeGenerator()
-            : this(null)
+            : this( null )
         {
         }
 
         public List<ICodeGeneratorModule> Modules { get; } = new List<ICodeGeneratorModule>();
 
 
-        public CodeGenerator(CSharpCompilationOptions options)
+        public CodeGenerator( CSharpCompilationOptions options )
         {
-            if (options == null) options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
+            if( options == null ) options = new CSharpCompilationOptions( OutputKind.DynamicallyLinkedLibrary );
             _options = options;
         }
 
@@ -42,10 +42,10 @@ namespace CK.CodeGen
         /// <param name="resolver">Must load an assembly from its name.</param>
         /// <param name="loader">Optional loader function to load the final emitted assembly.</param>
         /// <returns>Encapsulation of the result.</returns>
-        public GenerateResult Generate(string sourceCode, string assemblyPath, IEnumerable<Assembly> someReferences, IAssemblyResolver resolver, Func<string, Assembly> loader = null)
+        public GenerateResult Generate( string sourceCode, string assemblyPath, IEnumerable<Assembly> someReferences, IAssemblyResolver resolver, Func<string, Assembly> loader = null )
         {
-            if (someReferences == null) throw new ArgumentNullException(nameof(someReferences));
-            if (resolver == null) throw new ArgumentNullException(nameof(resolver));
+            if( someReferences == null ) throw new ArgumentNullException( nameof( someReferences ) );
+            if( resolver == null ) throw new ArgumentNullException( nameof( resolver ) );
 #if NET461
             using( CK.Core.WeakAssemblyNameResolver.TempInstall())
             {
@@ -53,10 +53,10 @@ namespace CK.CodeGen
             var fromModules = Modules.SelectMany( m => m.RequiredAssemblies );
             var closureResult = resolver.GetAssembliesClosure( someReferences.Concat( fromModules ) );
             return Generate(
-                    sourceCode, 
-                    assemblyPath, 
-                    closureResult.AllAssemblies.Select(a => MetadataReference.CreateFromFile(resolver.GetAssemblyFilePath(a))), 
-                    loader).WithLoadFailures( closureResult.LoadFailures );
+                    sourceCode,
+                    assemblyPath,
+                    closureResult.AllAssemblies.Select( a => MetadataReference.CreateFromFile( resolver.GetAssemblyFilePath( a ) ) ),
+                    loader ).WithLoadFailures( closureResult.LoadFailures );
 #if NET461
             }
 #endif
@@ -82,7 +82,7 @@ namespace CK.CodeGen
             }
             catch( Exception ex )
             {
-                return new GenerateResult(ex, null, null, null, null, null);
+                return new GenerateResult( ex, null, null, null, null, null );
             }
 #if NET461
             }
@@ -98,10 +98,10 @@ namespace CK.CodeGen
         /// <param name="loader">Optional loader function to load the final emitted assembly.</param>
         /// <returns>Encapsulation of the result.</returns>
         public GenerateResult Generate(
-            string sourceCode, 
-            string assemblyPath, 
-            IEnumerable<MetadataReference> allReferences, 
-            Func<string, Assembly> loader = null)
+            string sourceCode,
+            string assemblyPath,
+            IEnumerable<MetadataReference> allReferences,
+            Func<string, Assembly> loader = null )
         {
 #if NET461
             using( CK.Core.WeakAssemblyNameResolver.TempInstall())
@@ -113,7 +113,7 @@ namespace CK.CodeGen
                 var trees = new List<SyntaxTree>();
                 trees.Add( tree );
                 StringBuilder bSource = new StringBuilder();
-                foreach( var m in Modules)
+                foreach( var m in Modules )
                 {
                     m.AppendSource( bSource );
                     trees.Add( SyntaxFactory.ParseSyntaxTree( bSource.ToString() ) );
@@ -121,30 +121,30 @@ namespace CK.CodeGen
                     // temporary: allow process of the main (first module) only.
                     trees[0] = m.PostProcess( trees[0] );
                 }
-                var option = _options.WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default);
+                var option = _options.WithAssemblyIdentityComparer( DesktopAssemblyIdentityComparer.Default );
                 CSharpCompilation compilation = CSharpCompilation.Create(
-                    Path.GetFileNameWithoutExtension(assemblyPath),
+                    Path.GetFileNameWithoutExtension( assemblyPath ),
                     trees,
                     allReferences,
-                    option);
+                    option );
 
-                var r = compilation.Emit(assemblyPath);
-                if (r.Success && loader != null)
+                var r = compilation.Emit( assemblyPath );
+                if( r.Success && loader != null )
                 {
                     try
                     {
-                        return new GenerateResult(null, trees, r, loader(assemblyPath), null, null);
+                        return new GenerateResult( null, trees, r, loader( assemblyPath ), null, null );
                     }
-                    catch (Exception ex)
+                    catch( Exception ex )
                     {
-                        return new GenerateResult(null, trees, r, null, ex, null);
+                        return new GenerateResult( null, trees, r, null, ex, null );
                     }
                 }
-                return new GenerateResult(null, trees, r, null, null, null);
+                return new GenerateResult( null, trees, r, null, null, null );
             }
-            catch (Exception ex)
+            catch( Exception ex )
             {
-                return new GenerateResult(ex, null, null, null, null, null);
+                return new GenerateResult( ex, null, null, null, null, null );
             }
 #if NET461
             }
