@@ -3,7 +3,7 @@
   <Import Project="..\..\Common\Shared.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net461</TargetFrameworks>
+    <TargetFramework>net461</TargetFramework>
     <RuntimeIdentifier>win</RuntimeIdentifier>
   </PropertyGroup>
 
