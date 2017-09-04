@@ -120,12 +120,13 @@ namespace CodeCake
                                  new
                                  {
                                      ProjectPath = p.Path.GetDirectory(),
-                                     NetCoreAppDll = p.Path.GetDirectory().CombineWithFilePath( "bin/" + configuration + "/netcoreapp1.1/" + p.Name + ".dll" ),
+                                     NetCoreAppDll = p.Path.GetDirectory().CombineWithFilePath( "bin/" + configuration + "/netcoreapp2.0/" + p.Name + ".dll" ),
                                      Net461Dll = p.Path.GetDirectory().CombineWithFilePath( "bin/" + configuration + "/net461/win/" + p.Name + ".dll" ),
                                  } );
 
                     foreach( var test in testDlls )
                     {
+                        bool foundTest = false;
                         if( System.IO.File.Exists( test.Net461Dll.FullPath ) )
                         {
                             Cake.Information( "Testing: {0}", test.Net461Dll );
@@ -133,12 +134,15 @@ namespace CodeCake
                             {
                                 Framework = "v4.5"
                             } );
+                            foundTest = true;
                         }
                         if( System.IO.File.Exists( test.NetCoreAppDll.FullPath ) )
                         {
                             Cake.Information( "Testing: {0}", test.NetCoreAppDll );
                             Cake.DotNetCoreExecute( test.NetCoreAppDll );
+                            foundTest = true;
                         }
+                        if( !foundTest ) Cake.Error( $"Tests not found for {test.ProjectPath}" );
                     }
                 } );
 
