@@ -85,19 +85,9 @@ namespace CodeCake
                     Cake.DeleteFiles( "Tests/**/TestResult*.xml" );
                 } );
 
-            Task( "Restore-NuGet-Packages" )
-                .IsDependentOn( "Check-Repository" )
-                .IsDependentOn( "Clean" )
-                .Does( () =>
-                {
-                    // https://docs.microsoft.com/en-us/nuget/schema/msbuild-targets
-                    Cake.DotNetCoreRestore( new DotNetCoreRestoreSettings().AddVersionArguments( gitInfo ) );
-                } );
-
             Task( "Build" )
                 .IsDependentOn( "Check-Repository" )
                 .IsDependentOn( "Clean" )
-                .IsDependentOn( "Restore-NuGet-Packages" )
                 .Does( () =>
                 {
                     using( var tempSln = Cake.CreateTemporarySolutionFile( solutionFileName ) )
