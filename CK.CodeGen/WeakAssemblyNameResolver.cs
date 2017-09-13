@@ -1,4 +1,3 @@
-﻿#if NET461
 using System;
 using System.Reflection;
 using System.Threading;
@@ -60,4 +59,3 @@ namespace CK.Core
         }
     }
 }
-#endif

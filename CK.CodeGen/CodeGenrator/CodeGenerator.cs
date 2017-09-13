@@ -46,20 +46,16 @@ namespace CK.CodeGen
         {
             if( someReferences == null ) throw new ArgumentNullException( nameof( someReferences ) );
             if( resolver == null ) throw new ArgumentNullException( nameof( resolver ) );
-#if NET461
-            using( CK.Core.WeakAssemblyNameResolver.TempInstall())
+            using( CK.Core.WeakAssemblyNameResolver.TempInstall() )
             {
-#endif
-            var fromModules = Modules.SelectMany( m => m.RequiredAssemblies );
-            var closureResult = resolver.GetAssembliesClosure( someReferences.Concat( fromModules ) );
-            return Generate(
-                    sourceCode,
-                    assemblyPath,
-                    closureResult.AllAssemblies.Select( a => MetadataReference.CreateFromFile( resolver.GetAssemblyFilePath( a ) ) ),
-                    loader ).WithLoadFailures( closureResult.LoadFailures );
-#if NET461
+                var fromModules = Modules.SelectMany( m => m.RequiredAssemblies );
+                var closureResult = resolver.GetAssembliesClosure( someReferences.Concat( fromModules ) );
+                return Generate(
+                        sourceCode,
+                        assemblyPath,
+                        closureResult.AllAssemblies.Select( a => MetadataReference.CreateFromFile( resolver.GetAssemblyFilePath( a ) ) ),
+                        loader ).WithLoadFailures( closureResult.LoadFailures );
             }
-#endif
         }
 
         /// <summary>
@@ -72,21 +68,17 @@ namespace CK.CodeGen
         /// <returns>Encapsulation of the result.</returns>
         public GenerateResult Generate( string sourceCode, string assemblyPath, IEnumerable<string> allRefAssemblyPaths, Func<string, Assembly> loader = null )
         {
-#if NET461
-            using( CK.Core.WeakAssemblyNameResolver.TempInstall())
+            using( CK.Core.WeakAssemblyNameResolver.TempInstall() )
             {
-#endif
-            try
-            {
-                return Generate( sourceCode, assemblyPath, allRefAssemblyPaths.Select( p => MetadataReference.CreateFromFile( p ) ), loader );
+                try
+                {
+                    return Generate( sourceCode, assemblyPath, allRefAssemblyPaths.Select( p => MetadataReference.CreateFromFile( p ) ), loader );
+                }
+                catch( Exception ex )
+                {
+                    return new GenerateResult( ex, null, null, null, null, null );
+                }
             }
-            catch( Exception ex )
-            {
-                return new GenerateResult( ex, null, null, null, null, null );
-            }
-#if NET461
-            }
-#endif
         }
 
         /// <summary>
@@ -103,52 +95,48 @@ namespace CK.CodeGen
             IEnumerable<MetadataReference> allReferences,
             Func<string, Assembly> loader = null )
         {
-#if NET461
-            using( CK.Core.WeakAssemblyNameResolver.TempInstall())
+            using( CK.Core.WeakAssemblyNameResolver.TempInstall() )
             {
-#endif
-            try
-            {
-                SyntaxTree tree = SyntaxFactory.ParseSyntaxTree( sourceCode );
-                var trees = new List<SyntaxTree>();
-                trees.Add( tree );
-                StringBuilder bSource = new StringBuilder();
-                foreach( var m in Modules )
+                try
                 {
-                    m.AppendSource( bSource );
-                    trees.Add( SyntaxFactory.ParseSyntaxTree( bSource.ToString() ) );
-                    bSource.Clear();
-                    // temporary: allow process of the main (first module) only.
-                    trees[0] = m.PostProcess( trees[0] );
-                }
-                var option = _options.WithAssemblyIdentityComparer( DesktopAssemblyIdentityComparer.Default );
-                CSharpCompilation compilation = CSharpCompilation.Create(
-                    Path.GetFileNameWithoutExtension( assemblyPath ),
-                    trees,
-                    allReferences,
-                    option );
+                    SyntaxTree tree = SyntaxFactory.ParseSyntaxTree( sourceCode );
+                    var trees = new List<SyntaxTree>();
+                    trees.Add( tree );
+                    StringBuilder bSource = new StringBuilder();
+                    foreach( var m in Modules )
+                    {
+                        m.AppendSource( bSource );
+                        trees.Add( SyntaxFactory.ParseSyntaxTree( bSource.ToString() ) );
+                        bSource.Clear();
+                        // temporary: allow process of the main (first module) only.
+                        trees[0] = m.PostProcess( trees[0] );
+                    }
+                    var option = _options.WithAssemblyIdentityComparer( DesktopAssemblyIdentityComparer.Default );
+                    CSharpCompilation compilation = CSharpCompilation.Create(
+                        Path.GetFileNameWithoutExtension( assemblyPath ),
+                        trees,
+                        allReferences,
+                        option );
 
-                var r = compilation.Emit( assemblyPath );
-                if( r.Success && loader != null )
-                {
-                    try
+                    var r = compilation.Emit( assemblyPath );
+                    if( r.Success && loader != null )
                     {
-                        return new GenerateResult( null, trees, r, loader( assemblyPath ), null, null );
+                        try
+                        {
+                            return new GenerateResult( null, trees, r, loader( assemblyPath ), null, null );
+                        }
+                        catch( Exception ex )
+                        {
+                            return new GenerateResult( null, trees, r, null, ex, null );
+                        }
                     }
-                    catch( Exception ex )
-                    {
-                        return new GenerateResult( null, trees, r, null, ex, null );
-                    }
+                    return new GenerateResult( null, trees, r, null, null, null );
                 }
-                return new GenerateResult( null, trees, r, null, null, null );
+                catch( Exception ex )
+                {
+                    return new GenerateResult( ex, null, null, null, null, null );
+                }
             }
-            catch( Exception ex )
-            {
-                return new GenerateResult( ex, null, null, null, null, null );
-            }
-#if NET461
-            }
-#endif
         }
     }
 }
