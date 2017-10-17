@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net461</TargetFrameworks>
+    <TargetFramework>net461</TargetFramework>
   </PropertyGroup>
   
   <Import Project="..\..\Common\Shared.props" />
@@ -12,11 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="4.19.3" />
+    <PackageReference Include="FluentAssertions" Version="4.19.4" />
     <PackageReference Include="NUnit" Version="[2.6.4]" />
-    <Reference Include="System" />
+    <!-- Tests use dynamic. -->
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
   </ItemGroup>
 
   <ItemGroup>

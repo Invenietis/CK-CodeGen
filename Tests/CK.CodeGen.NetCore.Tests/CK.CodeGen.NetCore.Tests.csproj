@@ -3,8 +3,8 @@
   <Import Project="..\..\Common\Shared.props" />
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <OutputType>Exe</OutputType>
     <OriginProjectName>CK.CodeGen.Tests</OriginProjectName>
   </PropertyGroup>
 
@@ -14,10 +14,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="4.19.3" />
-    <PackageReference Include="NUnitLite" Version="3.7.2" />
-    <PackageReference Include="NUnit" Version="3.7.1" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
+    <PackageReference Include="FluentAssertions" Version="4.19.4" />
+    <PackageReference Include="NUnitLite" Version="3.8.1" />
+    <PackageReference Include="NUnit" Version="3.8.1" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
   </ItemGroup>
 
   <ItemGroup>

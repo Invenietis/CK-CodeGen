@@ -85,26 +85,20 @@ namespace CodeCake
                     Cake.DeleteFiles( "Tests/**/TestResult*.xml" );
                 } );
 
-            Task( "Restore-NuGet-Packages" )
-                .IsDependentOn( "Check-Repository" )
-                .IsDependentOn( "Clean" )
-                .Does( () =>
-                {
-                    // https://docs.microsoft.com/en-us/nuget/schema/msbuild-targets
-                    Cake.DotNetCoreRestore( new DotNetCoreRestoreSettings().AddVersionArguments( gitInfo ) );
-                } );
-
             Task( "Build" )
                 .IsDependentOn( "Check-Repository" )
                 .IsDependentOn( "Clean" )
-                .IsDependentOn( "Restore-NuGet-Packages" )
                 .Does( () =>
                 {
-                    Cake.DotNetCoreBuild( solutionFileName,
-                        new DotNetCoreBuildSettings().AddVersionArguments( gitInfo, s =>
-                        {
-                            s.Configuration = configuration;
-                        } ) );
+                    using( var tempSln = Cake.CreateTemporarySolutionFile( solutionFileName ) )
+                    {
+                        tempSln.ExcludeProjectsFromBuild( "CodeCakeBuilder" );
+                        Cake.DotNetCoreBuild( tempSln.FullPath.FullPath,
+                            new DotNetCoreBuildSettings().AddVersionArguments( gitInfo, s =>
+                            {
+                                s.Configuration = configuration;
+                            } ) );
+                    }
                 } );
 
             Task( "Unit-Testing" )
@@ -116,12 +110,13 @@ namespace CodeCake
                                  new
                                  {
                                      ProjectPath = p.Path.GetDirectory(),
-                                     NetCoreAppDll = p.Path.GetDirectory().CombineWithFilePath( "bin/" + configuration + "/netcoreapp1.1/" + p.Name + ".dll" ),
+                                     NetCoreAppDll = p.Path.GetDirectory().CombineWithFilePath( "bin/" + configuration + "/netcoreapp2.0/" + p.Name + ".dll" ),
                                      Net461Dll = p.Path.GetDirectory().CombineWithFilePath( "bin/" + configuration + "/net461/win/" + p.Name + ".dll" ),
                                  } );
 
                     foreach( var test in testDlls )
                     {
+                        bool foundTest = false;
                         if( System.IO.File.Exists( test.Net461Dll.FullPath ) )
                         {
                             Cake.Information( "Testing: {0}", test.Net461Dll );
@@ -129,12 +124,15 @@ namespace CodeCake
                             {
                                 Framework = "v4.5"
                             } );
+                            foundTest = true;
                         }
                         if( System.IO.File.Exists( test.NetCoreAppDll.FullPath ) )
                         {
                             Cake.Information( "Testing: {0}", test.NetCoreAppDll );
                             Cake.DotNetCoreExecute( test.NetCoreAppDll );
+                            foundTest = true;
                         }
+                        if( !foundTest ) Cake.Error( $"Tests not found for {test.ProjectPath}" );
                     }
                 } );
 
