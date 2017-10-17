@@ -17,7 +17,7 @@ namespace CK.CodeGen.Abstractions.Tests
         public void create_type( string decl, string typeName )
         {
             ICodeScope sut = CreateCodeScope();
-            ITypeScope type = sut.CreateType( h => h.RawAppend( decl ) );
+            ITypeScope type = sut.CreateType( h => h.Append( decl ) );
 
             type.FullName.Should().Be( string.Format( "{0}.{1}", sut.FullName, typeName ) );
             type.Name.Should().Be( typeName );
@@ -31,7 +31,7 @@ namespace CK.CodeGen.Abstractions.Tests
         public void create_type_with_invalid_header( string header )
         {
             ICodeScope codeScope = CreateCodeScope();
-            codeScope.Invoking( sut => sut.CreateType( h => h.RawAppend( header ) ) )
+            codeScope.Invoking( sut => sut.CreateType( h => h.Append( header ) ) )
                      .ShouldThrow<InvalidOperationException>();
         }
 
@@ -39,8 +39,8 @@ namespace CK.CodeGen.Abstractions.Tests
         public void obtain_created_types()
         {
             ICodeScope sut = CreateCodeScope();
-            ITypeScope t1 = sut.CreateType( s => s.RawAppend( "public class C1" ) );
-            ITypeScope t2 = sut.CreateType( s => s.RawAppend( "public class C2" ) );
+            ITypeScope t1 = sut.CreateType( s => s.Append( "public class C1" ) );
+            ITypeScope t2 = sut.CreateType( s => s.Append( "public class C2" ) );
 
             sut.Types.Should().BeEquivalentTo( t1, t2 );
         }
@@ -49,7 +49,7 @@ namespace CK.CodeGen.Abstractions.Tests
         public void find_type()
         {
             ICodeScope sut = CreateCodeScope();
-            ITypeScope t = sut.CreateType( s => s.RawAppend( "public class C" ) );
+            ITypeScope t = sut.CreateType( s => s.Append( "public class C" ) );
 
             sut.FindType( "C" ).Should().BeSameAs( t );
         }
@@ -58,8 +58,8 @@ namespace CK.CodeGen.Abstractions.Tests
         public void create_existing_type_again()
         {
             ICodeScope codeScope = CreateCodeScope();
-            codeScope.CreateType( s => s.RawAppend( "public class C" ) );
-            codeScope.Invoking( sut => sut.CreateType( s => s.RawAppend( "public class C" ) ) ).ShouldThrow<ArgumentException>();
+            codeScope.CreateType( s => s.Append( "public class C" ) );
+            codeScope.Invoking( sut => sut.CreateType( s => s.Append( "public class C" ) ) ).ShouldThrow<ArgumentException>();
         }
 
         protected abstract ICodeScope CreateCodeScope();

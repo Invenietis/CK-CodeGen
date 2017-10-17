@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using CK.Text;
@@ -11,11 +11,11 @@ using CK.CodeGen.Abstractions;
 
 namespace CK.CodeGen
 {
-    public static class CodeGenExtensions
+    public static class CodeWriterExtensions
     {
         static readonly Dictionary<Type, string> _typeAliases;
 
-        static CodeGenExtensions()
+        static CodeWriterExtensions()
         {
             _typeAliases = new Dictionary<Type, string>();
             _typeAliases.Add( typeof( void ), "void" );
@@ -66,7 +66,7 @@ namespace CK.CodeGen
                 else
                 {
                     n = theT.Name;
-                    @this.Append( '.' );
+                    @this.Append( "." );
                 }
                 int idxTick = n.IndexOf( '`' ) + 1;
                 if( idxTick > 0 )
@@ -76,19 +76,25 @@ namespace CK.CodeGen
                     int nbParams = int.Parse( n.Substring( idxTick, endNbParam - idxTick ), NumberStyles.Integer );
                     Debug.Assert( nbParams > 0 );
                     @this.Append( n, 0, idxTick - 1 );
-                    @this.Append( '<' );
+                    @this.Append( "<" );
                     for( int iGen = 0; iGen < nbParams; ++iGen )
                     {
-                        if( iGen > 0 ) @this.Append( ',' );
+                        if( iGen > 0 ) @this.Append( "," );
                         AppendCSharpName( @this, allGenArgs.Dequeue(), typeDeclaration );
                     }
-                    @this.Append( '>' );
+                    @this.Append( ">" );
                 }
                 else @this.Append( n );
             }
             return @this;
         }
 
+        /// <summary>
+        /// Gets the code required to dynamically obtain the type. It is either "null", "typeof(void)"
+        /// or the call to "Type.GetType" with the assembly qualified name of this type.
+        /// </summary>
+        /// <param name="this">This type. Can be null.</param>
+        /// <returns>The code to obtain this Type' type.</returns>
         static public string ToGetTypeSourceString( this Type @this )
         {
             return @this == null
@@ -98,8 +104,19 @@ namespace CK.CodeGen
                         : "typeof(void)");
         }
 
+        /// <summary>
+        /// Obtains the code that represents this string. It is either "null" or
+        /// a verbatim string in which " are correctly doubled.
+        /// </summary>
+        /// <param name="this">This string.</param>
+        /// <returns>The code to represent it.</returns>
         static public string ToSourceString( this string @this ) => @this == null ? "null" : $"@\"{@this.Replace( "\"", "\"\"" )}\"";
 
+        /// <summary>
+        /// Gets either "true" or "false".
+        /// </summary>
+        /// <param name="this">This boolean.</param>
+        /// <returns>Either "true" or "false".</returns>
         static public string ToSourceString( this bool @this ) => @this ? "true" : "false";
 
         static public ICodeWriter AppendSourceString( this ICodeWriter @this, bool b ) => @this.Append( b ? "true" : "false" );
@@ -112,11 +129,11 @@ namespace CK.CodeGen
             bool already = false;
             foreach( var x in e )
             {
-                if( already ) @this.Append( ',' );
+                if( already ) @this.Append( "," );
                 else already = true;
                 AppendSourceString( @this, x );
             }
-            return @this.Append( '}' );
+            return @this.Append( "}" );
         }
 
         static public ICodeWriter AppendSourceString( this ICodeWriter @this, char c )
@@ -124,21 +141,21 @@ namespace CK.CodeGen
             return c == '\\' ? @this.Append( @"'\\'" ) : @this.Append( '\'' ).Append( c ).Append( '\'' );
         }
 
-        static public ICodeWriter AppendSourceString( this ICodeWriter @this, int i ) => @this.Append( i );
+        static public ICodeWriter AppendSourceString( this ICodeWriter @this, int i ) => @this.Append( i.ToString( CultureInfo.InvariantCulture ) );
 
-        static public ICodeWriter AppendSourceString( this ICodeWriter @this, long i ) => @this.Append( "(long)" ).Append( i );
+        static public ICodeWriter AppendSourceString( this ICodeWriter @this, long i ) => @this.Append( "(long)" ).Append( i.ToString( CultureInfo.InvariantCulture ) );
 
-        static public ICodeWriter AppendSourceString( this ICodeWriter @this, ulong i ) => @this.Append( "(ulong)" ).Append( i );
+        static public ICodeWriter AppendSourceString( this ICodeWriter @this, ulong i ) => @this.Append( "(ulong)" ).Append( i.ToString( CultureInfo.InvariantCulture ) );
 
-        static public ICodeWriter AppendSourceString( this ICodeWriter @this, short i ) => @this.Append( "(short)" ).Append( i );
+        static public ICodeWriter AppendSourceString( this ICodeWriter @this, short i ) => @this.Append( "(short)" ).Append( i.ToString( CultureInfo.InvariantCulture ) );
 
-        static public ICodeWriter AppendSourceString( this ICodeWriter @this, ushort i ) => @this.Append( "(ushort)" ).Append( i );
+        static public ICodeWriter AppendSourceString( this ICodeWriter @this, ushort i ) => @this.Append( "(ushort)" ).Append( i.ToString( CultureInfo.InvariantCulture ) );
 
-        static public ICodeWriter AppendSourceString( this ICodeWriter @this, sbyte i ) => @this.Append( "(sbyte)" ).Append( i );
+        static public ICodeWriter AppendSourceString( this ICodeWriter @this, sbyte i ) => @this.Append( "(sbyte)" ).Append( i.ToString( CultureInfo.InvariantCulture ) );
 
-        static public ICodeWriter AppendSourceString( this ICodeWriter @this, byte i ) => @this.Append( "(byte)" ).Append( i );
+        static public ICodeWriter AppendSourceString( this ICodeWriter @this, byte i ) => @this.Append( "(byte)" ).Append( i.ToString( CultureInfo.InvariantCulture ) );
 
-        static public ICodeWriter AppendSourceString( this ICodeWriter @this, uint i ) => @this.Append( "(uint)" ).Append( i );
+        static public ICodeWriter AppendSourceString( this ICodeWriter @this, uint i ) => @this.Append( "(uint)" ).Append( i.ToString( CultureInfo.InvariantCulture ) );
 
         static public ICodeWriter AppendSourceString( this ICodeWriter @this, Guid g ) => @this.Append( "new Guid(\"" ).Append( g.ToString() ).Append( "\")" );
 
@@ -150,17 +167,17 @@ namespace CK.CodeGen
 
         static public ICodeWriter AppendSourceString( this ICodeWriter @this, DateTime d )
         {
-            return @this.Append( "new DateTime(" ).Append( d.Ticks ).Append( ", DateTimeKind." ).Append( d.Kind ).Append( ')' );
+            return @this.Append( "new DateTime(" ).Append( d.Ticks.ToString( CultureInfo.InvariantCulture ) ).Append( ", DateTimeKind." ).Append( d.Kind.ToString() ).Append( ")" );
         }
 
         static public ICodeWriter AppendSourceString( this ICodeWriter @this, TimeSpan ts )
         {
-            return @this.Append( "new TimeSpan(" ).Append( ts.Ticks ).Append( ')' );
+            return @this.Append( "new TimeSpan(" ).Append( ts.Ticks.ToString( CultureInfo.InvariantCulture ) ).Append( ")" );
         }
 
         static public ICodeWriter AppendSourceString( this ICodeWriter @this, DateTimeOffset to )
         {
-            return @this.Append( "new DateTimeOffset(" ).Append( to.Ticks ).Append( ", new TimeSpan(" ).Append( to.Offset.Ticks ).Append( "))" );
+            return @this.Append( "new DateTimeOffset(" ).Append( to.Ticks.ToString( CultureInfo.InvariantCulture ) ).Append( ", new TimeSpan(" ).Append( to.Offset.Ticks.ToString(CultureInfo.InvariantCulture) ).Append( "))" );
         }
 
         static public ICodeWriter AppendSourceString( this ICodeWriter @this, IEnumerable e )
@@ -185,11 +202,11 @@ namespace CK.CodeGen
                 bool existing = false;
                 foreach( var x in e )
                 {
-                    if( existing ) @this.Append( ',' );
+                    if( existing ) @this.Append( "," );
                     else existing = true;
                     AppendSourceString( @this, x );
                 }
-                return @this.Append( '}' );
+                return @this.Append( "}" );
             }
             return @this.Append( "Array.Empty<" ).AppendCSharpName( type, false ).Append( ">()" );
         }
@@ -226,7 +243,7 @@ namespace CK.CodeGen
                 string s = o as string;
                 if( s != null ) return @this.Append( s.ToSourceString() );
                 Type t = o as Type;
-                if( t != null ) return @this.Append( "typeof(" ).AppendCSharpName( t, false ).Append( ')' );
+                if( t != null ) return @this.Append( "typeof(" ).AppendCSharpName( t, false ).Append( ")" );
                 IEnumerable e = o as IEnumerable;
                 if( e != null ) return AppendSourceString( @this, e );
             }
@@ -242,7 +259,7 @@ namespace CK.CodeGen
 
         public static ITypeScope SetBase( this ITypeScope @this, Type baseType )
         {
-            @this.Append(':').AppendCSharpName( baseType, true );
+            @this.Append(":").AppendCSharpName( baseType, true );
             return @this;
         }
 
@@ -250,19 +267,13 @@ namespace CK.CodeGen
 
         public static T Append<T>( this T @this, char c ) where T : ICodeWriter
         {
-            @this.RawAppend( c.ToString() );
-            return @this;
-        }
-
-        public static T Append<T>( this T @this, object o ) where T : ICodeWriter
-        {
-            @this.RawAppend( o.ToString() );
+            @this.Append( c.ToString() );
             return @this;
         }
 
         public static ICodeWriter Append( this ICodeWriter @this, string s, int startIndex, int count )
         {
-            @this.RawAppend( s.Substring( startIndex, count ) );
+            @this.Append( s.Substring( startIndex, count ) );
             return @this;
         }
 
@@ -281,7 +292,7 @@ namespace CK.CodeGen
             frontModifiers.Add( "override" );
             foreach( string frontModifier in frontModifiers ) @this.AppendWithWhitespace( frontModifier );
             @this.AppendCSharpName( baseMethod.ReturnType );
-            @this.RawAppend( name );
+            @this.Append( name );
 
             @this.AddParameters( baseMethod );
 
@@ -310,19 +321,19 @@ namespace CK.CodeGen
             else if( p.ParameterType.IsByRef ) @this.AppendWithWhitespace( "ref" );
             Type parameterType = p.ParameterType.IsByRef ? p.ParameterType.GetElementType() : p.ParameterType;
             @this.AppendCSharpName( parameterType, true );
-            @this.RawAppend( p.Name );
+            @this.Append( p.Name );
         }
 
         public static ICodeWriter AppendLine( this ICodeWriter @this )
         {
-            @this.RawAppend( Environment.NewLine );
+            @this.Append( Environment.NewLine );
             return @this;
         }
 
         public static ICodeWriter AppendLine( this ICodeWriter @this, object arg )
         {
             @this.Append( arg );
-            @this.RawAppend( Environment.NewLine );
+            @this.Append( Environment.NewLine );
             return @this;
         }
 

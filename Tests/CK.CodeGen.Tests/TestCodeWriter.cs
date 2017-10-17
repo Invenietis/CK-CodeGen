@@ -8,7 +8,7 @@ namespace CK.CodeGen.Tests
     {
         readonly List<string> _code = new List<string>();
 
-        public ICodeWriter RawAppend( string code )
+        public ICodeWriter Append( string code )
         {
             _code.Add( code );
             return this;

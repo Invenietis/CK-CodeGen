@@ -1,109 +1,149 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using CK.CodeGen.Abstractions;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace CK.CodeGen
 {
     sealed class NamespaceScopeImpl : CodeScopeImpl, INamespaceScope
     {
-        readonly Dictionary<string, NamespaceScopeImpl> _namespaces;
-        readonly HashSet<string> _usings;
-        readonly HashSet<VersionedReference> _packageReferences;
-        readonly HashSet<Assembly> _assemblies;
+        readonly static Regex _nsName = new Regex( @"^\s*(?<1>\w+)(\s*\.\s*(?<1>\w+))*\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture );
+        readonly Dictionary<string,KeyValuePair<string,string>> _usings;
+        readonly List<NamespaceScopeImpl> _subNamespaces;
 
-        internal NamespaceScopeImpl( INamespaceScope parent, string ns )
-            : base( parent )
+        internal NamespaceScopeImpl( CodeWorkspace ws, INamespaceScope parent, string name )
+            : base( ws, parent )
         {
-            if( ns == null ) ns = string.Empty;
-            _namespaces = new Dictionary<string, NamespaceScopeImpl>();
-            _usings = new HashSet<string>();
-            _packageReferences = new HashSet<VersionedReference>();
-            _assemblies = new HashSet<Assembly>();
-            LocalName = ns;
-            string[] parts = ns.Split( '.' );
-            Name = parts[parts.Length - 1];
+            Debug.Assert( (parent == null) == (name == "") );
+            Debug.Assert( parent == null || parent is NamespaceScopeImpl );
+            _usings = new Dictionary<string, KeyValuePair<string, string>>();
+            _subNamespaces = new List<NamespaceScopeImpl>();
+            if( parent != null ) SetName( name );
         }
 
-        public override string Name { get; }
+        INamespaceScope INamespaceScope.Parent => Parent;
 
-        protected override string LocalName { get; }
+        internal new NamespaceScopeImpl Parent => (NamespaceScopeImpl)base.Parent;
 
-        INamespaceScope INamespaceScope.Parent => (INamespaceScope)Parent;
-
-        public override ICodeScope EnsureUsing( string ns )
+        public INamespaceScope EnsureUsing( string ns )
         {
-            _usings.Add( ns );
+            if( !String.IsNullOrWhiteSpace( ns ) )
+            {
+                int assignIdx = ns.IndexOf( '=' );
+                if( assignIdx != 0 )
+                {
+                    if( assignIdx > 0 )
+                    {
+                        var def = ns.Substring( assignIdx + 1 );
+                        ns = CheckAndNormalizeOneName( ns.Substring( 0, assignIdx ) );
+                        return DoEnsureUsing( ns, def );
+                    }
+                    return DoEnsureUsing( CheckAndNormalizeNamespace( ns ), null );
+                }
+            }
+            throw new ArgumentException( $"'{ns}' is not a valid namespace.", nameof( ns ) );
+        }
+
+        public INamespaceScope EnsureUsingAlias( string alias, string definition )
+        {
+            if( String.IsNullOrWhiteSpace( definition ) ) throw new ArgumentException( $"'{definition}' is not a valid alias definition.", nameof( definition ) );
+            return DoEnsureUsing( CheckAndNormalizeOneName( alias ), definition );
+        }
+
+        INamespaceScope DoEnsureUsing( string alias, string definition )
+        {
+            Debug.Assert(
+                    (definition == null && CheckAndNormalizeOneName( alias ) == alias)
+                    || (definition != null && CheckAndNormalizeNamespace( alias ) == alias)
+                );
+            var keyDef = definition;
+            if( keyDef != null )
+            {
+                // We must normalize the trailing ;.
+                definition = definition.Trim();
+                if( definition.Length == 0 || definition == ";" ) throw new ArgumentException( $"'{definition}' is not a valid alias definition.", nameof( definition ) );
+                if( definition[definition.Length - 1] != ',' ) definition += ';';
+
+                keyDef = Regex.Replace( definition, "\\s+", String.Empty, RegexOptions.CultureInvariant );
+            }
+            if( _usings.TryGetValue( alias, out var defs ) )
+            {
+                if( defs.Key == keyDef ) return this;
+                string existing = defs.Value != null ? " = " + defs.Value : ";";
+                string newOne = definition != null ? " = " + definition : ";";
+                throw new ArgumentException( $"using {alias}{newOne} is already defined in this scope as: {alias}{existing}." );
+            }
+            var scope = this;
+            while( (scope = scope.Parent) != null )
+            {
+                if( scope._usings.TryGetValue( alias, out defs ) && defs.Key == keyDef ) return this;
+            }
+            _usings.Add( alias, new KeyValuePair<string, string>( keyDef, definition ) );
             return this;
+        }
+
+        static public string[] CheckAndGetNamespaceParts( string ns )
+        {
+            if( ns == null ) throw new ArgumentNullException( ns );
+            var m = _nsName.Match( ns );
+            if( !m.Success ) throw new ArgumentException( $"Invalid namespace: {ns}" );
+            var captures = m.Groups[1].Captures;
+            var result = new string[captures.Count];
+            for( int i = 0; i < result.Length; ++i ) result[i] = captures[i].Value;
+            return result;
+        }
+
+        static public string CheckAndNormalizeNamespace( string ns )
+        {
+            return String.Join( ".", CheckAndGetNamespaceParts( ns ) );
+        }
+
+        static public string CheckAndNormalizeOneName( string ns )
+        {
+            var n = CheckAndGetNamespaceParts( ns );
+            if( n.Length != 1 ) throw new ArgumentException( $"Only one identifier is expected: {ns}." );
+            return n[0];
         }
 
         public INamespaceScope FindOrCreateNamespace( string ns )
         {
-            NamespaceScopeImpl result;
-            if( !_namespaces.TryGetValue( ns, out result ) )
-            {
-                _namespaces[ns] = result = new NamespaceScopeImpl( this, ns );
-            }
-            return result;
+            string[] names = CheckAndGetNamespaceParts( ns );
+            return DoFindOrCreateNamespace( names, 0 );
         }
 
-        public IReadOnlyCollection<INamespaceScope> Namespaces => _namespaces.Values;
-
-        public override ICodeScope EnsurePackageReference( string name, string version )
+        INamespaceScope DoFindOrCreateNamespace( string[] names, int idx )
         {
-            _packageReferences.Add( new VersionedReference( name, version ) );
-            return this;
+            var exist = _subNamespaces.FirstOrDefault( x => x.Name == names[idx] );
+            if( exist == null )
+            {
+                exist = new NamespaceScopeImpl( Workspace, this, names[idx] );
+                _subNamespaces.Add( exist );
+            }
+            return names.Length == ++idx ? exist : exist.DoFindOrCreateNamespace( names, idx );
         }
 
-        public override ICodeScope EnsureAssemblyReference( Assembly assembly )
+        public IReadOnlyCollection<INamespaceScope> Namespaces => _subNamespaces;
+
+        public override StringBuilder Build( StringBuilder b, bool closeScope )
         {
-            _assemblies.Add( assembly );
-            return this;
+            if( Workspace.Global != this ) b.Append( "namespace " ).AppendLine( Name ).AppendLine( "{" );
+            foreach( var e in _usings )
+            {
+                b.Append( "using " ).Append( e.Key );
+                if( e.Value.Value == null ) b.Append( ';' );
+                else b.Append( " = " ).Append( e.Value.Value );
+                b.AppendLine();
+            }
+            BuildCode( b );
+            BuildTypes( b );
+            if( Workspace.Global != this && closeScope ) b.AppendLine( "}" );
+            return b;
         }
-
-        public override string Build( bool close )
-        {
-            StringBuilder sb = new StringBuilder();
-            if( !IsGlobal ) sb.AppendFormat( "namespace {0} {{", Name ).AppendLine();
-
-            foreach( string u in _usings ) sb.AppendFormat( "using {0};", u ).AppendLine();
-            foreach( TypeScopeImpl type in Types )
-            {
-                type.Build( sb, true );
-                sb.AppendLine();
-            }
-
-            if( !IsGlobal && close ) sb.AppendLine( "}" );
-            return sb.ToString();
-        }
-
-        public bool IsGlobal => Parent == null;
-
-        class VersionedReference
-        {
-            internal VersionedReference( string name, string version )
-            {
-                Name = name;
-                Version = version;
-            }
-
-            internal readonly string Name;
-
-            internal readonly string Version;
-
-            public override bool Equals( object obj )
-            {
-                VersionedReference other = obj as VersionedReference;
-                return other != null
-                    && other.Name == Name
-                    && other.Version == Version;
-            }
-
-            public override int GetHashCode()
-            {
-                return Name.GetHashCode() << 7 ^ Version.GetHashCode();
-            }
-        }
+        
+        
     }
 }
