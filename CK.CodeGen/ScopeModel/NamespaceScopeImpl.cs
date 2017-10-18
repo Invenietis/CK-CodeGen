@@ -15,7 +15,7 @@ namespace CK.CodeGen
         readonly Dictionary<string,KeyValuePair<string,string>> _usings;
         readonly List<NamespaceScopeImpl> _subNamespaces;
 
-        internal NamespaceScopeImpl( CodeWorkspace ws, INamespaceScope parent, string name )
+        internal NamespaceScopeImpl( CodeWorkspaceImpl ws, INamespaceScope parent, string name )
             : base( ws, parent )
         {
             Debug.Assert( (parent == null) == (name == "") );
@@ -68,7 +68,7 @@ namespace CK.CodeGen
                 if( definition.Length == 0 || definition == ";" ) throw new ArgumentException( $"'{definition}' is not a valid alias definition.", nameof( definition ) );
                 if( definition[definition.Length - 1] != ',' ) definition += ';';
 
-                keyDef = Regex.Replace( definition, "\\s+", String.Empty, RegexOptions.CultureInvariant );
+                keyDef = RemoveWhiteSpaces( definition );
             }
             if( _usings.TryGetValue( alias, out var defs ) )
             {

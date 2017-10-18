@@ -6,10 +6,9 @@ namespace CK.CodeGen.Abstractions
     public interface ICodeWriter
     {
         /// <summary>
-        /// Appends a raw string to this writer.
+        /// Adds a raw string to this writer.
         /// </summary>
-        /// <param name="code">Raw C# code.</param>
-        /// <returns>This writer.</returns>
-        ICodeWriter Append( string code );
+        /// <param name="code">Raw C# code. Can be null or empty.</param>
+        void DoAdd( string code );
     }
 }

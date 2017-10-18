@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +7,7 @@ using System.Text;
 using FluentAssertions;
 using System.Threading.Tasks;
 using CK.Text;
+using CK.CodeGen.Abstractions.Tests;
 
 namespace CK.CodeGen.Tests
 {
@@ -47,11 +48,14 @@ namespace CK.CodeGen.Tests
                 typeof(Dictionary<string,int>),
             };
 
-            TestCodeWriter w = new TestCodeWriter();
-            w.AppendLine( "using System; using NUnit.Framework; using CK.Text; using System.Collections.Generic; using System.Linq;" );
-            w.AppendLine( "public class Tester {" );
-            w.AppendLine( "public string Run() {" );
-            w.AppendLine( @"
+            var w = new SimpleCodeWriter();
+            w.RawAppend( "using System; using NUnit.Framework; using CK.Text; using System.Collections.Generic; using System.Linq;" )
+                .AppendLine()
+                .RawAppend( "public class Tester {" )
+                .AppendLine()
+                .RawAppend( "public string Run() {" )
+                .AppendLine()
+                .RawAppend( @"
             DateTime tD = new DateTime(2017,5,27,13,47,23,DateTimeKind.Local);
             DateTimeOffset tO = new DateTimeOffset( tD.Ticks, TimeSpan.FromMinutes(42) );
             TimeSpan tT = TimeSpan.FromMilliseconds( 987897689 );
@@ -81,36 +85,37 @@ namespace CK.CodeGen.Tests
                 tT,
                 System.Type.Missing,
                 typeof(Dictionary<string,int>),
-            }; " );
-            w.Append( $"var rewrite = " ).AppendSourceString( array ).AppendLine( ";" );
-            w.AppendLine( @"
-            var diff = array
-                        .Select( ( o, idx ) => new { O = o, T = rewrite[idx], I = idx } )
-                        .Where( x => (x.O == null && x.T != null) || (x.O != null && !x.O.Equals( x.T )) )
-                        .Select( x => $""{x.I} - {x.O} != {x.T}"" )
-                        .Concatenate();
-            return diff;" );
-            w.AppendLine( "}}" );
+            }; " )
+                .AppendLine()
+                .RawAppend( $"var rewrite = " )
+                .Append( array ).RawAppend( ";" )
+                .AppendLine()
+                .RawAppend( @"
+                   var diff = array
+                               .Select( ( o, idx ) => new { O = o, T = rewrite[idx], I = idx } )
+                               .Where( x => (x.O == null && x.T != null) || (x.O != null && !x.O.Equals( x.T )) )
+                               .Select( x => $""{x.I} - {x.O} != {x.T}"" )
+                               .Concatenate();
+                   return diff;" )
+                .AppendLine()
+                .RawAppend( "}}" )
+                .AppendLine();
 
             Assembly[] references = new[]
             {
-                typeof(object).GetTypeInfo().Assembly,
-                typeof(CK.Text.StringMatcher).GetTypeInfo().Assembly,
-                typeof(System.Diagnostics.Debug).GetTypeInfo().Assembly,
-                typeof(System.Linq.Enumerable).GetTypeInfo().Assembly,
-                typeof(TestFixtureAttribute).GetTypeInfo().Assembly
+                typeof(object).Assembly,
+                typeof(CK.Text.StringMatcher).Assembly,
+                typeof(System.Diagnostics.Debug).Assembly,
+                typeof(System.Linq.Enumerable).Assembly,
+                typeof(TestFixtureAttribute).Assembly
             };
-            Assembly a = TestHelper.CreateAssembly( w.ToString(), references );
+
+            var code = w.ToString();
+            Assembly a = TestHelper.CreateAssembly( code, references );
             object tester = Activator.CreateInstance( a.ExportedTypes.Single( t => t.Name == "Tester" ) );
             string diff = (string)tester.GetType().GetMethod( "Run" ).Invoke( tester, Array.Empty<object>() );
             diff.Should().BeEmpty();
         }
 
-
-        [Test]
-        public void writing_an_unknown_typed_object_is_an_error()
-        {
-            Assert.Throws<ArgumentException>( () => new TestCodeWriter().AppendSourceString( this ) );
-        }
     }
 }

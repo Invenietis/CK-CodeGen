@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
@@ -9,10 +9,10 @@ namespace CK.CodeGen.Tests
     {
         static public readonly DefaultAssemblyResolver Default = new DefaultAssemblyResolver();
 
-        public string GetAssemblyFilePath(Assembly a) => new Uri(a.CodeBase).LocalPath;
+        public string GetAssemblyFilePath( Assembly a ) => new Uri( a.CodeBase ).LocalPath;
 
-        public IEnumerable<AssemblyName> GetReferencedAssemblies(Assembly a) => a.GetReferencedAssemblies();
+        public IEnumerable<AssemblyName> GetReferencedAssemblies( Assembly a ) => a.GetReferencedAssemblies();
 
-        public Assembly LoadByName(AssemblyName n) => Assembly.Load(n);
+        public Assembly LoadByName( AssemblyName n ) => Assembly.Load( n );
     }
 }

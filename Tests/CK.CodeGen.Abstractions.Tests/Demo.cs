@@ -1,10 +1,10 @@
-﻿namespace CK.CodeGen.Tests
-{
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Diagnostics;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
 
+namespace CK.CodeGen.Abstractions.Tests
+{
     public enum Enum1
     {
         None = 0,
@@ -17,7 +17,7 @@
         private readonly int _x;
         private readonly int _y;
 
-        public Struct1(int x, int y)
+        public Struct1( int x, int y )
         {
             _x = x;
             _y = y;
@@ -27,9 +27,9 @@
 
         public int Y => _y;
 
-        public override bool Equals(object obj)
+        public override bool Equals( object obj )
         {
-            if (!(obj is Struct1)) return false;
+            if( !(obj is Struct1) ) return false;
             Struct1 other = (Struct1)obj;
             return _x == other._x
                 && _y == other._y;
@@ -43,19 +43,19 @@
 
     public interface Interface1
     {
-        Struct1 M1(int arg1, Enum1 arg2);
+        Struct1 M1( int arg1, Enum1 arg2 );
 
-        string M2(string arg);
+        string M2( string arg );
     }
 
     public interface Interface2 : Interface1
     {
-        int M3(string arg);
+        int M3( string arg );
     }
 
     public interface Interface3 : Interface2, IEnumerable<string>
     {
-        Guid M4(); 
+        Guid M4();
     }
 
     public interface Interface4
@@ -72,7 +72,7 @@
     {
         int _f1;
 
-        protected Class1(int arg)
+        protected Class1( int arg )
         {
             _f1 = arg;
         }
@@ -94,33 +94,33 @@
         static T1 _f3 = null;
         T2 _f4 = new T2();
 
-        public Class2(int arg1, string arg2 = null)
-            : base(arg1)
+        public Class2( int arg1, string arg2 = null )
+            : base( arg1 )
         {
             _f2 = arg2;
         }
 
         public IEnumerator<string> GetEnumerator()
         {
-            for (int i = 0; i < P1; i++) yield return i.ToString();
+            for( int i = 0; i < P1; i++ ) yield return i.ToString();
         }
 
-        public Struct1 M1(int arg1, Enum1 arg2)
+        public Struct1 M1( int arg1, Enum1 arg2 )
         {
             int x;
-            if (arg2 == Enum1.None) x = 0;
-            else if (arg2 == Enum1.Case1) x = 1;
+            if( arg2 == Enum1.None ) x = 0;
+            else if( arg2 == Enum1.Case1 ) x = 1;
             else x = 2;
-            return new Struct1(x, arg1);
+            return new Struct1( x, arg1 );
         }
 
-        public string M2(string s = null)
+        public string M2( string s = null )
         {
-            if (s == null) s = string.Empty;
-            return string.Concat(s, s);
+            if( s == null ) s = string.Empty;
+            return string.Concat( s, s );
         }
 
-        public int M3(string s) => int.Parse(s);
+        public int M3( string s ) => int.Parse( s );
 
         public Guid M4()
         {
@@ -141,7 +141,7 @@
 
         public int P2 { get; } = 25;
 
-        public static int M6<T>(T arg) where T : Interface5
+        public static int M6<T>( T arg ) where T : Interface5
         {
             return arg.P1;
         }
@@ -154,7 +154,7 @@
             }
             set
             {
-                if(value != null && value != _f3) _f3 = value;
+                if( value != null && value != _f3 ) _f3 = value;
             }
         }
 
@@ -163,7 +163,7 @@
             get => _f4.P1 > 15 ? _f4 : new T2();
             internal set
             {
-                Debug.Assert(value.P1 != 0);
+                Debug.Assert( value.P1 != 0 );
                 _f4 = value;
             }
         }

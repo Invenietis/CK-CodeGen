@@ -11,11 +11,13 @@ namespace CK.CodeGen
 {
     abstract class CodeScopeImpl : ICodeScope
     {
-        readonly CodeWorkspace _workspace;
+        readonly static Regex _variantOutIn = new Regex( @"(out|in)\s", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture );
+
+        readonly CodeWorkspaceImpl _workspace;
         readonly Dictionary<string, TypeScopeImpl> _types;
         readonly List<string> _code;
 
-        protected CodeScopeImpl( CodeWorkspace workspace, ICodeScope parent )
+        protected CodeScopeImpl( CodeWorkspaceImpl workspace, ICodeScope parent )
         {
             _workspace = workspace;
             _types = new Dictionary<string, TypeScopeImpl>();
@@ -32,7 +34,7 @@ namespace CK.CodeGen
 
         ICodeWorkspace ICodeScope.Workspace => _workspace;
 
-        internal CodeWorkspace Workspace => _workspace;
+        internal CodeWorkspaceImpl Workspace => _workspace;
 
         public string Name { get; private set; }
 
@@ -42,9 +44,12 @@ namespace CK.CodeGen
         {
             Debug.Assert( Name == null );
             Debug.Assert( Parent != null );
-            Debug.Assert( !String.IsNullOrWhiteSpace(name) );
+            Debug.Assert( !String.IsNullOrWhiteSpace( name ) );
+            Debug.Assert( NamespaceScopeImpl.RemoveWhiteSpaces( name ) == name );
             Name = name;
-            FullName = Parent.FullName + '.' + Name;
+            FullName = Parent.Parent != null
+                        ? Parent.FullName + '.' + name
+                        : name;
         }
 
         public ITypeScope CreateType( Action<ITypeScope> header )
@@ -59,17 +64,17 @@ namespace CK.CodeGen
 
         public ITypeScope FindType( string name )
         {
+            if( String.IsNullOrEmpty( name ) ) throw new ArgumentException( "Invalid null or empty type name.", nameof( name ) );
             TypeScopeImpl result;
-            _types.TryGetValue( name, out result );
+            _types.TryGetValue( RemoveWhiteSpaces( RemoveVariantInOut( name ) ), out result );
             return result;
         }
 
         public IReadOnlyCollection<ITypeScope> Types => _types.Values;
 
-        public ICodeWriter Append( string code )
+        public void DoAdd( string code )
         {
             if( !String.IsNullOrEmpty( code ) ) _code.Add( code );
-            return this;
         }
 
         public abstract StringBuilder Build( StringBuilder b, bool closeScope );
@@ -87,5 +92,15 @@ namespace CK.CodeGen
         }
 
         protected List<string> Code => _code;
+
+        public static string RemoveVariantInOut( string s )
+        {
+            return _variantOutIn.Replace( s, String.Empty );
+        }
+
+        public static string RemoveWhiteSpaces( string s )
+        {
+            return Regex.Replace( s, "\\s+", String.Empty, RegexOptions.CultureInvariant );
+        }
     }
 }

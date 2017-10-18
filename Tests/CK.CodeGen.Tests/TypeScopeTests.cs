@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using CK.CodeGen.Abstractions;
 using NUnit.Framework;
 
@@ -9,9 +9,9 @@ namespace CK.CodeGen.Tests
     {
         protected override ITypeScope CreateTypeScope()
         {
-            INamespaceScope global = CodeScope.CreateGlobalNamespace();
+            INamespaceScope global = CodeWorkspace.Create().Global;
             INamespaceScope ns = global.FindOrCreateNamespace( "A.Simple.Namespace" );
-            return ns.CreateType( s => s.Append( "public class ClassName" ) );
+            return ns.CreateType( s => s.RawAppend( "public class ClassName" ) );
         }
     }
 }

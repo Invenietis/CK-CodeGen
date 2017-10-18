@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -23,7 +23,7 @@ namespace CK.CodeGen.Tests
         static TestHelper()
         {
             _monitor = new ActivityMonitor();
-            _monitor.Output.RegisterClient(new ActivityMonitorConsoleClient());
+            _monitor.Output.RegisterClient( new ActivityMonitorConsoleClient() );
         }
 
         public static IActivityMonitor Monitor => _monitor;
@@ -32,42 +32,42 @@ namespace CK.CodeGen.Tests
         {
             get
             {
-                if (_solutionFolder == null) InitalizePaths();
+                if( _solutionFolder == null ) InitalizePaths();
                 return _solutionFolder;
             }
         }
 
         public static string BinFolder => AppContext.BaseDirectory;
 
-        public static string RandomDllPath => Path.Combine(BinFolder, $"Test-{Guid.NewGuid().ToString().Substring(0, 8)}.dll" );
+        public static string RandomDllPath => Path.Combine( BinFolder, $"Test-{Guid.NewGuid().ToString().Substring( 0, 8 )}.dll" );
 
-        public static Assembly CreateAssembly(string sourceCode, IEnumerable<Assembly> references, params ICodeGeneratorModule[] modules )
+        public static Assembly CreateAssembly( string sourceCode, IEnumerable<Assembly> references, params ICodeGeneratorModule[] modules )
         {
             var g = new CodeGenerator();
             g.Modules.AddRange( modules );
             return HandleCreateResult(
                 sourceCode,
-                g.Generate(sourceCode, TestHelper.RandomDllPath,
-                            references, DefaultAssemblyResolver.Default, 
-                            GetAssemblyLoader()));
+                g.Generate( sourceCode, TestHelper.RandomDllPath,
+                            references, DefaultAssemblyResolver.Default,
+                            GetAssemblyLoader() ) );
         }
 
 
-        public static Assembly CreateAssembly(string sourceCode, IEnumerable<string> references)
+        public static Assembly CreateAssembly( string sourceCode, IEnumerable<string> references )
         {
             return HandleCreateResult(
                 sourceCode,
-                new CodeGenerator().Generate(sourceCode, TestHelper.RandomDllPath, references, GetAssemblyLoader()));
+                new CodeGenerator().Generate( sourceCode, TestHelper.RandomDllPath, references, GetAssemblyLoader() ) );
         }
 
-        public static Assembly CreateAssembly(string sourceCode, IEnumerable<MetadataReference> references)
+        public static Assembly CreateAssembly( string sourceCode, IEnumerable<MetadataReference> references )
         {
             return HandleCreateResult(
                 sourceCode,
-                new CodeGenerator().Generate(sourceCode, TestHelper.RandomDllPath, references, GetAssemblyLoader()));
+                new CodeGenerator().Generate( sourceCode, TestHelper.RandomDllPath, references, GetAssemblyLoader() ) );
         }
 
-        static Assembly HandleCreateResult(string sourceCode, GenerateResult result)
+        static Assembly HandleCreateResult( string sourceCode, GenerateResult result )
         {
             result.LogResult( TestHelper.Monitor );
             result.Success.Should().BeTrue();
@@ -87,10 +87,10 @@ namespace CK.CodeGen.Tests
 
         static void InitalizePaths()
         {
-            _solutionFolder = Path.GetDirectoryName(Path.GetDirectoryName(GetTestProjectPath()));
-            Console.WriteLine($"SolutionFolder is: {_solutionFolder}.");
+            _solutionFolder = Path.GetDirectoryName( Path.GetDirectoryName( GetTestProjectPath() ) );
+            Console.WriteLine( $"SolutionFolder is: {_solutionFolder}." );
         }
 
-        static string GetTestProjectPath([CallerFilePath]string path = null) => Path.GetDirectoryName(path);
+        static string GetTestProjectPath( [CallerFilePath]string path = null ) => Path.GetDirectoryName( path );
     }
 }

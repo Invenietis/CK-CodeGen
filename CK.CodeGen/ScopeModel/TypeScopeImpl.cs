@@ -12,12 +12,11 @@ namespace CK.CodeGen
     {
         readonly static string HeaderTypeError = @"Unable to extract kind and type name from: '{0}'.";
         readonly static string[] _typeKind = new[] { "class", "interface", "enum", "struct" };
-        readonly static Regex _nameStopper = new Regex( @"\s*(\bwhere\s|:|{)", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture );
-        readonly static Regex _variantOutIn = new Regex( @"(?<!out|in)\s", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture );
+        readonly static Regex _nameStopper = new Regex( @"\s*(\bwhere\s+\p{L}|:|{)", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture );
 
         string _declaration;
 
-        internal TypeScopeImpl( CodeWorkspace ws, ICodeScope parent )
+        internal TypeScopeImpl( CodeWorkspaceImpl ws, ICodeScope parent )
             : base( ws, parent )
         {
             ICodeScope p = parent;
@@ -43,6 +42,7 @@ namespace CK.CodeGen
         internal void Initialize()
         {
             var b = new StringBuilder();
+            // We store the declaration and clears the code buffer.
             string decl = _declaration = Build( b, false ).ToString();
             Code.Clear();
             string kind;
@@ -54,22 +54,42 @@ namespace CK.CodeGen
                 if( idx < decl.Length )
                 {
                     Match m = _nameStopper.Match( decl, idx );
-                    if( m.Success && m.Index > idx )
+                    if( m.Success )
                     {
+                        if( m.Index > idx )
+                        {
+                            int endStopIdx = m.Index + m.Length;
+                            bool hasOpenBrace = decl[endStopIdx - 1] == '{'
+                                                || decl.IndexOf( '{', endStopIdx ) > 0;
+                            if( !hasOpenBrace ) Code.Add( "{" );
 
-                        int endStopIdx = m.Index + m.Length;
-                        bool hasOpenBrace = decl[endStopIdx - 1] == '{'
-                                            || decl.IndexOf( '{', endStopIdx ) > 0;
-                        if( !hasOpenBrace ) Code.Add( "{" );
-
-                        string rawType = decl.Substring( idx, m.Index - idx );
-                        SetName( ReferenceEquals( kind, "interface" )
-                                    ? _variantOutIn.Replace( rawType, String.Empty )
-                                    : rawType );
+                            SetCleanTypeName( kind, decl.Substring( idx, m.Index - idx ) );
+                            return;
+                        }
+                        // The stopper starts: there is no type name.
+                    }
+                    else
+                    {
+                        // No stopper found: the type name is from idx to the end.
+                        var rawType = decl.Substring( idx ).TrimEnd();
+                        if( rawType.Length > 0 )
+                        {
+                            SetCleanTypeName( kind, rawType );
+                            Code.Add( "{" );
+                            return;
+                        }
                     }
                 }
             }
             throw new InvalidOperationException( string.Format( HeaderTypeError, decl ) );
+        }
+
+        void SetCleanTypeName( string kind, string rawType )
+        {
+            var typeName = ReferenceEquals( kind, "interface" )
+                        ? RemoveVariantInOut( rawType )
+                        : rawType;
+            SetName( RemoveWhiteSpaces( typeName ) );
         }
 
         static int IndexOfKind( string s, out string found )
