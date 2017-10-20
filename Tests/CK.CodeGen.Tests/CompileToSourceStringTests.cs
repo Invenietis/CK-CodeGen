@@ -93,7 +93,7 @@ namespace CK.CodeGen.Tests
                 typeof(Dictionary<string,int>),
             }; " )
                 .NewLine()
-                .Append( "var rewrite = " ).Append( array ).Append( ";" ).NewLine()
+                .Append( "var rewrite = " ).AppendCollection( array ).Append( ";" ).NewLine()
                 .Append( @"
                    var diff = array
                                .Select( ( o, idx ) => new { O = o, T = rewrite[idx], I = idx } )

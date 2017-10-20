@@ -140,32 +140,6 @@ namespace CK.CodeGen
         static public T Append<T>( this T @this, bool b ) where T : ICodeWriter => @this.Append( b ? "true" : "false" );
 
         /// <summary>
-        /// Appends the code of a set of objetcs of a given type <typeparamref name="T"/>.
-        /// The code is either "null", <see cref="Array.Empty{T}()"/> or an actual new array
-        /// with the items appended with <see cref="Append{T}(T, object)"/>: only
-        /// basic types are supported.
-        /// </summary>
-        /// <typeparam name="T">Actual type of the code writer.</typeparam>
-        /// <typeparam name="TItem">The items type.</typeparam>
-        /// <param name="this">This code writer.</param>
-        /// <param name="e">Set of items for which code must be generated. Can be null.</param>
-        /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T Append<T,TItem>( this T @this, IEnumerable<TItem> e ) where T : ICodeWriter
-        {
-            if( e == null ) return @this.Append( "null" );
-            if( !e.Any() ) return @this.Append( "Array.Empty<" ).AppendCSharpName( typeof( TItem ), false ).Append( ">()" );
-            @this.Append( "new " ).AppendCSharpName( typeof( TItem ), false ).Append( "[]{" );
-            bool already = false;
-            foreach( TItem x in e )
-            {
-                if( already ) @this.Append( "," );
-                else already = true;
-                Append( @this, x );
-            }
-            return @this.Append( "}" );
-        }
-
-        /// <summary>
         /// Appends the source representation of a character: "'c'".
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
@@ -362,7 +336,73 @@ namespace CK.CodeGen
         }
 
         /// <summary>
-        /// Appends the code of a set of objects.
+        /// Appends the source representation of the string.
+        /// See <see cref="ExternalTypeExtensions.ToSourceString(string)"/>.
+        /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
+        /// <param name="this">This code writer.</param>
+        /// <param name="s">The string. Can be null.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
+        static public T AppendSourceString<T>( this T @this, string s ) where T : ICodeWriter
+        {
+            return @this.Append( s.ToSourceString() );
+        }
+
+        /// <summary>
+        /// Appends multiple string (raw C# code) at once, separated with a comma by default.
+        /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
+        /// <param name="this">This code writer.</param>
+        /// <param name="strings">The string. Can be null or empty.</param>
+        /// <param name="separator">Separator between the strings.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
+        static public T Append<T>( this T @this, IEnumerable<string> strings, string separator = ", " ) where T : ICodeWriter
+        {
+            if( strings != null )
+            {
+                if( String.IsNullOrEmpty( separator ) ) separator = null;
+                bool already = false;
+                foreach( var s in strings )
+                {
+                    if( already )
+                    {
+                        if( separator != null ) @this.Append( separator );
+                    }
+                    else already = true;
+                    Append( @this, s );
+                }
+            }
+            return @this;
+        }
+
+        /// <summary>
+        /// Appends the code of a collection of objetcs of a given type <typeparamref name="T"/>.
+        /// The code is either "null", <see cref="Array.Empty{T}()"/> or an actual new array
+        /// with the items appended with <see cref="Append{T}(T, object)"/>: only
+        /// basic types are supported.
+        /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
+        /// <typeparam name="TItem">The items type.</typeparam>
+        /// <param name="this">This code writer.</param>
+        /// <param name="e">Set of items for which code must be generated. Can be null.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
+        static public T AppendCollection<T,TItem>( this T @this, IEnumerable<TItem> e ) where T : ICodeWriter
+        {
+            if( e == null ) return @this.Append( "null" );
+            if( !e.Any() ) return @this.Append( "Array.Empty<" ).AppendCSharpName( typeof( TItem ), false ).Append( ">()" );
+            @this.Append( "new " ).AppendCSharpName( typeof( TItem ), false ).Append( "[]{" );
+            bool already = false;
+            foreach( TItem x in e )
+            {
+                if( already ) @this.Append( "," );
+                else already = true;
+                Append( @this, x );
+            }
+            return @this.Append( "}" );
+        }
+
+        /// <summary>
+        /// Appends the code of a collection of objects.
         /// If the actual set is a <see cref="IEnumerable{T}"/>, the actual type is extracted
         /// otherwise the type of the items is considered as being object.
         /// The code is either "null", <see cref="Array.Empty{T}()"/> or an actual new array
@@ -373,7 +413,7 @@ namespace CK.CodeGen
         /// <param name="this">This code writer.</param>
         /// <param name="e">Set of items for which code must be generated. Can be null.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T Append<T>( this T @this, IEnumerable e ) where T : ICodeWriter
+        static public T AppendCollection<T>( this T @this, IEnumerable e ) where T : ICodeWriter
         {
             if( e == null ) return @this.Append( "null" );
             Type type = typeof( object );
@@ -401,19 +441,6 @@ namespace CK.CodeGen
                 return @this.Append( "}" );
             }
             return @this.Append( "Array.Empty<" ).AppendCSharpName( type, false ).Append( ">()" );
-        }
-
-        /// <summary>
-        /// Appends the source representation of the string.
-        /// See <see cref="ExternalTypeExtensions.ToSourceString(string)"/>.
-        /// </summary>
-        /// <typeparam name="T">Actual type of the code writer.</typeparam>
-        /// <param name="this">This code writer.</param>
-        /// <param name="s">The string. Can be null.</param>
-        /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T AppendString<T>( this T @this, string s ) where T : ICodeWriter
-        {
-            return @this.Append( s.ToSourceString() );
         }
 
         /// <summary>
@@ -450,7 +477,7 @@ namespace CK.CodeGen
                 case DateTime x: return Append( @this, x );
                 case TimeSpan x: return Append( @this, x );
                 case DateTimeOffset x: return Append( @this, x );
-                case IEnumerable x: return Append( @this, x );
+                case IEnumerable x: return AppendCollection( @this, x );
             }
             throw new ArgumentException( "Unknown type: " + o.GetType().AssemblyQualifiedName );
         }
