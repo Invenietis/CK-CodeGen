@@ -94,9 +94,11 @@ namespace CK.CodeGen
         }
 
         /// <summary>
-        /// Generates an assembly from a source code and a list of Roselyn <see cref="MetadataReference"/> required reference assemblies.
+        /// Generates an assembly from a <see cref="SyntaxTree"/> list and a
+        /// list of <see cref="MetadataReference"/> required reference assemblies.
         /// </summary>
-        /// <param name="sourceCode">The source code. Must be valid C# code.</param>
+        /// <param name="compileOptions">Compilation options.</param>
+        /// <param name="trees">The syntax trees.</param>
         /// <param name="assemblyPath">The full final assembly path (including the .dll extension).</param>
         /// <param name="allReferences">List of assemblies' references.</param>
         /// <param name="loader">Optional loader function to load the final emitted assembly.</param>

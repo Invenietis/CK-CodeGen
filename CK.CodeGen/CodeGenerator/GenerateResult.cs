@@ -1,4 +1,4 @@
-﻿using CK.Core;
+using CK.Core;
 using CK.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Emit;
@@ -69,8 +69,14 @@ namespace CK.CodeGen
             LoadFailures = f;
         }
 
-        public void LogResult( IActivityMonitor monitor )
+        /// <summary>
+        /// Dumps the result of the compilation into a monitor.
+        /// </summary>
+        /// <param name="monitor">The monitor to use.</param>
+        /// <param name="dumpSourceLevel">Optionnaly dumps the source as another <see cref="CK.Core.LogLevel"/>.</param>
+        public void LogResult( IActivityMonitor monitor, LogLevel dumpSourceLevel = LogLevel.Debug )
         {
+            if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
             using( monitor.OpenInfo( "Code Generation information." ) )
             {
                 if( LoadFailures.Count > 0 )
@@ -83,7 +89,7 @@ namespace CK.CodeGen
                 if( Success )
                 {
                     monitor.Info( "Source code generation and compilation succeeded." );
-                    DumpDebugSource( monitor );
+                    DumpSources( monitor, dumpSourceLevel );
                 }
                 else
                 {
@@ -97,7 +103,7 @@ namespace CK.CodeGen
                         {
                             if( !EmitResult.Success )
                             {
-                                using( monitor.OpenInfo( $"{EmitResult.Diagnostics.Count()} Compilation diagnostics & Source code." ) )
+                                using( monitor.OpenInfo( $"{EmitResult.Diagnostics.Count()} Compilation diagnostics." ) )
                                 {
                                     foreach( var diag in EmitResult.Diagnostics )
                                     {
@@ -106,7 +112,7 @@ namespace CK.CodeGen
                                 }
                             }
                         }
-                        DumpDebugSource( monitor );
+                        DumpSources( monitor, dumpSourceLevel );
                     }
                 }
                 if( AssemblyLoadError != null )
@@ -120,17 +126,17 @@ namespace CK.CodeGen
             }
         }
 
-        void DumpDebugSource( IActivityMonitor monitor )
+        void DumpSources( IActivityMonitor monitor, LogLevel level )
         {
             if( Sources != null && Sources.Count > 0 )
             {
-                using( monitor.OpenDebug( $"Processed {Sources.Count} source tree(s):" ) )
+                using( monitor.OpenGroup( level, $"Processed {Sources.Count} source tree(s):" ) )
                 {
                     for( int i = 0; i < Sources.Count; ++i )
                     {
-                        using( monitor.OpenDebug( $"Source n°{i}" ) )
+                        using( monitor.OpenGroup( level, $"Source n°{i}" ) )
                         {
-                            monitor.Debug( Sources[i].ToString() );
+                            monitor.Log( level, Sources[i].ToString() );
                         }
                     }
                 }

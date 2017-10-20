@@ -44,6 +44,7 @@ namespace CK.CodeGen
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
+        /// <param name="code">Raw code to append.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, string code ) where T : ICodeWriter
         {
@@ -70,9 +71,9 @@ namespace CK.CodeGen
         /// <summary>
         /// Appends the C# type name. Handles generic definition (either opened or closed).
         /// The <paramref name="typeDeclaration"/> parameters applies to open generics:
-        /// When sets to true, typeof( Dictionary<,>.KeyCollection )
+        /// When sets to true, typeof( Dictionary&lt;,&gt;.KeyCollection )
         /// will append "System.Collections.Generic.Dictionary&lt;TKey,TValue&gt;.KeyCollection".
-        /// When false (the default), it will append "System.Collections.Generic.Dictionary<,>.KeyCollection".
+        /// When false (the default), it will append "System.Collections.Generic.Dictionary&lt;,&gt;.KeyCollection".
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
@@ -141,7 +142,7 @@ namespace CK.CodeGen
         /// <summary>
         /// Appends the code of a set of objetcs of a given type <typeparamref name="T"/>.
         /// The code is either "null", <see cref="Array.Empty{T}()"/> or an actual new array
-        /// with the items appended with <see cref="Append(ICodeWriter, object)"/>: only
+        /// with the items appended with <see cref="Append{T}(T, object)"/>: only
         /// basic types are supported.
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
@@ -170,7 +171,7 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="c">The character.</param>
-        /// <param name="this">This code writer to enable fluent syntax.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, char c ) where T : ICodeWriter
         {
             return c == '\\'
@@ -184,7 +185,7 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="i">The integer.</param>
-        /// <param name="this">This code writer to enable fluent syntax.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, int i ) where T : ICodeWriter
         {
             return @this.Append( i.ToString( CultureInfo.InvariantCulture ) );
@@ -195,7 +196,7 @@ namespace CK.CodeGen
         /// </summary>
         /// <param name="this">This code writer.</param>
         /// <param name="i">The long.</param>
-        /// <param name="this">This code writer to enable fluent syntax.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, long i ) where T : ICodeWriter
         {
             return @this.Append( i.ToString( CultureInfo.InvariantCulture ) ).Append( "L" );
@@ -207,7 +208,7 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="i">The unsigned long.</param>
-        /// <param name="this">This code writer to enable fluent syntax.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, ulong i ) where T : ICodeWriter
         {
             return @this.Append( "(ulong)" ).Append( i.ToString( CultureInfo.InvariantCulture ) );
@@ -219,7 +220,7 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="i">The short integer..</param>
-        /// <param name="this">This code writer to enable fluent syntax.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, short i ) where T : ICodeWriter
         {
             return @this.Append( "(short)" ).Append( i.ToString( CultureInfo.InvariantCulture ) );
@@ -231,7 +232,7 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="i">The unsigned short integer..</param>
-        /// <param name="this">This code writer to enable fluent syntax.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, ushort i ) where T : ICodeWriter
         {
             return @this.Append( "(ushort)" ).Append( i.ToString( CultureInfo.InvariantCulture ) );
@@ -243,7 +244,7 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="i">The signed byte.</param>
-        /// <param name="this">This code writer to enable fluent syntax.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, sbyte i ) where T : ICodeWriter
         {
             return @this.Append( "(sbyte)" ).Append( i.ToString( CultureInfo.InvariantCulture ) );
@@ -254,7 +255,7 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="i">The byte.</param>
-        /// <param name="this">This code writer to enable fluent syntax.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, byte i ) where T : ICodeWriter
         {
             return @this.Append( "(byte)" ).Append( i.ToString( CultureInfo.InvariantCulture ) );
@@ -266,7 +267,7 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="i">The unsigned integer.</param>
-        /// <param name="this">This code writer to enable fluent syntax.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, uint i ) where T : ICodeWriter
         {
             return @this.Append( "(uint)" ).Append( i.ToString( CultureInfo.InvariantCulture ) );
@@ -278,7 +279,7 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="g">The Guid.</param>
-        /// <param name="this">This code writer to enable fluent syntax.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, Guid g ) where T : ICodeWriter
         {
             return @this.Append( "new Guid(\"" ).Append( g.ToString() ).Append( "\")" );
@@ -290,7 +291,7 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="d">The double.</param>
-        /// <param name="this">This code writer to enable fluent syntax.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, double d ) where T : ICodeWriter
         {
             return @this.Append( d.ToString( CultureInfo.InvariantCulture ) );
@@ -302,7 +303,7 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="f">The float.</param>
-        /// <param name="this">This code writer to enable fluent syntax.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, float f ) where T : ICodeWriter
         {
             return @this.Append( f.ToString( CultureInfo.InvariantCulture ) ).Append( "f" );
@@ -314,7 +315,7 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="d">The decimal.</param>
-        /// <param name="this">This code writer to enable fluent syntax.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, decimal d ) where T : ICodeWriter
         {
             return @this.Append( d.ToString( CultureInfo.InvariantCulture ) ).Append( "m" );
@@ -326,7 +327,7 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="d">The datetime.</param>
-        /// <param name="this">This code writer to enable fluent syntax.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, DateTime d ) where T : ICodeWriter
         {
             return @this.Append( "new DateTime(" ).Append( d.Ticks ).Append( ", DateTimeKind." ).Append( d.Kind.ToString() ).Append( ")" );
@@ -337,8 +338,8 @@ namespace CK.CodeGen
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
-        /// <param name="d">The time span.</param>
-        /// <param name="this">This code writer to enable fluent syntax.</param>
+        /// <param name="ts">The time span.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, TimeSpan ts ) where T : ICodeWriter
         {
             return @this.Append( "new TimeSpan(" ).Append( ts.Ticks.ToString( CultureInfo.InvariantCulture ) ).Append( ")" );
@@ -349,8 +350,8 @@ namespace CK.CodeGen
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
-        /// <param name="d">The date time with offset.</param>
-        /// <param name="this">This code writer to enable fluent syntax.</param>
+        /// <param name="to">The date time with offset.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, DateTimeOffset to ) where T : ICodeWriter
         {
             return @this.Append( "new DateTimeOffset(" )
@@ -365,7 +366,7 @@ namespace CK.CodeGen
         /// If the actual set is a <see cref="IEnumerable{T}"/>, the actual type is extracted
         /// otherwise the type of the items is considered as being object.
         /// The code is either "null", <see cref="Array.Empty{T}()"/> or an actual new array
-        /// with the items appended with <see cref="Append(ICodeWriter, object)"/>: only
+        /// with the items appended with <see cref="Append{T}(T, object)"/>: only
         /// basic types are supported.
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>

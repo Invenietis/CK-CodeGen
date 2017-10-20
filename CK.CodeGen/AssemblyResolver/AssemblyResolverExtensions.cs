@@ -6,7 +6,11 @@ using System.Text;
 
 namespace CK.CodeGen
 {
-    static class AssemblyResolverExtensions
+    /// <summary>
+    /// Extends <see cref="IAssemblyResolver"/> with the recursive discovering of
+    /// referenced assemblies.
+    /// </summary>
+    public static class AssemblyResolverExtensions
     {
         class Resolver
         {
@@ -41,10 +45,14 @@ namespace CK.CodeGen
                 try
                 {
                     a = _resolver.LoadByName( n );
+                    if( a.FullName != n.FullName )
+                    {
+                        _failures.Add( new AssemblyLoadFailure( n, a.GetName() ) );
+                    }
                 }
                 catch
                 {
-                    if( n.Version != null )
+                    if( n.Version != null && String.IsNullOrWhiteSpace( n.CultureName ) )
                     {
                         var uName = new AssemblyName( n.Name );
                         try
@@ -63,11 +71,23 @@ namespace CK.CodeGen
             }
         }
 
+        /// <summary>
+        /// Gets the transitive dependencies of one assembly.
+        /// </summary>
+        /// <param name="this">This assembly resolver.</param>
+        /// <param name="a">The assembly.</param>
+        /// <returns>A result with the closure or errors.</returns>
         public static AssemblyClosureResult GetAssemblyClosure( this IAssemblyResolver @this, Assembly a )
         {
             return new Resolver( @this ).Process( a ).Result;
         }
 
+        /// <summary>
+        /// Gets the transitive dependencies of a set of assemblies.
+        /// </summary>
+        /// <param name="this">This assembly resolver.</param>
+        /// <param name="assemblies">The assemblies.</param>
+        /// <returns>A result with the closure or errors.</returns>
         public static AssemblyClosureResult GetAssembliesClosure( this IAssemblyResolver @this, IEnumerable<Assembly> assemblies )
         {
             var r = new Resolver( @this );

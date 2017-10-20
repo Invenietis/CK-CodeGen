@@ -32,6 +32,7 @@ namespace CK.CodeGen
         /// </summary>
         /// <param name="code">Original code. Can be null or empty.</param>
         /// <param name="modules">Code modules. Can be null or empty.</param>
+        /// <param name="addRuntimeAssembly">True to automatically add the typeof(object)'s assembly.</param>
         /// <returns>A generator input.</returns>
         internal static GeneratorInput Create( ICodeWorkspace code, IEnumerable<ICodeGeneratorModule> modules, bool addRuntimeAssembly )
         {

@@ -14,6 +14,7 @@ namespace CK.CodeGen.Abstractions
         /// Its name is automatically extracted from the header that may contain the
         /// opening curly brace '{' or not (in such case it is automatically appended).
         /// </summary>
+        /// <param name="this">This code scope.</param>
         /// <param name="header">The header of the type. Must not be null.</param>
         /// <returns>The new type scope.</returns>
         public static ITypeScope CreateType( this ICodeScope @this, string header )

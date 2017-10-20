@@ -13,6 +13,17 @@ namespace CK.CodeGen.Abstractions
     public static class TypeScopeExtensions
     {
 
+        /// <summary>
+        /// Appends all (or filtered set) constructors from a type (that should be the base type)
+        /// to this type wich simply relay the call to the base class.
+        /// </summary>
+        /// <param name="this">This type scope.</param>
+        /// <param name="baseType">The base type.</param>
+        /// <param name="accessBuilder">
+        /// Optional filter (returning null skips the constructor) and
+        /// access protection builder. The default acces protection is "public ".
+        /// </param>
+        /// <returns>This type scope to enable fluent syntax.</returns>
         public static ITypeScope AppendPassThroughConstructors( this ITypeScope @this, Type baseType, Func<ConstructorInfo, string> accessBuilder = null )
         {
             foreach( var c in baseType.GetConstructors( BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic )

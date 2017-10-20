@@ -11,13 +11,13 @@ namespace CK.CodeGen.Abstractions
     /// It generalizes <see cref="ITypeScope"/> that defines a Type (class, struct, enum, etc.)
     /// and <see cref="INamespaceScope"/> that defines a namespace.
     /// It is itself a <see cref="ICodeWriter"/>: raw code can be appendend to it as needed
-    /// that will appear at the top of the final source code.
+    /// that will appear at the top of the final namespace source code.
     /// </summary>
     public interface ICodeScope : ICodeWriter
     {
         /// <summary>
         /// The parent code scope.
-        /// This is null for a root <see cref="INamespaceScope"/> (<see cref="INamespaceScope.IsGlobal"/> is true).
+        /// This is null for a root <see cref="INamespaceScope"/>.
         /// </summary>
         ICodeScope Parent { get; }
 
@@ -28,13 +28,13 @@ namespace CK.CodeGen.Abstractions
 
         /// <summary>
         /// The nam of this code scope: it is the leaf of the <see cref="FullName"/>.
-        /// It is never null but can be empty for a root <see cref="INamespaceScope"/> (<see cref="INamespaceScope.IsGlobal"/> is true). 
+        /// It is never null but can be empty for a global <see cref="INamespaceScope"/>. 
         /// </summary>
         string Name { get; }
 
         /// <summary>
         /// The full name of this scope starts with the full name of this <see cref="Parent"/> scope.
-        /// It is never null but can be empty for a root <see cref="INamespaceScope"/> (<see cref="INamespaceScope.IsGlobal"/> is true). 
+        /// It is never null but can be empty for a global <see cref="INamespaceScope"/>. 
         /// </summary>
         string FullName { get; }
 

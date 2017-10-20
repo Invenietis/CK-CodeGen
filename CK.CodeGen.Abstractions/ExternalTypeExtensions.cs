@@ -10,6 +10,9 @@ using CK.CodeGen.Abstractions;
 
 namespace CK.CodeGen
 {
+    /// <summary>
+    /// Adds extension methods related to source code generation to basic types.
+    /// </summary>
     public static class ExternalTypeExtensions
     {
         /// <summary>

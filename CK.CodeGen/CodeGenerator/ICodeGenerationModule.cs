@@ -19,7 +19,7 @@ namespace CK.CodeGen
         /// Optionnaly processes the current syntax trees that contain the
         /// initial source code and code added by previous modules.
         /// </summary>
-        /// <param name="t">The syntax trees.</param>
+        /// <param name="trees">The syntax trees.</param>
         /// <returns>The syntax trees unchanged or a rewritten one.</returns>
         IReadOnlyList<SyntaxTree> Rewrite( IReadOnlyList<SyntaxTree> trees );
 
