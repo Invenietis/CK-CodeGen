@@ -32,7 +32,7 @@ namespace CK.CodeGen.Abstractions
         /// a <see cref="ArgumentException"/> is thrown.
         /// </summary>
         /// <param name="alias">The alias name. Can not be null or empty.</param>
-        /// <param name="definition">The definition. Can not be null or empty.</param>
+        /// <param name="definition">The definition. Can not be null or empty nor ends with the ';'.</param>
         /// <returns>This namespace to enable fluent syntax.</returns>
         INamespaceScope EnsureUsingAlias( string alias, string definition );
 

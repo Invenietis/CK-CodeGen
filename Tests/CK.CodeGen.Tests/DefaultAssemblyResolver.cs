@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CK.CodeGen.Tests
 {
-    public class DefaultAssemblyResolver : CK.CodeGen.IAssemblyResolver
+    public class DefaultAssemblyResolver : IAssemblyResolver
     {
         static public readonly DefaultAssemblyResolver Default = new DefaultAssemblyResolver();
 

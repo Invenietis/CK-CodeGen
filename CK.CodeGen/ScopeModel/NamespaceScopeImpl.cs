@@ -25,6 +25,31 @@ namespace CK.CodeGen
             if( parent != null ) SetName( name );
         }
 
+        internal void MergeWith( NamespaceScopeImpl other )
+        {
+            Debug.Assert( other != null );
+            foreach( var u in other._usings )
+            {
+                DoEnsureUsing( u.Key, u.Value.Key, u.Value.Value );
+            }
+            foreach( var oNS in other._subNamespaces )
+            {
+                var my = _subNamespaces.FirstOrDefault( x => x.Name == oNS.Name );
+                if( my == null ) 
+                {
+                    my = new NamespaceScopeImpl( Workspace, this, oNS.Name );
+                    _subNamespaces.Add( my );
+                }
+                my.MergeWith( oNS );
+            }
+
+            foreach( var ns in _subNamespaces )
+            {
+                var o = other._subNamespaces.FirstOrDefault( x => x.Name == ns.Name );
+                if( o != null ) ns.MergeWith( o );
+            }
+        }
+
         INamespaceScope INamespaceScope.Parent => Parent;
 
         internal new NamespaceScopeImpl Parent => (NamespaceScopeImpl)base.Parent;
@@ -45,7 +70,7 @@ namespace CK.CodeGen
                     return DoEnsureUsing( CheckAndNormalizeNamespace( ns ), null );
                 }
             }
-            throw new ArgumentException( $"'{ns}' is not a valid namespace.", nameof( ns ) );
+            throw new ArgumentException( $"'using {ns}' is invalid.", nameof( ns ) );
         }
 
         public INamespaceScope EnsureUsingAlias( string alias, string definition )
@@ -57,8 +82,8 @@ namespace CK.CodeGen
         INamespaceScope DoEnsureUsing( string alias, string definition )
         {
             Debug.Assert(
-                    (definition == null && CheckAndNormalizeOneName( alias ) == alias)
-                    || (definition != null && CheckAndNormalizeNamespace( alias ) == alias)
+                    (definition == null && CheckAndNormalizeNamespace( alias ) == alias)
+                    || (definition != null && CheckAndNormalizeOneName( alias ) == alias)
                 );
             var keyDef = definition;
             if( keyDef != null )
@@ -70,6 +95,12 @@ namespace CK.CodeGen
 
                 keyDef = RemoveWhiteSpaces( definition );
             }
+            return DoEnsureUsing( alias, keyDef, definition );
+        }
+        INamespaceScope DoEnsureUsing( string alias, string keyDef, string definition )
+        {
+            Debug.Assert( alias != null );
+            Debug.Assert( (keyDef == null) == (definition == null) );
             if( _usings.TryGetValue( alias, out var defs ) )
             {
                 if( defs.Key == keyDef ) return this;
@@ -139,6 +170,10 @@ namespace CK.CodeGen
                 b.AppendLine();
             }
             BuildCode( b );
+            foreach( var ns in _subNamespaces )
+            {
+                ns.Build( b, true );
+            }
             BuildTypes( b );
             if( Workspace.Global != this && closeScope ) b.AppendLine( "}" );
             return b;

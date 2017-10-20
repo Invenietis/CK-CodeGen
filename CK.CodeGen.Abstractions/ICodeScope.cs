@@ -39,10 +39,11 @@ namespace CK.CodeGen.Abstractions
         string FullName { get; }
 
         /// <summary>
-        /// Creates a <see cref="ITypeScope"/> inside this one.
-        /// Its name is automatically extracted from the header that must be generated.
+        /// Creates a <see cref="ITypeScope"/> inside this code scope.
+        /// Its name is automatically extracted from the header that may contain the
+        /// opening curly brace '{' or not (in such case it is automatically appended).
         /// </summary>
-        /// <param name="header">Configure the header.</param>
+        /// <param name="header">Configure the header. Must not be null.</param>
         /// <returns>The new type scope.</returns>
         ITypeScope CreateType( Action<ITypeScope> header );
 

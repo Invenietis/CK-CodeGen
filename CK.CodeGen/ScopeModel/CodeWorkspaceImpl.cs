@@ -19,11 +19,22 @@ namespace CK.CodeGen
 
         internal NamespaceScopeImpl Global { get; }
 
-        public ICodeWorkspace EnsureAssemblyReference( Assembly assembly )
+        public IReadOnlyCollection<Assembly> AssemblyReferences => _assemblies;
+
+        public void DoEnsureAssemblyReference( Assembly assembly )
         {
+            if( assembly == null ) throw new ArgumentNullException( nameof( assembly ) );
             _assemblies.Add( assembly );
-            return this;
         }
-        
+
+        public void MergeWith( ICodeWorkspace other )
+        {
+            if( other == null ) throw new ArgumentNullException( nameof( other ) );
+            if( other != this )
+            {
+                foreach( var a in other.AssemblyReferences ) _assemblies.Add( a );
+                Global.MergeWith( (NamespaceScopeImpl)other.Global );
+            }
+        }
     }
 }

@@ -77,12 +77,26 @@ namespace CK.CodeGen
             if( !String.IsNullOrEmpty( code ) ) _code.Add( code );
         }
 
+        internal void MergeWith( CodeScopeImpl other )
+        {
+            Debug.Assert( other != null );
+            _code.AddRange( other._code );
+            foreach( var kv in other._types )
+            {
+                if( !_types.TryGetValue( kv.Key, out var my ) )
+                {
+                    my = new TypeScopeImpl( Workspace, this );
+                    _types.Add( kv.Key, my );
+                }
+                my.MergeWith( kv.Value );
+            }
+        }
+
         public abstract StringBuilder Build( StringBuilder b, bool closeScope );
 
         protected StringBuilder BuildCode( StringBuilder b )
         {
             foreach( var c in _code ) b.Append( c );
-            b.AppendLine();
             return b;
         }
         protected StringBuilder BuildTypes( StringBuilder b )

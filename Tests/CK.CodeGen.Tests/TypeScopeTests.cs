@@ -11,7 +11,7 @@ namespace CK.CodeGen.Tests
         {
             INamespaceScope global = CodeWorkspace.Create().Global;
             INamespaceScope ns = global.FindOrCreateNamespace( "A.Simple.Namespace" );
-            return ns.CreateType( s => s.RawAppend( "public class ClassName" ) );
+            return ns.CreateType( s => s.Append( "public class ClassName" ) );
         }
     }
 }

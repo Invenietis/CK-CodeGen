@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
@@ -11,7 +11,7 @@ namespace CK.CodeGen
 
         public readonly AssemblyName SuccessfulWeakFallback;
 
-        public AssemblyLoadFailure(AssemblyName n, AssemblyName nWeak)
+        public AssemblyLoadFailure( AssemblyName n, AssemblyName nWeak )
         {
             Name = n;
             SuccessfulWeakFallback = nWeak;

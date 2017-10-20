@@ -13,7 +13,15 @@ namespace CK.CodeGen
         /// <summary>
         /// Creates a root workspace.
         /// </summary>
-        /// <returns>A new empty worspace.</returns>
-        public static ICodeWorkspace Create() => new CodeWorkspaceImpl();
+        /// <param name="initialSource">Optional initial <see cref="ICodeWorkspace.Global"/> source code.</param>
+        /// <param name="assembly">Optional initial <see cref="ICodeWorkspace.AssemblyReferences"/>.</param>
+        /// <returns>A new worspace.</returns>
+        public static ICodeWorkspace Create( string initialSource = null, params Assembly[] assembly )
+        {
+            var w = new CodeWorkspaceImpl();
+            if( !String.IsNullOrWhiteSpace( initialSource) ) w.Global.Append( initialSource );
+            foreach( var a in assembly ) w.DoEnsureAssemblyReference( a );
+            return w;
+        }
     }
 }

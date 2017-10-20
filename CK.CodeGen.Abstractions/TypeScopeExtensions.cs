@@ -12,9 +12,44 @@ namespace CK.CodeGen.Abstractions
     /// </summary>
     public static class TypeScopeExtensions
     {
+
+        public static ITypeScope AppendPassThroughConstructors( this ITypeScope @this, Type baseType, Func<ConstructorInfo, string> accessBuilder = null )
+        {
+            foreach( var c in baseType.GetConstructors( BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic )
+                                      .Where( c => c.IsPublic || c.IsFamily || c.IsFamilyOrAssembly ) )
+            {
+                string access = "public ";
+                if( accessBuilder != null && (access = accessBuilder( c )) == null ) continue;
+                if( access.Length > 0 )
+                {
+                    @this.Append( access );
+                    if( !Char.IsWhiteSpace( access, access.Length - 1 ) ) @this.Space();
+                }
+                var parameters = c.GetParameters();
+                @this.Append( RemoveGenericParameters( @this.Name ) )
+                     .AppendParameters( parameters );
+
+                if( parameters.Length > 0 )
+                {
+                    @this.Append( " : base( " );
+                    bool isFirst = true;
+                    foreach( var p in parameters )
+                    {
+                        @this.Append( p.Name );
+                        if( isFirst ) isFirst = false;
+                        else @this.Append( ", " );
+                    }
+                    @this.Append( " )" );
+                }
+                @this.Append( "{}" ).NewLine();
+            }
+            return @this;
+        }
+
+
         /// <summary>
         /// Appends the method signature with an "override " modifier, adapting the
-        /// original <paramref name="method"/> acces protection.
+        /// original <paramref name="method"/> access protection.
         /// The method must be virtual (not static nor sealed) and not purely internal.
         /// This does not open any body for the method nor adds a ; terminator.
         /// </summary>
@@ -29,7 +64,8 @@ namespace CK.CodeGen.Abstractions
 
         /// <summary>
         /// Appends the method signature with an "override sealed " modifier, adapting the
-        /// original <paramref name="method"/> acces protection.
+        /// original <paramref name="method"/> access protection.
+        /// The method must be virtual (not static nor sealed) and not purely internal.
         /// This does not open any body for the method nor adds a ; terminator.
         /// </summary>
         /// <param name="this">This type scope.</param>
@@ -47,11 +83,11 @@ namespace CK.CodeGen.Abstractions
         /// </summary>
         /// <param name="this">This type scope.</param>
         /// <param name="method">The method description.</param>
-        /// <param name="protection">Access protection option.</param>
+        /// <param name="access">Access protection option.</param>
         /// <returns>This type scope to enable fluent syntax.</returns>
-        public static ITypeScope AppendSignature( this ITypeScope @this, MethodInfo method, AccessProtectionOption protection = AccessProtectionOption.All )
+        public static ITypeScope AppendSignature( this ITypeScope @this, MethodInfo method, AccessProtectionOption access = AccessProtectionOption.All )
         {
-            return DoAppendSignature( @this, protection, null, method );
+            return DoAppendSignature( @this, access, null, method );
         }
 
         static ITypeScope DoAppendSignature(
@@ -69,11 +105,11 @@ namespace CK.CodeGen.Abstractions
                 name += '>';
             }
             if( protection != AccessProtectionOption.None ) @this.AppendAccessProtection( method, protection );
-            @this.RawAppend( frontModifier )
+            @this.Append( frontModifier )
                  .AppendCSharpName( method.ReturnType )
-                 .AppendWhiteSpace()
-                 .RawAppend( name )
-                 .AddParameters( method );
+                 .Space()
+                 .Append( name )
+                 .AppendParameters( method.GetParameters() );
             return @this;
         }
 
@@ -85,55 +121,56 @@ namespace CK.CodeGen.Abstractions
             {
                 throw new ArgumentException( $"Method {method} must not be internal.", nameof( method ) );
             }
-            if( method.IsPublic ) w.RawAppend( "public " );
-            else if( method.IsFamily ) w.RawAppend( "protected " );
+            if( method.IsPublic ) w.Append( "public " );
+            else if( method.IsFamily ) w.Append( "protected " );
             else if( method.IsAssembly )
             {
                 if( p == AccessProtectionOption.All )
                 {
-                    w.RawAppend( "internal " );
+                    w.Append( "internal " );
                 }
             }
             else if( method.IsFamilyAndAssembly )
             {
                 if( p == AccessProtectionOption.All )
                 {
-                    w.RawAppend( "private protected " ); 
+                    w.Append( "private protected " ); 
                 }
-                else w.RawAppend( "protected " );
+                else w.Append( "protected " );
             }
             else if( method.IsFamilyOrAssembly )
             {
                 if( p == AccessProtectionOption.All )
                 {
-                    w.RawAppend( "internal protected " );
+                    w.Append( "internal protected " );
                 }
-                else w.RawAppend( "protected " );
+                else w.Append( "protected " );
             }
             return w;
         }
 
-        static ITypeScope AddParameters( this ITypeScope @this, MethodInfo baseMethod )
+        static ITypeScope AppendParameters( this ITypeScope @this, IReadOnlyList<ParameterInfo> parameters )
         {
-            @this.RawAppend( "(" );
+            if( parameters.Count == 0 ) return @this.Append( "()" );
+            @this.Append( "( " );
             bool isFirstParameter = true;
-            foreach( var p in baseMethod.GetParameters() )
+            foreach( var p in parameters )
             {
-                @this.AppendWhiteSpace().AddParameter( p );
                 if( isFirstParameter ) isFirstParameter = false;
-                else @this.RawAppend( "," );
+                else @this.Append( ", " );
+                @this.AddParameter( p );
             }
-            return @this.RawAppend( " )" );
+            return @this.Append( " )" );
         }
 
         static ITypeScope AddParameter( this ITypeScope @this, ParameterInfo p )
         {
-            if( p.IsOut ) @this.RawAppend( "out " );
-            else if( p.ParameterType.IsByRef ) @this.RawAppend( "ref " );
+            if( p.IsOut ) @this.Append( "out " );
+            else if( p.ParameterType.IsByRef ) @this.Append( "ref " );
             Type parameterType = p.ParameterType.IsByRef ? p.ParameterType.GetElementType() : p.ParameterType;
             return @this.AppendCSharpName( parameterType, true )
-                        .AppendWhiteSpace()
-                        .RawAppend( p.Name );
+                        .Space()
+                        .Append( p.Name );
         }
 
         static void CheckIsOverridable( MethodInfo method )
@@ -142,6 +179,13 @@ namespace CK.CodeGen.Abstractions
             if( !method.IsVirtual || method.IsStatic || method.IsFinal )
                 throw new ArgumentException( $"Method {method} is not overridable.", nameof( method ) );
         }
+
+        static string RemoveGenericParameters( string typeName )
+        {
+            int idx = typeName.IndexOf( '<' );
+            return idx < 0 ? typeName : typeName.Substring( idx );
+        }
+
 
     }
 }

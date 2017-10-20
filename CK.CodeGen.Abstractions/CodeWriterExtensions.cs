@@ -45,7 +45,7 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T RawAppend<T>( this T @this, string code ) where T : ICodeWriter
+        static public T Append<T>( this T @this, string code ) where T : ICodeWriter
         {
             @this.DoAdd( code );
             return @this;
@@ -57,7 +57,7 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T AppendWhiteSpace<T>( this T @this ) where T : ICodeWriter => @this.RawAppend( " " );
+        static public T Space<T>( this T @this ) where T : ICodeWriter => @this.Append( " " );
 
         /// <summary>
         /// Appends a <see cref="Environment.NewLine"/>.
@@ -65,7 +65,7 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T AppendLine<T>( this T @this ) where T : ICodeWriter => @this.RawAppend( Environment.NewLine );
+        static public T NewLine<T>( this T @this ) where T : ICodeWriter => @this.Append( Environment.NewLine );
 
         /// <summary>
         /// Appends the C# type name. Handles generic definition (either opened or closed).
@@ -81,14 +81,14 @@ namespace CK.CodeGen
         /// <returns>This code writer to enable fluent syntax.</returns>
         public static T AppendCSharpName<T>( this T @this, Type t, bool typeDeclaration = true ) where T : ICodeWriter
         {
-            if( t == null ) return @this.RawAppend( "null" );
-            if( t.IsGenericParameter ) return typeDeclaration ? @this.RawAppend( t.Name ) : @this;
+            if( t == null ) return @this.Append( "null" );
+            if( t.IsGenericParameter ) return typeDeclaration ? @this.Append( t.Name ) : @this;
             string alias;
             if( _typeAliases.TryGetValue( t, out alias ) )
             {
-                return @this.RawAppend( alias );
+                return @this.Append( alias );
             }
-            if( t == typeof( void ) ) return @this.RawAppend( "void" );
+            if( t == typeof( void ) ) return @this.Append( "void" );
             var pathTypes = new Stack<Type>();
             pathTypes.Push( t );
             Type decl = t.DeclaringType;
@@ -97,20 +97,16 @@ namespace CK.CodeGen
                 pathTypes.Push( decl );
                 decl = decl.DeclaringType;
             }
-            //var tInfo = t.GetType();
             var allGenArgs = new Queue<Type>( t.GetGenericArguments() );
-            //var allGenArgs = new Queue<Type>( tInfo.GenericTypeArguments );
-            //foreach( var p in tInfo.GetGenericArguments() ) allGenArgs.Enqueue( p );
             for( int iType = 0; pathTypes.Count > 0; iType++ )
             {
                 Type theT = pathTypes.Pop();
-                //TypeInfo theTInfo = theT.GetTypeInfo();
                 string n;
                 if( iType == 0 ) n = theT.FullName;
                 else
                 {
                     n = theT.Name;
-                    @this.RawAppend( "." );
+                    @this.Append( "." );
                 }
                 int idxTick = n.IndexOf( '`' ) + 1;
                 if( idxTick > 0 )
@@ -119,16 +115,16 @@ namespace CK.CodeGen
                     while( endNbParam < n.Length && Char.IsDigit( n, endNbParam ) ) endNbParam++;
                     int nbParams = int.Parse( n.Substring( idxTick, endNbParam - idxTick ), NumberStyles.Integer );
                     Debug.Assert( nbParams > 0 );
-                    @this.RawAppend( n.Substring( 0, idxTick - 1 ) );
-                    @this.RawAppend( "<" );
+                    @this.Append( n.Substring( 0, idxTick - 1 ) );
+                    @this.Append( "<" );
                     for( int iGen = 0; iGen < nbParams; ++iGen )
                     {
-                        if( iGen > 0 ) @this.RawAppend( "," );
+                        if( iGen > 0 ) @this.Append( "," );
                         AppendCSharpName( @this, allGenArgs.Dequeue(), typeDeclaration );
                     }
-                    @this.RawAppend( ">" );
+                    @this.Append( ">" );
                 }
-                else @this.RawAppend( n );
+                else @this.Append( n );
             }
             return @this;
         }
@@ -140,7 +136,7 @@ namespace CK.CodeGen
         /// <param name="this">This code writer.</param>
         /// <param name="b">The boolean value.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T Append<T>( this T @this, bool b ) where T : ICodeWriter => @this.RawAppend( b ? "true" : "false" );
+        static public T Append<T>( this T @this, bool b ) where T : ICodeWriter => @this.Append( b ? "true" : "false" );
 
         /// <summary>
         /// Appends the code of a set of objetcs of a given type <typeparamref name="T"/>.
@@ -155,41 +151,43 @@ namespace CK.CodeGen
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T,TItem>( this T @this, IEnumerable<TItem> e ) where T : ICodeWriter
         {
-            if( e == null ) return @this.RawAppend( "null" );
-            if( !e.Any() ) return @this.RawAppend( "Array.Empty<" ).AppendCSharpName( typeof( TItem ), false ).RawAppend( ">()" );
-            @this.RawAppend( "new " ).AppendCSharpName( typeof( TItem ), false ).RawAppend( "[]{" );
+            if( e == null ) return @this.Append( "null" );
+            if( !e.Any() ) return @this.Append( "Array.Empty<" ).AppendCSharpName( typeof( TItem ), false ).Append( ">()" );
+            @this.Append( "new " ).AppendCSharpName( typeof( TItem ), false ).Append( "[]{" );
             bool already = false;
             foreach( TItem x in e )
             {
-                if( already ) @this.RawAppend( "," );
+                if( already ) @this.Append( "," );
                 else already = true;
                 Append( @this, x );
             }
-            return @this.RawAppend( "}" );
+            return @this.Append( "}" );
         }
 
         /// <summary>
         /// Appends the source representation of a character: "'c'".
         /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="c">The character.</param>
         /// <param name="this">This code writer to enable fluent syntax.</param>
         static public T Append<T>( this T @this, char c ) where T : ICodeWriter
         {
             return c == '\\'
-                    ? @this.RawAppend( @"'\\'" )
-                    : @this.RawAppend( "'" ).RawAppend( c.ToString() ).RawAppend( "'" );
+                    ? @this.Append( @"'\\'" )
+                    : @this.Append( "'" ).Append( c.ToString() ).Append( "'" );
         }
 
         /// <summary>
         /// Appends the source representation of an integer value.
         /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="i">The integer.</param>
         /// <param name="this">This code writer to enable fluent syntax.</param>
         static public T Append<T>( this T @this, int i ) where T : ICodeWriter
         {
-            return @this.RawAppend( i.ToString( CultureInfo.InvariantCulture ) );
+            return @this.Append( i.ToString( CultureInfo.InvariantCulture ) );
         }
 
         /// <summary>
@@ -200,153 +198,166 @@ namespace CK.CodeGen
         /// <param name="this">This code writer to enable fluent syntax.</param>
         static public T Append<T>( this T @this, long i ) where T : ICodeWriter
         {
-            return @this.RawAppend( i.ToString( CultureInfo.InvariantCulture ) ).RawAppend( "L" );
+            return @this.Append( i.ToString( CultureInfo.InvariantCulture ) ).Append( "L" );
         }
 
         /// <summary>
         /// Appends the source representation of a <see cref="UInt64"/> value (0 is appended as "(ulong)0").
         /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="i">The unsigned long.</param>
         /// <param name="this">This code writer to enable fluent syntax.</param>
         static public T Append<T>( this T @this, ulong i ) where T : ICodeWriter
         {
-            return @this.RawAppend( "(ulong)" ).RawAppend( i.ToString( CultureInfo.InvariantCulture ) );
+            return @this.Append( "(ulong)" ).Append( i.ToString( CultureInfo.InvariantCulture ) );
         }
 
         /// <summary>
         /// Appends the source representation of a <see cref="Int16"/> value (0 is appended as "(short)0").
         /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="i">The short integer..</param>
         /// <param name="this">This code writer to enable fluent syntax.</param>
         static public T Append<T>( this T @this, short i ) where T : ICodeWriter
         {
-            return @this.RawAppend( "(short)" ).RawAppend( i.ToString( CultureInfo.InvariantCulture ) );
+            return @this.Append( "(short)" ).Append( i.ToString( CultureInfo.InvariantCulture ) );
         }
 
         /// <summary>
         /// Appends the source representation of a <see cref="UInt16"/> value (0 is appended as "(ushort)0").
         /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="i">The unsigned short integer..</param>
         /// <param name="this">This code writer to enable fluent syntax.</param>
         static public T Append<T>( this T @this, ushort i ) where T : ICodeWriter
         {
-            return @this.RawAppend( "(ushort)" ).RawAppend( i.ToString( CultureInfo.InvariantCulture ) );
+            return @this.Append( "(ushort)" ).Append( i.ToString( CultureInfo.InvariantCulture ) );
         }
 
         /// <summary>
         /// Appends the source representation of a <see cref="SByte"/> value (0 is appended as "(sbyte)0").
         /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="i">The signed byte.</param>
         /// <param name="this">This code writer to enable fluent syntax.</param>
         static public T Append<T>( this T @this, sbyte i ) where T : ICodeWriter
         {
-            return @this.RawAppend( "(sbyte)" ).RawAppend( i.ToString( CultureInfo.InvariantCulture ) );
+            return @this.Append( "(sbyte)" ).Append( i.ToString( CultureInfo.InvariantCulture ) );
         }
         /// <summary>
         /// Appends the source representation of a <see cref="Byte"/> value (0 is appended as "(byte)0").
         /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="i">The byte.</param>
         /// <param name="this">This code writer to enable fluent syntax.</param>
         static public T Append<T>( this T @this, byte i ) where T : ICodeWriter
         {
-            return @this.RawAppend( "(byte)" ).RawAppend( i.ToString( CultureInfo.InvariantCulture ) );
+            return @this.Append( "(byte)" ).Append( i.ToString( CultureInfo.InvariantCulture ) );
         }
 
         /// <summary>
         /// Appends the source representation of a <see cref="UInt32"/> value (0 is appended as "(uint)0").
         /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="i">The unsigned integer.</param>
         /// <param name="this">This code writer to enable fluent syntax.</param>
         static public T Append<T>( this T @this, uint i ) where T : ICodeWriter
         {
-            return @this.RawAppend( "(uint)" ).RawAppend( i.ToString( CultureInfo.InvariantCulture ) );
+            return @this.Append( "(uint)" ).Append( i.ToString( CultureInfo.InvariantCulture ) );
         }
 
         /// <summary>
         /// Appends the source representation of a <see cref="Guid"/> value: "new Guid(...)".
         /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="g">The Guid.</param>
         /// <param name="this">This code writer to enable fluent syntax.</param>
         static public T Append<T>( this T @this, Guid g ) where T : ICodeWriter
         {
-            return @this.RawAppend( "new Guid(\"" ).RawAppend( g.ToString() ).RawAppend( "\")" );
+            return @this.Append( "new Guid(\"" ).Append( g.ToString() ).Append( "\")" );
         }
 
         /// <summary>
         /// Appends the source representation of a <see cref="Double"/> value.
         /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="d">The double.</param>
         /// <param name="this">This code writer to enable fluent syntax.</param>
         static public T Append<T>( this T @this, double d ) where T : ICodeWriter
         {
-            return @this.RawAppend( d.ToString( CultureInfo.InvariantCulture ) );
+            return @this.Append( d.ToString( CultureInfo.InvariantCulture ) );
         }
 
         /// <summary>
         /// Appends the source representation of a <see cref="Single"/> value.
         /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="f">The float.</param>
         /// <param name="this">This code writer to enable fluent syntax.</param>
         static public T Append<T>( this T @this, float f ) where T : ICodeWriter
         {
-            return @this.RawAppend( f.ToString( CultureInfo.InvariantCulture ) ).RawAppend( "f" );
+            return @this.Append( f.ToString( CultureInfo.InvariantCulture ) ).Append( "f" );
         }
 
         /// <summary>
         /// Appends the source representation of a <see cref="Decimal"/> value (0 is appended as "0m").
         /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="d">The decimal.</param>
         /// <param name="this">This code writer to enable fluent syntax.</param>
         static public T Append<T>( this T @this, decimal d ) where T : ICodeWriter
         {
-            return @this.RawAppend( d.ToString( CultureInfo.InvariantCulture ) ).RawAppend( "m" );
+            return @this.Append( d.ToString( CultureInfo.InvariantCulture ) ).Append( "m" );
         }
 
         /// <summary>
         /// Appends the source representation of a <see cref="DateTime"/> value: "new DateTime( ... )".
         /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="d">The datetime.</param>
         /// <param name="this">This code writer to enable fluent syntax.</param>
         static public T Append<T>( this T @this, DateTime d ) where T : ICodeWriter
         {
-            return @this.RawAppend( "new DateTime(" ).Append( d.Ticks ).RawAppend( ", DateTimeKind." ).RawAppend( d.Kind.ToString() ).RawAppend( ")" );
+            return @this.Append( "new DateTime(" ).Append( d.Ticks ).Append( ", DateTimeKind." ).Append( d.Kind.ToString() ).Append( ")" );
         }
 
         /// <summary>
         /// Appends the source representation of a <see cref="TimeSpan"/> value: "new TimeSpan( ... )".
         /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="d">The time span.</param>
         /// <param name="this">This code writer to enable fluent syntax.</param>
         static public T Append<T>( this T @this, TimeSpan ts ) where T : ICodeWriter
         {
-            return @this.RawAppend( "new TimeSpan(" ).RawAppend( ts.Ticks.ToString( CultureInfo.InvariantCulture ) ).RawAppend( ")" );
+            return @this.Append( "new TimeSpan(" ).Append( ts.Ticks.ToString( CultureInfo.InvariantCulture ) ).Append( ")" );
         }
 
         /// <summary>
         /// Appends the source representation of a <see cref="DateTimeOffset"/> value: "new DateTimeOffset( ... )".
         /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="d">The date time with offset.</param>
         /// <param name="this">This code writer to enable fluent syntax.</param>
         static public T Append<T>( this T @this, DateTimeOffset to ) where T : ICodeWriter
         {
-            return @this.RawAppend( "new DateTimeOffset(" )
+            return @this.Append( "new DateTimeOffset(" )
                         .Append( to.Ticks )
-                        .RawAppend( ", new TimeSpan(" )
+                        .Append( ", new TimeSpan(" )
                         .Append( to.Offset.Ticks )
-                        .RawAppend( "))" );
+                        .Append( "))" );
         }
 
         /// <summary>
@@ -357,51 +368,51 @@ namespace CK.CodeGen
         /// with the items appended with <see cref="Append(ICodeWriter, object)"/>: only
         /// basic types are supported.
         /// </summary>
-        /// <typeparam name="T">The items type.</typeparam>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="e">Set of items for which code must be generated. Can be null.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, IEnumerable e ) where T : ICodeWriter
         {
-            if( e == null ) return @this.RawAppend( "null" );
+            if( e == null ) return @this.Append( "null" );
             Type type = typeof( object );
             var eI = e.GetType()
                         .GetTypeInfo()
                         .ImplementedInterfaces
-                        .FirstOrDefault( iT => iT.GetTypeInfo().IsGenericType && iT.GetGenericTypeDefinition() == typeof( IEnumerable<> ) );
+                        .FirstOrDefault( iT => iT.IsGenericType && iT.GetGenericTypeDefinition() == typeof( IEnumerable<> ) );
             if( eI != null )
             {
-                var arg = eI.GetTypeInfo().GenericTypeArguments;
-                if( arg.Length == 1 ) type = arg[0];
+                type = eI.GetGenericArguments()[0];
             }
             var i = e.GetEnumerator();
             bool any = i.MoveNext();
             (i as IDisposable)?.Dispose();
             if( any )
             {
-                @this.RawAppend( "new " ).AppendCSharpName( type, false ).RawAppend( "[]{" );
+                @this.Append( "new " ).AppendCSharpName( type, false ).Append( "[]{" );
                 bool existing = false;
                 foreach( var x in e )
                 {
-                    if( existing ) @this.RawAppend( "," );
+                    if( existing ) @this.Append( "," );
                     else existing = true;
                     Append( @this, x );
                 }
-                return @this.RawAppend( "}" );
+                return @this.Append( "}" );
             }
-            return @this.RawAppend( "Array.Empty<" ).AppendCSharpName( type, false ).RawAppend( ">()" );
+            return @this.Append( "Array.Empty<" ).AppendCSharpName( type, false ).Append( ">()" );
         }
 
         /// <summary>
         /// Appends the source representation of the string.
         /// See <see cref="ExternalTypeExtensions.ToSourceString(string)"/>.
         /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="s">The string. Can be null.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T Append<T>( this T @this, string s ) where T : ICodeWriter
+        static public T AppendString<T>( this T @this, string s ) where T : ICodeWriter
         {
-            return @this.RawAppend( s.ToSourceString() );
+            return @this.Append( s.ToSourceString() );
         }
 
         /// <summary>
@@ -409,44 +420,38 @@ namespace CK.CodeGen
         /// Only types that are implemented throug one of the existing Append extension methods
         /// are supported: an <see cref="ArgumentException"/> is thrown for unsuported type.
         /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="o">The object. Can be null.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, object o ) where T : ICodeWriter
         {
-            if( o == null ) return @this.RawAppend( "null" );
-            if( o == System.Type.Missing ) return @this.RawAppend( "System.Type.Missing" );
-            TypeInfo oT = o.GetType().GetTypeInfo();
-            if( oT.IsValueType )
+            if( o == Type.Missing ) return @this.Append( "System.Type.Missing" );
+            switch( o )
             {
-                if( o is bool ) return Append( @this, (bool)o );
-                if( o is int ) return Append( @this, (int)o );
-                if( o is long ) return Append( @this, (long)o );
-                if( o is short ) return Append( @this, (short)o );
-                if( o is ushort ) return Append( @this, (ushort)o );
-                if( o is sbyte ) return Append( @this, (sbyte)o );
-                if( o is uint ) return Append( @this, (uint)o );
-                if( o is ulong ) return Append( @this, (ulong)o );
-                if( o is byte ) return Append( @this, (byte)o );
-                if( o is Guid ) return Append( @this, (Guid)o );
-                if( o is char ) return Append( @this, (char)o );
-                if( o is double ) return Append( @this, (double)o );
-                if( o is float ) return Append( @this, (float)o );
-                if( o is decimal ) return Append( @this, (decimal)o );
-                if( o is DateTime ) return Append( @this, (DateTime)o );
-                if( o is TimeSpan ) return Append( @this, (TimeSpan)o );
-                if( o is DateTimeOffset ) return Append( @this, (DateTimeOffset)o );
+                case null: return @this.Append( "null" );
+                case Type x: return @this.Append( "typeof(" ).AppendCSharpName( x, false ).Append( ")" );
+                case string x: return Append( @this, x.ToSourceString() );
+                case bool x: return Append( @this, x );
+                case int x: return Append( @this, x );
+                case long x: return Append( @this, x );
+                case short x: return Append( @this, x );
+                case ushort x: return Append( @this, x );
+                case sbyte x: return Append( @this, x );
+                case uint x: return Append( @this, x );
+                case ulong x: return Append( @this, x );
+                case byte x: return Append( @this, x );
+                case Guid x: return Append( @this, x );
+                case char x: return Append( @this, x );
+                case double x: return Append( @this, x );
+                case float x: return Append( @this, x );
+                case Decimal x: return Append( @this, x );
+                case DateTime x: return Append( @this, x );
+                case TimeSpan x: return Append( @this, x );
+                case DateTimeOffset x: return Append( @this, x );
+                case IEnumerable x: return Append( @this, x );
             }
-            else
-            {
-                string s = o as string;
-                if( s != null ) return @this.RawAppend( s.ToSourceString() );
-                Type t = o as Type;
-                if( t != null ) return @this.RawAppend( "typeof(" ).AppendCSharpName( t, false ).RawAppend( ")" );
-                IEnumerable e = o as IEnumerable;
-                if( e != null ) return Append( @this, e );
-            }
-            throw new ArgumentException( "Unknown type: " + oT.AssemblyQualifiedName );
+            throw new ArgumentException( "Unknown type: " + o.GetType().AssemblyQualifiedName );
         }
     }
 }

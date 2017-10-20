@@ -15,6 +15,8 @@ namespace CK.CodeGen
         readonly static Regex _nameStopper = new Regex( @"\s*(\bwhere\s+\p{L}|:|{)", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture );
 
         string _declaration;
+        int _codeStartIdx;
+        bool _needOpenBrace;
 
         internal TypeScopeImpl( CodeWorkspaceImpl ws, ICodeScope parent )
             : base( ws, parent )
@@ -33,6 +35,16 @@ namespace CK.CodeGen
         }
 
         public INamespaceScope Namespace { get; }
+
+        internal void MergeWith( TypeScopeImpl other )
+        {
+            Debug.Assert( other != null );
+            if( other._codeStartIdx > 0 )
+            {
+                Code.Add( other._declaration.Substring( _codeStartIdx ) );
+            }
+            base.MergeWith( this );
+        }
 
         /// <summary>
         /// Extracts the name (ignoring front modifiers, type name, generic parameters,
@@ -59,10 +71,10 @@ namespace CK.CodeGen
                         if( m.Index > idx )
                         {
                             int endStopIdx = m.Index + m.Length;
-                            bool hasOpenBrace = decl[endStopIdx - 1] == '{'
-                                                || decl.IndexOf( '{', endStopIdx ) > 0;
-                            if( !hasOpenBrace ) Code.Add( "{" );
-
+                            _codeStartIdx = decl[endStopIdx - 1] == '{'
+                                                ? endStopIdx
+                                                : decl.IndexOf( '{', endStopIdx ) + 1;
+                            _needOpenBrace = _codeStartIdx == 0;
                             SetCleanTypeName( kind, decl.Substring( idx, m.Index - idx ) );
                             return;
                         }
@@ -75,7 +87,7 @@ namespace CK.CodeGen
                         if( rawType.Length > 0 )
                         {
                             SetCleanTypeName( kind, rawType );
-                            Code.Add( "{" );
+                            _needOpenBrace = true;
                             return;
                         }
                     }
@@ -117,6 +129,7 @@ namespace CK.CodeGen
         public override StringBuilder Build( StringBuilder b, bool closeScope )
         {
             b.Append( _declaration );
+            if( _needOpenBrace ) b.Append( Environment.NewLine ).Append( '{' ).Append( Environment.NewLine );
             BuildCode( b );
             BuildTypes( b );
             if( closeScope ) b.AppendLine( "}" );

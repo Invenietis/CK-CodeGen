@@ -7,16 +7,20 @@ using System.Text;
 using FluentAssertions;
 using System.Threading.Tasks;
 using CK.Text;
-using CK.CodeGen.Abstractions.Tests;
+using CK.CodeGen.Abstractions;
 
 namespace CK.CodeGen.Tests
 {
     [TestFixture]
-    public class ToSourceStringTests
+    public class CompileToSourceStringTests
     {
         [Test]
         public void writing_and_reading_simple_values_of_all_known_types()
         {
+            var workspace = CodeWorkspace.Create();
+            var global = workspace.Global;
+
+            #region Injected code
             DateTime tD = new DateTime(2017,5,27,13,47,23,DateTimeKind.Local);
             DateTimeOffset tO = new DateTimeOffset( tD.Ticks, TimeSpan.FromMinutes(42) );
             TimeSpan tT = TimeSpan.FromMilliseconds( 987897689 );
@@ -47,15 +51,17 @@ namespace CK.CodeGen.Tests
                 System.Type.Missing,
                 typeof(Dictionary<string,int>),
             };
+            #endregion
 
-            var w = new SimpleCodeWriter();
-            w.RawAppend( "using System; using NUnit.Framework; using CK.Text; using System.Collections.Generic; using System.Linq;" )
-                .AppendLine()
-                .RawAppend( "public class Tester {" )
-                .AppendLine()
-                .RawAppend( "public string Run() {" )
-                .AppendLine()
-                .RawAppend( @"
+            global.EnsureUsing( "System" )
+                  .EnsureUsing( "NUnit.Framework" )
+                  .EnsureUsing( "CK.Text" )
+                  .EnsureUsing( "System.Collections.Generic" )
+                  .EnsureUsing( "System.Linq" );
+
+            global.CreateType( "public class Tester" )
+                .Append( "public string Run() {" ).NewLine()
+                .Append( @"
             DateTime tD = new DateTime(2017,5,27,13,47,23,DateTimeKind.Local);
             DateTimeOffset tO = new DateTimeOffset( tD.Ticks, TimeSpan.FromMinutes(42) );
             TimeSpan tT = TimeSpan.FromMilliseconds( 987897689 );
@@ -86,32 +92,29 @@ namespace CK.CodeGen.Tests
                 System.Type.Missing,
                 typeof(Dictionary<string,int>),
             }; " )
-                .AppendLine()
-                .RawAppend( $"var rewrite = " )
-                .Append( array ).RawAppend( ";" )
-                .AppendLine()
-                .RawAppend( @"
+                .NewLine()
+                .Append( "var rewrite = " ).Append( array ).Append( ";" ).NewLine()
+                .Append( @"
                    var diff = array
                                .Select( ( o, idx ) => new { O = o, T = rewrite[idx], I = idx } )
                                .Where( x => (x.O == null && x.T != null) || (x.O != null && !x.O.Equals( x.T )) )
                                .Select( x => $""{x.I} - {x.O} != {x.T}"" )
                                .Concatenate();
-                   return diff;" )
-                .AppendLine()
-                .RawAppend( "}}" )
-                .AppendLine();
+                   return diff;" ).NewLine()
+                .Append( "}" )
+                .NewLine();
 
-            Assembly[] references = new[]
-            {
-                typeof(object).Assembly,
-                typeof(CK.Text.StringMatcher).Assembly,
-                typeof(System.Diagnostics.Debug).Assembly,
-                typeof(System.Linq.Enumerable).Assembly,
-                typeof(TestFixtureAttribute).Assembly
-            };
+            workspace.EnsureAssemblyReference(
+                typeof(object),
+                typeof(StringMatcher),
+                typeof(System.Diagnostics.Debug),
+                typeof(System.Linq.Enumerable),
+                typeof(TestFixtureAttribute)
+            );
 
-            var code = w.ToString();
-            Assembly a = TestHelper.CreateAssembly( code, references );
+            var source = workspace.GetGlobalSource();
+            var references = workspace.AssemblyReferences;
+            Assembly a = TestHelper.CreateAssembly( source, references );
             object tester = Activator.CreateInstance( a.ExportedTypes.Single( t => t.Name == "Tester" ) );
             string diff = (string)tester.GetType().GetMethod( "Run" ).Invoke( tester, Array.Empty<object>() );
             diff.Should().BeEmpty();

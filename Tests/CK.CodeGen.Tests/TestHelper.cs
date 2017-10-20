@@ -47,24 +47,9 @@ namespace CK.CodeGen.Tests
             g.Modules.AddRange( modules );
             return HandleCreateResult(
                 sourceCode,
-                g.Generate( sourceCode, TestHelper.RandomDllPath,
+                g.Generate( sourceCode, RandomDllPath,
                             references, DefaultAssemblyResolver.Default,
                             GetAssemblyLoader() ) );
-        }
-
-
-        public static Assembly CreateAssembly( string sourceCode, IEnumerable<string> references )
-        {
-            return HandleCreateResult(
-                sourceCode,
-                new CodeGenerator().Generate( sourceCode, TestHelper.RandomDllPath, references, GetAssemblyLoader() ) );
-        }
-
-        public static Assembly CreateAssembly( string sourceCode, IEnumerable<MetadataReference> references )
-        {
-            return HandleCreateResult(
-                sourceCode,
-                new CodeGenerator().Generate( sourceCode, TestHelper.RandomDllPath, references, GetAssemblyLoader() ) );
         }
 
         static Assembly HandleCreateResult( string sourceCode, GenerateResult result )
