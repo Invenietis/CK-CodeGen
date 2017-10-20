@@ -1,20 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+  
   <Import Project="..\..\Common\Shared.props" />
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>net461</TargetFrameworks>
+    <!-- 
+    To allow testing on net461. 
+    This solves the issue of missing assemblies like System.Security.Cryptography.Algorithms
+    See https://github.com/dotnet/corefx/issues/15570
+        https://github.com/dotnet/roslyn/issues/17778
+        (and many others)
+    -->
+    <RuntimeIdentifier>win</RuntimeIdentifier>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\..\CK.CodeGen\CK.CodeGen.csproj" />
+    <ProjectReference Include="..\CK.CodeGen.Abstractions.Tests\CK.CodeGen.Abstractions.Tests.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="4.19.4" />
+    <PackageReference Include="FluentAssertions" Version="4.19.3" />
     <PackageReference Include="NUnit" Version="[2.6.4]" />
-    <!-- Tests use dynamic. -->
+    <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
   </ItemGroup>
 
   <ItemGroup>

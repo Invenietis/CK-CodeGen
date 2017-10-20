@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\CK.CodeGen\CK.CodeGen.csproj" />
+    <ProjectReference Include="..\CK.CodeGen.Abstractions.Tests\CK.CodeGen.Abstractions.Tests.csproj" />
   </ItemGroup>
 
   <ItemGroup>
