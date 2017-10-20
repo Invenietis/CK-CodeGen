@@ -106,36 +106,25 @@ namespace CodeCake
                 .Does( () =>
                 {
                     Cake.CreateDirectory( releasesDir );
-                    var testDlls = projects.Where( p => p.Name.EndsWith( ".Tests" ) ).Select( p =>
-                                 new
-                                 {
-                                     ProjectPath = p.Path.GetDirectory(),
-                                     NetCoreAppDll = p.Path.GetDirectory().CombineWithFilePath( "bin/" + configuration + "/netcoreapp2.0/" + p.Name + ".dll" ),
-                                     Net461Dll = p.Path.GetDirectory().CombineWithFilePath( "bin/" + configuration + "/net461/" + p.Name + ".dll" ),
-                                 } );
 
-                    foreach( var test in testDlls )
+                    Cake.Information( "Testing: CK.CodeGen.Tests (Net461)." );
                     {
-                        bool foundTest = false;
-                        //
-                        // This currently fails with System.Security.Cryptography.Algorithms.
-                        //
-                        //if( System.IO.File.Exists( test.Net461Dll.FullPath ) )
-                        //{
-                        //    Cake.Information( "Testing: {0}", test.Net461Dll );
-                        //    Cake.NUnit( test.Net461Dll.FullPath, new NUnitSettings()
-                        //    {
-                        //        Framework = "v4.5"
-                        //    } );
-                        //    foundTest = true;
-                        //}
-                        if( System.IO.File.Exists( test.NetCoreAppDll.FullPath ) )
-                        {
-                            Cake.Information( "Testing: {0}", test.NetCoreAppDll );
-                            Cake.DotNetCoreExecute( test.NetCoreAppDll );
-                            foundTest = true;
-                        }
-                        if( !foundTest ) Cake.Error( $"Tests not found for {test.ProjectPath}" );
+                        var p = projects.Single( x => x.Name == "CK.CodeGen.Tests" );
+                        var path = p.Path.GetDirectory()
+                                    .CombineWithFilePath( "bin/" + configuration + "/net461/win/" + p.Name + ".dll" )
+                                    .FullPath;
+                        Cake.NUnit( path, new NUnitSettings()
+                                    {
+                                        Framework = "v4.5"
+                                    } );
+                    }
+                    Cake.Information( "Testing: CK.CodeGen.NetCore.Tests (NetCoreApp 2.0)." );
+                    {
+                        var p = projects.Single( x => x.Name == "CK.CodeGen.NetCore.Tests" );
+                        var path = p.Path.GetDirectory()
+                                    .CombineWithFilePath( "bin/" + configuration + "/netcoreapp2.0/" + p.Name + ".dll" )
+                                    .FullPath;
+                        Cake.DotNetCoreExecute( path );
                     }
                 } );
 
