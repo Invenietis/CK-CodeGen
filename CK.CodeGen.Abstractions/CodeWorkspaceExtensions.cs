@@ -28,6 +28,20 @@ namespace CK.CodeGen.Abstractions
         }
 
         /// <summary>
+        /// Ensures that this workspace references one or more actual assemblies.
+        /// </summary>
+        /// <typeparam name="T">Actual type of the workspace.</typeparam>
+        /// <param name="this">This workspace.</param>
+        /// <param name="assemblies">The assemblies. None of them must be null.</param>
+        /// <returns>This workspace to enable fluent syntax.</returns>
+        public static T EnsureAssemblyReference<T>( this T @this, IEnumerable<Assembly> assemblies ) where T : ICodeWorkspace
+        {
+            if( assemblies == null ) throw new ArgumentNullException( nameof( assemblies ) );
+            foreach( var a in assemblies ) @this.DoEnsureAssemblyReference( a );
+            return @this;
+        }
+
+        /// <summary>
         /// Ensures that this workspace references the given type's assembly.
         /// </summary>
         /// <typeparam name="T">Actual type of the workspace.</typeparam>
