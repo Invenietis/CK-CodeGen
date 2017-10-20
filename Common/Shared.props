@@ -13,10 +13,13 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <PropertyGroup>
-      <Deterministic Condition=" '$(CakeBuild)' == 'true' ">true</Deterministic>
-      <PathMap>C:\Dev\CK-Database-Projects\CK-CodeGen=C:\CK</PathMap>
-  </PropertyGroup>
+
+  <!-- Reproducible builds. See: http://blog.paranoidcoding.com/2016/04/05/deterministic-builds-in-roslyn.html -->
+    <PropertyGroup>
+        <Deterministic>true</Deterministic>
+        <CKWorldPath>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), CK-World))</CKWorldPath>
+        <PathMap Condition=" '$(CKWorldPath)' != '' ">$(CKWorldPath)=C:\CK-World</PathMap>
+    </PropertyGroup>
     
   <!-- 
     When building from the CI (ie. from Cake, hence directly with the msbuild tool, SolutionDir is not defined),
