@@ -11,7 +11,7 @@ namespace CK.CodeGen.Abstractions.Tests
         [Test]
         public void appending_an_unknown_typed_object_is_an_error()
         {
-            var w = new SimpleCodeWriter();
+            var w = new StringCodeWriter();
             w.Invoking( x => x.Append( this ) ).ShouldThrow<ArgumentException>();
         }
 
@@ -47,11 +47,9 @@ namespace CK.CodeGen.Abstractions.Tests
         [TestCase( typeof( G<string>.Nested ), "CK.CodeGen.Abstractions.Tests.CodeWriterTests.G<string>.Nested" )]
         [TestCase( typeof( A<>.C<> ), "CK.CodeGen.Abstractions.Tests.CodeWriterTests.A<>.C<>" )]
         [TestCase( typeof( A<int>.C<string> ), "CK.CodeGen.Abstractions.Tests.CodeWriterTests.A<int>.C<string>" )]
-        public void ToCSharpName_tests( Type type, string expected )
+        public void ToCSharpName_tests_without_generic_parameter_names( Type type, string expected )
         {
-            var writer = new SimpleCodeWriter();
-            writer.AppendCSharpName( type, false );
-            Assert.AreEqual( expected, writer.ToString() );
+            Assert.AreEqual( expected, type.ToCSharpName( false ) );
         }
 
         [TestCase( typeof( Dictionary<,>.KeyCollection ), "System.Collections.Generic.Dictionary<TKey,TValue>.KeyCollection" )]
@@ -63,9 +61,9 @@ namespace CK.CodeGen.Abstractions.Tests
         [TestCase( typeof( Another.I<> ), "CK.CodeGen.Abstractions.Tests.CodeWriterTests.Another.I<T3>" )]
         [TestCase( typeof( G<>.Nested ), "CK.CodeGen.Abstractions.Tests.CodeWriterTests.G<T>.Nested" )]
         [TestCase( typeof( A<>.C<> ), "CK.CodeGen.Abstractions.Tests.CodeWriterTests.A<TB>.C<TD>" )]
-        public void ToCSharpName_tests_with_generic_parameter_names( Type type, string expected )
+        public void ToCSharpName_tests( Type type, string expected )
         {
-            var writer = new SimpleCodeWriter();
+            var writer = new StringCodeWriter( new StringBuilder() );
             writer.AppendCSharpName( type );
             Assert.AreEqual( expected, writer.ToString() );
         }

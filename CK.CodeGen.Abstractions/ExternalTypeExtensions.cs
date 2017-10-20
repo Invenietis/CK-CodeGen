@@ -42,5 +42,16 @@ namespace CK.CodeGen
                         ? "null"
                         : $"@\"{@this.Replace( "\"", "\"\"" )}\"";
         }
+
+        /// <summary>
+        /// See <see cref="CodeWriterExtensions.AppendCSharpName{T}(T, Type, bool)"/>.
+        /// </summary>
+        /// <param name="this">This type.</param>
+        /// <param name="typeDeclaration">True to include generic parameter names in the output.</param>
+        /// <returns>The C# type name.</returns>
+        public static string ToCSharpName( this Type @this, bool typeDeclaration = true )
+        {
+            return new StringCodeWriter().AppendCSharpName( @this, typeDeclaration ).ToString();
+        }
     }
 }

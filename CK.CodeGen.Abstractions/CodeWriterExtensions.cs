@@ -71,14 +71,14 @@ namespace CK.CodeGen
         /// <summary>
         /// Appends the C# type name. Handles generic definition (either opened or closed).
         /// The <paramref name="typeDeclaration"/> parameters applies to open generics:
-        /// When sets to true, typeof( Dictionary&lt;,&gt;.KeyCollection )
+        /// When true (the default), typeof( Dictionary&lt;,&gt;.KeyCollection )
         /// will append "System.Collections.Generic.Dictionary&lt;TKey,TValue&gt;.KeyCollection".
-        /// When false (the default), it will append "System.Collections.Generic.Dictionary&lt;,&gt;.KeyCollection".
+        /// When sets to false, it will append "System.Collections.Generic.Dictionary&lt;,&gt;.KeyCollection".
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="t">The type to obtain.</param>
-        /// <param name="typeDeclaration">True to include orginal generic parameters in the output.</param>
+        /// <param name="typeDeclaration">True to include generic parameter names in the output.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
         public static T AppendCSharpName<T>( this T @this, Type t, bool typeDeclaration = true ) where T : ICodeWriter
         {
