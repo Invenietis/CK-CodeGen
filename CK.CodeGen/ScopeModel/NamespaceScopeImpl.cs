@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace CK.CodeGen
 {
-    sealed class NamespaceScopeImpl : CodeScopeImpl, INamespaceScope
+    sealed class NamespaceScopeImpl : TypeDefinerScopeImpl, INamespaceScope
     {
         readonly static Regex _nsName = new Regex( @"^\s*(?<1>\w+)(\s*\.\s*(?<1>\w+))*\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture );
         readonly Dictionary<string,KeyValuePair<string,string>> _usings;

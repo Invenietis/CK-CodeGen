@@ -6,7 +6,7 @@ using CK.Text;
 
 namespace CK.CodeGen.Abstractions.Tests
 {
-    public abstract class NamespaceScopeTests : CodeScopeTests
+    public abstract class NamespaceScopeTests : TypeDefinerScopeTests
     {
         [Test]
         public void initialize_empty_global_namespace()
@@ -73,7 +73,7 @@ namespace CK.CodeGen.Abstractions.Tests
 
         protected abstract ICodeWorkspace CreateWorkspace();
 
-        protected override ICodeScope CreateCodeScope()
+        protected override ITypeDefinerScope CreateTypeDefinerScope()
         {
             INamespaceScope global = CreateWorkspace().Global;
             return global.FindOrCreateNamespace( "X.Y.Z" );

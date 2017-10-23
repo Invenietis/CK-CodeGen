@@ -8,20 +8,21 @@ using CK.CodeGen.Abstractions;
 
 namespace CK.CodeGen
 {
-    sealed class TypeScopeImpl : CodeScopeImpl, ITypeScope
+    sealed class TypeScopeImpl : TypeDefinerScopeImpl, ITypeScope
     {
         readonly static string HeaderTypeError = @"Unable to extract kind and type name from: '{0}'.";
         readonly static string[] _typeKind = new[] { "class", "interface", "enum", "struct" };
         readonly static Regex _nameStopper = new Regex( @"\s*(\bwhere\s+\p{L}|:|{)", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture );
+        readonly FunctionDefiner _funcs;
 
         string _declaration;
         int _codeStartIdx;
-        bool _needOpenBrace;
 
-        internal TypeScopeImpl( CodeWorkspaceImpl ws, ICodeScope parent )
+        internal TypeScopeImpl( CodeWorkspaceImpl ws, INamedScope parent )
             : base( ws, parent )
         {
-            ICodeScope p = parent;
+            _funcs = new FunctionDefiner( true );
+            INamedScope p = parent;
             for( ; ;)
             {
                 if( p is INamespaceScope ns )
@@ -43,19 +44,19 @@ namespace CK.CodeGen
             {
                 Code.Add( other._declaration.Substring( _codeStartIdx ) );
             }
+            _funcs.MergeWith( Workspace, this, other._funcs );
             base.MergeWith( this );
         }
 
         /// <summary>
-        /// Extracts the name (ignoring front modifiers, type name, generic parameters,
-        /// base class, interfaces and generic constraints).
+        /// Extracts the name.
         /// The declaration itself is updated as one string and the scope opener is injected if needed.
         /// </summary>
         internal void Initialize()
         {
             var b = new StringBuilder();
             // We store the declaration and clears the code buffer.
-            string decl = _declaration = Build( b, false ).ToString();
+            string decl = _declaration = BuildCode( b ).ToString();
             Code.Clear();
             string kind;
             int idx = IndexOfKind( decl, out kind );
@@ -74,7 +75,6 @@ namespace CK.CodeGen
                             _codeStartIdx = decl[endStopIdx - 1] == '{'
                                                 ? endStopIdx
                                                 : decl.IndexOf( '{', endStopIdx ) + 1;
-                            _needOpenBrace = _codeStartIdx == 0;
                             SetCleanTypeName( kind, decl.Substring( idx, m.Index - idx ) );
                             return;
                         }
@@ -87,7 +87,6 @@ namespace CK.CodeGen
                         if( rawType.Length > 0 )
                         {
                             SetCleanTypeName( kind, rawType );
-                            _needOpenBrace = true;
                             return;
                         }
                     }
@@ -129,11 +128,17 @@ namespace CK.CodeGen
         public override StringBuilder Build( StringBuilder b, bool closeScope )
         {
             b.Append( _declaration );
-            if( _needOpenBrace ) b.Append( Environment.NewLine ).Append( '{' ).Append( Environment.NewLine );
+            if( _codeStartIdx == 0 ) b.Append( Environment.NewLine ).Append( '{' ).Append( Environment.NewLine );
             BuildCode( b );
+            _funcs.Build( b );
             BuildTypes( b );
             if( closeScope ) b.AppendLine( "}" );
             return b;
+        }
+
+        public IFunctionScope CreateFunction( Action<IFunctionScope> header )
+        {
+            return _funcs.Create( Workspace, this, header );
         }
     }
 }

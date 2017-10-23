@@ -9,47 +9,16 @@ using System.Diagnostics;
 
 namespace CK.CodeGen
 {
-    abstract class CodeScopeImpl : ICodeScope
+    abstract class TypeDefinerScopeImpl : NamedScopeImpl, ITypeDefinerScope
     {
         readonly static Regex _variantOutIn = new Regex( @"(out|in)\s", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture );
 
-        readonly CodeWorkspaceImpl _workspace;
         readonly Dictionary<string, TypeScopeImpl> _types;
-        readonly List<string> _code;
 
-        protected CodeScopeImpl( CodeWorkspaceImpl workspace, ICodeScope parent )
+        protected TypeDefinerScopeImpl( CodeWorkspaceImpl workspace, INamedScope parent )
+            : base( workspace, parent )
         {
-            _workspace = workspace;
             _types = new Dictionary<string, TypeScopeImpl>();
-            _code = new List<string>();
-            Parent = parent;
-            if( parent == null )
-            {
-                Name = String.Empty;
-                FullName = String.Empty;
-            }
-        }
-
-        public ICodeScope Parent { get; }
-
-        ICodeWorkspace ICodeScope.Workspace => _workspace;
-
-        internal CodeWorkspaceImpl Workspace => _workspace;
-
-        public string Name { get; private set; }
-
-        public string FullName { get; private set; }
-
-        protected void SetName( string name )
-        {
-            Debug.Assert( Name == null );
-            Debug.Assert( Parent != null );
-            Debug.Assert( !String.IsNullOrWhiteSpace( name ) );
-            Debug.Assert( NamespaceScopeImpl.RemoveWhiteSpaces( name ) == name );
-            Name = name;
-            FullName = Parent.Parent != null
-                        ? Parent.FullName + '.' + name
-                        : name;
         }
 
         public ITypeScope CreateType( Action<ITypeScope> header )
@@ -72,15 +41,9 @@ namespace CK.CodeGen
 
         public IReadOnlyCollection<ITypeScope> Types => _types.Values;
 
-        public void DoAdd( string code )
+        internal void MergeWith( TypeDefinerScopeImpl other )
         {
-            if( !String.IsNullOrEmpty( code ) ) _code.Add( code );
-        }
-
-        internal void MergeWith( CodeScopeImpl other )
-        {
-            Debug.Assert( other != null );
-            _code.AddRange( other._code );
+            base.MergeWith( other );
             foreach( var kv in other._types )
             {
                 if( !_types.TryGetValue( kv.Key, out var my ) )
@@ -92,29 +55,16 @@ namespace CK.CodeGen
             }
         }
 
-        public abstract StringBuilder Build( StringBuilder b, bool closeScope );
-
-        protected StringBuilder BuildCode( StringBuilder b )
-        {
-            foreach( var c in _code ) b.Append( c );
-            return b;
-        }
         protected StringBuilder BuildTypes( StringBuilder b )
         {
             foreach( var t in _types.Values ) t.Build( b, true );
             return b;
         }
 
-        protected List<string> Code => _code;
 
         public static string RemoveVariantInOut( string s )
         {
             return _variantOutIn.Replace( s, String.Empty );
-        }
-
-        public static string RemoveWhiteSpaces( string s )
-        {
-            return Regex.Replace( s, "\\s+", String.Empty, RegexOptions.CultureInvariant );
         }
     }
 }

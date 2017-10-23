@@ -1,10 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.12
+VisualStudioVersion = 15.0.26730.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{95EC7837-0507-4DA9-8EBB-C10D316B7A4A}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		appveyor.yml = appveyor.yml
 		NuGet.config = NuGet.config
 		RepositoryInfo.xml = RepositoryInfo.xml
@@ -24,7 +25,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.CodeGen.NetCore.Tests", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.CodeGen.Abstractions", "CK.CodeGen.Abstractions\CK.CodeGen.Abstractions.csproj", "{5A38CA78-0AF5-4CB2-9C9D-13B556D5C8D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CK.CodeGen.Abstractions.Tests", "Tests\CK.CodeGen.Abstractions.Tests\CK.CodeGen.Abstractions.Tests.csproj", "{1DD53F9C-7449-4C29-B008-00D4DFC25A78}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.CodeGen.Abstractions.Tests", "Tests\CK.CodeGen.Abstractions.Tests\CK.CodeGen.Abstractions.Tests.csproj", "{1DD53F9C-7449-4C29-B008-00D4DFC25A78}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -64,5 +65,8 @@ Global
 		{00CAF176-BF0D-4544-A72E-C4F595ACD565} = {24E13C0A-5D83-4E5A-8E43-67F3996CD903}
 		{38AB5ADD-0BDF-4AD7-B2D6-70DF959865E1} = {24E13C0A-5D83-4E5A-8E43-67F3996CD903}
 		{1DD53F9C-7449-4C29-B008-00D4DFC25A78} = {24E13C0A-5D83-4E5A-8E43-67F3996CD903}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D64A2416-4038-4160-8C77-029C379EEEFA}
 	EndGlobalSection
 EndGlobal

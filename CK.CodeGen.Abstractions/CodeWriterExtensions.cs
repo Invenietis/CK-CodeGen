@@ -360,10 +360,10 @@ namespace CK.CodeGen
             }
             int vC = c;
             if( vC < 32
-                || (vC >= 127 && vC <= 160 )
+                || (vC >= 127 && vC <= 160)
                 || vC >= 888 )
             {
-                return @this.Append( "'\\u" ).Append( vC.ToString("X4") ).Append( "'" );
+                return @this.Append( "'\\u" ).Append( vC.ToString( "X4" ) ).Append( "'" );
             }
             return @this.Append( "'" ).Append( c.ToString() ).Append( "'" );
         }

@@ -37,7 +37,7 @@ namespace CK.CodeGen.Abstractions
                     if( !Char.IsWhiteSpace( access, access.Length - 1 ) ) @this.Space();
                 }
                 var parameters = c.GetParameters();
-                @this.Append( RemoveGenericParameters( @this.Name ) )
+                @this.Append( Helper.RemoveGenericParameters( @this.Name ) )
                      .AppendParameters( parameters );
 
                 if( parameters.Length > 0 )
@@ -57,7 +57,6 @@ namespace CK.CodeGen.Abstractions
             return @this;
         }
 
-
         /// <summary>
         /// Appends the method signature with an "override " modifier, adapting the
         /// original <paramref name="method"/> access protection.
@@ -69,8 +68,9 @@ namespace CK.CodeGen.Abstractions
         /// <returns>This type scope to enable fluent syntax.</returns>
         public static ITypeScope AppendOverrideSignature( this ITypeScope @this, MethodInfo method )
         {
-            CheckIsOverridable( method );
-            return DoAppendSignature( @this, AccessProtectionOption.ThrowOnPureInternal, "override ", method );
+            Helper.CheckIsOverridable( method );
+            Helper.DoAppendSignature( @this, AccessProtectionOption.ThrowOnPureInternal, "override ", method );
+            return @this;
         }
 
         /// <summary>
@@ -84,8 +84,9 @@ namespace CK.CodeGen.Abstractions
         /// <returns>This type scope to enable fluent syntax.</returns>
         public static ITypeScope AppendSealedOverrideSignature( this ITypeScope @this, MethodInfo method )
         {
-            CheckIsOverridable( method );
-            return DoAppendSignature( @this, AccessProtectionOption.ThrowOnPureInternal, "override sealed ", method );
+            Helper.CheckIsOverridable( method );
+            Helper.DoAppendSignature( @this, AccessProtectionOption.ThrowOnPureInternal, "override sealed ", method );
+            return @this;
         }
 
         /// <summary>
@@ -98,105 +99,35 @@ namespace CK.CodeGen.Abstractions
         /// <returns>This type scope to enable fluent syntax.</returns>
         public static ITypeScope AppendSignature( this ITypeScope @this, MethodInfo method, AccessProtectionOption access = AccessProtectionOption.All )
         {
-            return DoAppendSignature( @this, access, null, method );
-        }
-
-        static ITypeScope DoAppendSignature(
-            this ITypeScope @this,
-            AccessProtectionOption protection,
-            string frontModifier,
-            MethodInfo method )
-        {
-            if( method == null ) throw new ArgumentNullException( nameof( method ) );
-            string name = method.Name;
-            if( method.ContainsGenericParameters )
-            {
-                name += '<';
-                name += String.Join( ",", method.GetGenericArguments().Select( a => a.Name ) );
-                name += '>';
-            }
-            if( protection != AccessProtectionOption.None ) @this.AppendAccessProtection( method, protection );
-            @this.Append( frontModifier )
-                 .AppendCSharpName( method.ReturnType )
-                 .Space()
-                 .Append( name )
-                 .AppendParameters( method.GetParameters() );
+            Helper.DoAppendSignature( @this, access, null, method );
             return @this;
         }
 
-        static ITypeScope AppendAccessProtection( this ITypeScope w, MethodInfo method, AccessProtectionOption p )
+        /// <summary>
+        /// Creates an overridden method.
+        /// The <paramref name="method"/> must be virtual (not static nor sealed) and not purely internal.
+        /// </summary>
+        /// <param name="this">This type scope.</param>
+        /// <param name="method">The method description.</param>
+        /// <returns>The newly created function scope.</returns>
+        public static IFunctionScope CreateOverride( this ITypeScope @this, MethodInfo method )
         {
-            Debug.Assert( p != AccessProtectionOption.None );
-            if( p == AccessProtectionOption.ThrowOnPureInternal
-                && (method.IsAssembly || method.IsFamilyAndAssembly) )
-            {
-                throw new ArgumentException( $"Method {method} must not be internal.", nameof( method ) );
-            }
-            if( method.IsPublic ) w.Append( "public " );
-            else if( method.IsFamily ) w.Append( "protected " );
-            else if( method.IsAssembly )
-            {
-                if( p == AccessProtectionOption.All )
-                {
-                    w.Append( "internal " );
-                }
-            }
-            else if( method.IsFamilyAndAssembly )
-            {
-                if( p == AccessProtectionOption.All )
-                {
-                    w.Append( "private protected " ); 
-                }
-                else w.Append( "protected " );
-            }
-            else if( method.IsFamilyOrAssembly )
-            {
-                if( p == AccessProtectionOption.All )
-                {
-                    w.Append( "internal protected " );
-                }
-                else w.Append( "protected " );
-            }
-            return w;
+            Helper.CheckIsOverridable( method );
+            return @this.CreateFunction( h => h.DoAppendSignature( AccessProtectionOption.ThrowOnPureInternal, "override ", method ) );
         }
 
-        static ITypeScope AppendParameters( this ITypeScope @this, IReadOnlyList<ParameterInfo> parameters )
+        /// <summary>
+        /// Creates a sealed overridden method.
+        /// The <paramref name="method"/> must be virtual (not static nor sealed) and not purely internal.
+        /// </summary>
+        /// <param name="this">This type scope.</param>
+        /// <param name="method">The method description.</param>
+        /// <returns>The newly created function scope.</returns>
+        public static IFunctionScope CreateSealedOverride( this ITypeScope @this, MethodInfo method )
         {
-            if( parameters.Count == 0 ) return @this.Append( "()" );
-            @this.Append( "( " );
-            bool isFirstParameter = true;
-            foreach( var p in parameters )
-            {
-                if( isFirstParameter ) isFirstParameter = false;
-                else @this.Append( ", " );
-                @this.AddParameter( p );
-            }
-            return @this.Append( " )" );
+            Helper.CheckIsOverridable( method );
+            return @this.CreateFunction( h => h.DoAppendSignature( AccessProtectionOption.ThrowOnPureInternal, "sealed override ", method ) );
         }
-
-        static ITypeScope AddParameter( this ITypeScope @this, ParameterInfo p )
-        {
-            if( p.IsOut ) @this.Append( "out " );
-            else if( p.ParameterType.IsByRef ) @this.Append( "ref " );
-            Type parameterType = p.ParameterType.IsByRef ? p.ParameterType.GetElementType() : p.ParameterType;
-            return @this.AppendCSharpName( parameterType, true )
-                        .Space()
-                        .Append( p.Name );
-        }
-
-        static void CheckIsOverridable( MethodInfo method )
-        {
-            if( method == null ) throw new ArgumentNullException( nameof( method ) );
-            if( !method.IsVirtual || method.IsStatic || method.IsFinal )
-                throw new ArgumentException( $"Method {method} is not overridable.", nameof( method ) );
-        }
-
-        static string RemoveGenericParameters( string typeName )
-        {
-            int idx = typeName.IndexOf( '<' );
-            return idx < 0 ? typeName : typeName.Substring( idx );
-        }
-
 
     }
 }

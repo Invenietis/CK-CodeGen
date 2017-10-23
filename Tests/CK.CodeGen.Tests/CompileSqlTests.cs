@@ -35,16 +35,15 @@ namespace CK.CodeGen.Tests
              .EnsureUsing( "System.Data.SqlClient" );
 
             var type = b.CreateType( w => w.Append( "public class GGGG : " ).AppendCSharpName( typeof( SimpleBase ) ) );
-            type.AppendOverrideSignature( typeof( SimpleBase ).GetMethod( "Do" ) )
-                .Append( @"{
-                if( i.HasValue )
+            type.CreateOverride( typeof( SimpleBase ).GetMethod( "Do" ) )
+                .Append(
+                @"if( i.HasValue )
                 {
                     i *= i;
                 }
                 var c = new SqlCommand(""p""+i.ToString());
                 var p = c.Parameters.AddWithValue(""@i"", (object)i ?? DBNull.Value);
-                return c;
-                }" );
+                return c;" );
 
             var source = workspace.GetGlobalSource();
             var references = workspace.AssemblyReferences;

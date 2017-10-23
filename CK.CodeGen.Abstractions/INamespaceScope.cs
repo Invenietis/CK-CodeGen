@@ -4,11 +4,10 @@ using System.Collections.Generic;
 namespace CK.CodeGen.Abstractions
 {
     /// <summary>
-    /// A namespace is a <see cref="ICodeScope"/>.
-    /// It can define types (this is provided by <see cref="ICodeScope"/>), subordinated
-    /// namespaces and handles "using" clauses.
+    /// A namespace is a <see cref="ITypeDefinerScope"/> (it can define types).
+    /// It handles "using" clauses and creates subordinated namespaces.
     /// </summary>
-    public interface INamespaceScope : ICodeScope
+    public interface INamespaceScope : ITypeDefinerScope
     {
         /// <summary>
         /// Gets the parent namespace.
