@@ -41,6 +41,7 @@ namespace CK.CodeGen
         /// <summary>
         /// Appends raw C# code.
         /// This is the most basic Append method to use.
+        /// Use <see cref="AppendSourceString{T}(T, string)"/> to append the source string representation.
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
@@ -49,6 +50,21 @@ namespace CK.CodeGen
         static public T Append<T>( this T @this, string code ) where T : ICodeWriter
         {
             @this.DoAdd( code );
+            return @this;
+        }
+
+        /// <summary>
+        /// Appends raw character.
+        /// Use <see cref="AppendSourceChar{T}(T, char)"/> to append the source string representation
+        /// of the character.
+        /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
+        /// <param name="this">This code writer.</param>
+        /// <param name="c">Char to append.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
+        static public T Append<T>( this T @this, char c ) where T : ICodeWriter
+        {
+            @this.DoAdd( c.ToString() );
             return @this;
         }
 
@@ -138,20 +154,6 @@ namespace CK.CodeGen
         /// <param name="b">The boolean value.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, bool b ) where T : ICodeWriter => @this.Append( b ? "true" : "false" );
-
-        /// <summary>
-        /// Appends the source representation of a character: "'c'".
-        /// </summary>
-        /// <typeparam name="T">Actual type of the code writer.</typeparam>
-        /// <param name="this">This code writer.</param>
-        /// <param name="c">The character.</param>
-        /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T Append<T>( this T @this, char c ) where T : ICodeWriter
-        {
-            return c == '\\'
-                    ? @this.Append( @"'\\'" )
-                    : @this.Append( "'" ).Append( c.ToString() ).Append( "'" );
-        }
 
         /// <summary>
         /// Appends the source representation of an integer value.
@@ -336,6 +338,37 @@ namespace CK.CodeGen
         }
 
         /// <summary>
+        /// Appends the source representation of a character: "'c'".
+        /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
+        /// <param name="this">This code writer.</param>
+        /// <param name="c">The character.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
+        static public T AppendSourceChar<T>( this T @this, char c ) where T : ICodeWriter
+        {
+            switch( c )
+            {
+                case '\\': return @this.Append( @"'\\'" );
+                case '\r': return @this.Append( @"'\r'" );
+                case '\n': return @this.Append( @"'\n'" );
+                case '\t': return @this.Append( @"'\t'" );
+                case '\0': return @this.Append( @"'\0'" );
+                case '\b': return @this.Append( @"'\b'" );
+                case '\v': return @this.Append( @"'\v'" );
+                case '\a': return @this.Append( @"'\a'" );
+                case '\f': return @this.Append( @"'\f'" );
+            }
+            int vC = c;
+            if( vC < 32
+                || (vC >= 127 && vC <= 160 )
+                || vC >= 888 )
+            {
+                return @this.Append( "'\\u" ).Append( vC.ToString("X4") ).Append( "'" );
+            }
+            return @this.Append( "'" ).Append( c.ToString() ).Append( "'" );
+        }
+
+        /// <summary>
         /// Appends the source representation of the string.
         /// See <see cref="ExternalTypeExtensions.ToSourceString(string)"/>.
         /// </summary>
@@ -470,7 +503,7 @@ namespace CK.CodeGen
                 case ulong x: return Append( @this, x );
                 case byte x: return Append( @this, x );
                 case Guid x: return Append( @this, x );
-                case char x: return Append( @this, x );
+                case char x: return AppendSourceChar( @this, x );
                 case double x: return Append( @this, x );
                 case float x: return Append( @this, x );
                 case Decimal x: return Append( @this, x );

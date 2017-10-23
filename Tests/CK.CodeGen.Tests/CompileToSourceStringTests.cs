@@ -41,6 +41,11 @@ namespace CK.CodeGen.Tests
                 (uint)7,
                 (ulong)8,
                 'a',
+                '\uD800', // A high surrogate
+                '\uDC00', // A low surrogate
+                '\0',
+                '\u3712',
+                '\t',
                 4.89e-2,
                 4.8965e-2f,
                 new Decimal( Math.E ),
@@ -82,6 +87,11 @@ namespace CK.CodeGen.Tests
                 (uint)7,
                 (ulong)8,
                 'a',
+                '\uD800', // A high surrogate
+                '\uDC00', // A low surrogate
+                '\0',
+                '\u3712',
+                '\t',
                 4.89e-2,
                 4.8965e-2f,
                 new decimal( Math.E ),
