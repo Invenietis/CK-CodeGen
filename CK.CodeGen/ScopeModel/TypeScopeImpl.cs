@@ -37,6 +37,8 @@ namespace CK.CodeGen
 
         public INamespaceScope Namespace { get; }
 
+        public bool IsNestedType => Parent is ITypeScope;
+
         internal void MergeWith( TypeScopeImpl other )
         {
             Debug.Assert( other != null );

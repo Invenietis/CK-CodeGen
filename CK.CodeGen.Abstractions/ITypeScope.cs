@@ -10,5 +10,11 @@ namespace CK.CodeGen.Abstractions
         /// Gets the closest namespace that contains this type.
         /// </summary>
         INamespaceScope Namespace { get; }
+
+        /// <summary>
+        /// Gets whether this type is defined in another <see cref="ITypeScope"/>
+        /// (or in a <see cref="INamespaceScope"/>).
+        /// </summary>
+        bool IsNestedType { get; }
     }
 }

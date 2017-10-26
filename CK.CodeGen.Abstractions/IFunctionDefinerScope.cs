@@ -12,7 +12,7 @@ namespace CK.CodeGen.Abstractions
     public interface IFunctionDefinerScope : INamedScope
     {
         /// <summary>
-        /// Creates a <see cref="ITypeScope"/> inside this code scope.
+        /// Creates a <see cref="IFunctionScope"/> inside this scope.
         /// Its name is automatically extracted from the header that may contain the
         /// opening curly brace '{' or not (in such case it is automatically appended).
         /// </summary>

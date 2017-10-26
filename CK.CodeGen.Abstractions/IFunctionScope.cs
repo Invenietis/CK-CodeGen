@@ -10,6 +10,11 @@ namespace CK.CodeGen.Abstractions
     public interface IFunctionScope : IFunctionDefinerScope
     {
         /// <summary>
+        /// Gets the function name description.
+        /// </summary>
+        IFunctionName FunctionName { get; }
+
+        /// <summary>
         /// Gets the closest type that contains this function or method.
         /// </summary>
         ITypeScope EnclosingType { get; }

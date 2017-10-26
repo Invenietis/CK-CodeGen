@@ -70,13 +70,14 @@ namespace CK.CodeGen
             Match mId1 = _quickAndDirtyType.Match( decl.Substring( idxStart ) );
             if( mId1.Success )
             {
+                string nakedName;
                 string rawName;
-                _returnType = rawName = RemoveWhiteSpaces( mId1.Value );
+                _returnType = rawName = RemoveWhiteSpaces( nakedName = mId1.Value );
                 int idxNext = idxStart + mId1.Index + mId1.Length;
                 Match mId2 = _quickAndDirtyType.Match( decl.Substring( idxNext ) );
                 if( mId2.Success )
                 {
-                    rawName = RemoveWhiteSpaces( mId2.Value );
+                    rawName = RemoveWhiteSpaces( nakedName = mId2.Value );
                     idxNext += mId2.Index + mId2.Length;
                 }
                 Match args = _recursePar.Match( decl.Substring( idxNext ) );
