@@ -19,6 +19,8 @@ namespace CK.CodeGen
             public readonly VariantModifier Variance;
             public readonly TypeName Type;
 
+            public static readonly GenParam Empty = new TypeName.GenParam( VariantModifier.None, TypeName.Empty );
+
             internal GenParam( VariantModifier v, TypeName t )
             {
                 Variance = v;
@@ -55,16 +57,12 @@ namespace CK.CodeGen
             }
         }
 
+        public static readonly TypeName Empty = new TypeName( String.Empty, null, null );
+
         readonly string _name;
         readonly IReadOnlyList<GenParam> _genArgs;
         readonly IReadOnlyList<int> _arrayDims;
         readonly int _hash;
-
-        public string Name => _name;
-
-        public IReadOnlyList<GenParam> GenArgs => _genArgs;
-
-        public IReadOnlyList<int> ArrayDims => _arrayDims;
 
         internal TypeName( string n, IReadOnlyList<GenParam> gen, IReadOnlyList<int> arrayDims )
         {
@@ -77,6 +75,12 @@ namespace CK.CodeGen
             TypeKey = _name + '`' + _genArgs.Count;
         }
 
+        public string Name => _name;
+
+        public IReadOnlyList<GenParam> GenArgs => _genArgs;
+
+        public IReadOnlyList<int> ArrayDims => _arrayDims;
+
         public string TypeKey { get; }
 
         public StringBuilder Write( StringBuilder b )
@@ -85,8 +89,14 @@ namespace CK.CodeGen
             if( _genArgs.Count > 0 )
             {
                 b.Append( '<' );
-                foreach( var g in _genArgs ) g.Write( b );
-                b.Append( '<' );
+                bool already = false;
+                foreach( var g in _genArgs )
+                {
+                    if( already ) b.Append( ',' );
+                    else already = true;
+                    g.Write( b );
+                }
+                b.Append( '>' );
             }
             foreach( int d in _arrayDims )
             {
@@ -95,12 +105,10 @@ namespace CK.CodeGen
             return b;
         }
 
-        public override string ToString() => Write( new StringBuilder() ).ToString();
-
         public int CompareTo( TypeName other )
         {
             int cmp = StringComparer.Ordinal.Compare( _name, other._name );
-            if( cmp != 0 ) return _name == "new()" ? -1 : (other._name == "new()" ? 1 : cmp);
+            if( cmp != 0 ) return _name == "new()" ? 1 : (other._name == "new()" ? -1 : cmp);
             cmp = _genArgs.Count - other._genArgs.Count;
             if( cmp != 0 ) return cmp;
             cmp = _arrayDims.Count - other._arrayDims.Count;
@@ -127,12 +135,12 @@ namespace CK.CodeGen
                     && _genArgs.SequenceEqual( other._genArgs );
         }
 
-        public override bool Equals( object obj )
-        {
-            return obj is TypeName o && Equals( o );
-        }
+        public override bool Equals( object obj ) => obj is TypeName o && Equals( o );
 
         public override int GetHashCode() => _hash;
+
+        public override string ToString() => Write( new StringBuilder() ).ToString();
+
     }
 
 }

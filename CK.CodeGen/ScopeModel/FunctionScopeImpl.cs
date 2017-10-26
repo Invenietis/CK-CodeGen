@@ -44,6 +44,8 @@ namespace CK.CodeGen
 
         public string ReturnType => _returnType;
 
+        public IFunctionName FunctionName => throw new NotImplementedException();
+
         internal void MergeWith( FunctionScopeImpl other )
         {
             Debug.Assert( other != null );
@@ -51,13 +53,13 @@ namespace CK.CodeGen
             {
                 Code.Add( other._declaration.Substring( _codeStartIdx ) );
             }
+            MergeCode( other );
             _funcs.MergeWith( Workspace, this, other._funcs );
-            base.MergeWith( this );
         }
 
         internal void Initialize()
         {
-            var b = new StringBuilder();
+            var b = new SmarterStringBuilder( null );
             // We store the declaration and clears the code buffer.
             string decl = _declaration = BuildCode( b ).ToString();
             Code.Clear();
@@ -97,13 +99,13 @@ namespace CK.CodeGen
             throw new InvalidOperationException( string.Format( HeaderTypeError, decl ) );
         }
 
-        public override StringBuilder Build( StringBuilder b, bool closeScope )
+        internal protected override SmarterStringBuilder Build( SmarterStringBuilder b, bool closeScope )
         {
-            b.Append( _declaration );
-            if( _codeStartIdx == 0 ) b.Append( Environment.NewLine ).Append( '{' ).Append( Environment.NewLine );
+            b.AppendLine().Append( _declaration );
+            if( _codeStartIdx == 0 ) b.AppendLine().Append( '{' ).AppendLine();
             BuildCode( b );
             _funcs.Build( b );
-            if( closeScope ) b.AppendLine( "}" );
+            if( closeScope ) b.AppendLine().Append( "}" );
             return b;
         }
 

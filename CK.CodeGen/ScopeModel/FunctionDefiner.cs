@@ -24,7 +24,7 @@ namespace CK.CodeGen
             return f;
         }
 
-        public StringBuilder Build( StringBuilder b )
+        public SmarterStringBuilder Build( SmarterStringBuilder b )
         {
             foreach( var t in _funcs.Values ) t.Build( b, true );
             return b;

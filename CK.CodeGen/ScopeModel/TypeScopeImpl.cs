@@ -5,16 +5,16 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using CK.CodeGen.Abstractions;
+using CK.Text;
 
 namespace CK.CodeGen
 {
     sealed class TypeScopeImpl : TypeDefinerScopeImpl, ITypeScope
     {
-        readonly static string HeaderTypeError = @"Unable to extract kind and type name from: '{0}'.";
-        readonly static string[] _typeKind = new[] { "class", "interface", "enum", "struct" };
-        readonly static Regex _nameStopper = new Regex( @"\s*(\bwhere\s+\p{L}|:|{)", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture );
+        const string HeaderTypeError = @"Unable to parse type declaration from: '{0}'.";
         readonly FunctionDefiner _funcs;
 
+        TypeDefinition _typeDef;
         string _declaration;
         int _codeStartIdx;
 
@@ -23,7 +23,7 @@ namespace CK.CodeGen
         {
             _funcs = new FunctionDefiner( true );
             INamedScope p = parent;
-            for( ; ;)
+            for(; ; )
             {
                 if( p is INamespaceScope ns )
                 {
@@ -39,15 +39,22 @@ namespace CK.CodeGen
 
         public bool IsNestedType => Parent is ITypeScope;
 
+        internal string TypeKey => _typeDef.Name.TypeKey;
+
         internal void MergeWith( TypeScopeImpl other )
         {
             Debug.Assert( other != null );
+            if( !_typeDef.Equals( other._typeDef ) )
+            {
+                throw new InvalidOperationException( $"Unable to merge type '{_typeDef}' with '{other._typeDef}'." );
+            }
             if( other._codeStartIdx > 0 )
             {
                 Code.Add( other._declaration.Substring( _codeStartIdx ) );
             }
+            MergeCode( other );
+            MergeTypes( other );
             _funcs.MergeWith( Workspace, this, other._funcs );
-            base.MergeWith( this );
         }
 
         /// <summary>
@@ -56,85 +63,32 @@ namespace CK.CodeGen
         /// </summary>
         internal void Initialize()
         {
-            var b = new StringBuilder();
+            var b = new SmarterStringBuilder( null );
             // We store the declaration and clears the code buffer.
-            string decl = _declaration = BuildCode( b ).ToString();
+            _declaration = BuildCode( b ).ToString();
             Code.Clear();
-            string kind;
-            int idx = IndexOfKind( decl, out kind );
-            if( idx >= 0 )
+            var m = new StringMatcher( _declaration );
+            m.SkipWhiteSpacesAndJSComments();
+            if( !m.MatchTypeDefinition( out _typeDef, IsNestedType, out bool hasCodeOpener ) )
             {
-                idx += kind.Length + 1;
-                while( idx < decl.Length && Char.IsWhiteSpace( decl, idx ) ) ++idx;
-                if( idx < decl.Length )
-                {
-                    Match m = _nameStopper.Match( decl, idx );
-                    if( m.Success )
-                    {
-                        if( m.Index > idx )
-                        {
-                            int endStopIdx = m.Index + m.Length;
-                            _codeStartIdx = decl[endStopIdx - 1] == '{'
-                                                ? endStopIdx
-                                                : decl.IndexOf( '{', endStopIdx ) + 1;
-                            SetCleanTypeName( kind, decl.Substring( idx, m.Index - idx ) );
-                            return;
-                        }
-                        // The stopper starts: there is no type name.
-                    }
-                    else
-                    {
-                        // No stopper found: the type name is from idx to the end.
-                        var rawType = decl.Substring( idx ).TrimEnd();
-                        if( rawType.Length > 0 )
-                        {
-                            SetCleanTypeName( kind, rawType );
-                            return;
-                        }
-                    }
-                }
+                throw new InvalidOperationException( string.Format( HeaderTypeError, _declaration ) );
             }
-            throw new InvalidOperationException( string.Format( HeaderTypeError, decl ) );
-        }
-
-        void SetCleanTypeName( string kind, string rawType )
-        {
-            var typeName = ReferenceEquals( kind, "interface" )
-                        ? RemoveVariantInOut( rawType )
-                        : rawType;
-            SetName( RemoveWhiteSpaces( typeName ) );
-        }
-
-        static int IndexOfKind( string s, out string found )
-        {
-            found = null;
-            int bestIdx = Int32.MaxValue;
-            foreach( string value in _typeKind )
+            if( hasCodeOpener )
             {
-                int idx = s.IndexOf( value );
-                if( idx >= 0
-                    && idx < bestIdx
-                    && (idx == 0 || Char.IsWhiteSpace(s,idx-1)) )
-                {
-                    int end = idx + value.Length;
-                    if( end < s.Length && Char.IsWhiteSpace( s, end ) )
-                    {
-                        found = value;
-                        bestIdx = idx;
-                    }
-                }
+                m.MatchWhiteSpaces( 0 );
+                _codeStartIdx = m.StartIndex;
             }
-            return found != null ? bestIdx : -1;
+            SetName( _typeDef.Name.ToString() );
         }
 
-        public override StringBuilder Build( StringBuilder b, bool closeScope )
+        internal protected override SmarterStringBuilder Build( SmarterStringBuilder b, bool closeScope )
         {
-            b.Append( _declaration );
-            if( _codeStartIdx == 0 ) b.Append( Environment.NewLine ).Append( '{' ).Append( Environment.NewLine );
+            b.AppendLine().Append( _declaration );
+            if( _codeStartIdx == 0 ) b.AppendLine().Append( '{' ).AppendLine();
             BuildCode( b );
             _funcs.Build( b );
             BuildTypes( b );
-            if( closeScope ) b.AppendLine( "}" );
+            if( closeScope ) b.AppendLine().Append( '}' ).AppendLine();
             return b;
         }
 
@@ -142,5 +96,7 @@ namespace CK.CodeGen
         {
             return _funcs.Create( Workspace, this, header );
         }
+
+        public override string ToString() => _typeDef.Write( new StringBuilder() ).ToString();
     }
 }

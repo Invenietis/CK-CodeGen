@@ -66,15 +66,14 @@ namespace CK.CodeGen.Tests
             var source = workspace.GetGlobalSource();
             Normalize( source ).Should().Be( Normalize(
                 @"using INT = System.UInt8;
-                  namespace A {
-                    namespace X {
-                      namespace a {
-                      }
-                      namespace b {
-                      }
-                    }
-                  }
-                "
+namespace A
+{
+    namespace X
+    {
+        namespace a { }
+        namespace b { }
+    }
+}"
                 ) );
 
             global.EnsureUsingAlias( "CNode", "SNode<string,bool>" );
@@ -97,8 +96,7 @@ namespace CK.CodeGen.Tests
                       namespace b {
                       }
                     }
-                  }
-                "
+                  }"
                 ) );
         }
 

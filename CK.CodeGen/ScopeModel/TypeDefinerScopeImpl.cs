@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using CK.CodeGen.Abstractions;
 using System.Diagnostics;
+using CK.Text;
 
 namespace CK.CodeGen
 {
@@ -27,23 +28,25 @@ namespace CK.CodeGen
             TypeScopeImpl typeScope = new TypeScopeImpl( Workspace, this );
             header( typeScope );
             typeScope.Initialize();
-            _types.Add( typeScope.Name, typeScope );
+            _types.Add( typeScope.TypeKey, typeScope );
             return typeScope;
         }
 
         public ITypeScope FindType( string name )
         {
             if( String.IsNullOrEmpty( name ) ) throw new ArgumentException( "Invalid null or empty type name.", nameof( name ) );
+            var m = new StringMatcher( name );
+            m.SkipWhiteSpacesAndJSComments();
+            if( !m.MatchTypeKey( out string key ) ) throw new ArgumentException( $"Invalid type name: {name}", nameof( name ) );
             TypeScopeImpl result;
-            _types.TryGetValue( RemoveWhiteSpaces( RemoveVariantInOut( name ) ), out result );
+            _types.TryGetValue( key, out result );
             return result;
         }
 
         public IReadOnlyCollection<ITypeScope> Types => _types.Values;
 
-        internal void MergeWith( TypeDefinerScopeImpl other )
+        protected void MergeTypes( TypeDefinerScopeImpl other )
         {
-            base.MergeWith( other );
             foreach( var kv in other._types )
             {
                 if( !_types.TryGetValue( kv.Key, out var my ) )
@@ -55,12 +58,11 @@ namespace CK.CodeGen
             }
         }
 
-        protected StringBuilder BuildTypes( StringBuilder b )
+        protected SmarterStringBuilder BuildTypes( SmarterStringBuilder b )
         {
             foreach( var t in _types.Values ) t.Build( b, true );
             return b;
         }
-
 
         public static string RemoveVariantInOut( string s )
         {

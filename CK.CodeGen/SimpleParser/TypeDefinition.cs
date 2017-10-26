@@ -22,6 +22,8 @@ namespace CK.CodeGen
             Struct
         }
 
+        public IReadOnlyList<AttributeDefinition> Attributes { get; }
+
         public Modifiers Modifiers { get; }
 
         public TypeKind Kind { get; }
@@ -33,12 +35,14 @@ namespace CK.CodeGen
         public IReadOnlyList<TypeParameterConstraint> Constraints { get; }
 
         internal TypeDefinition(
+            IReadOnlyList<AttributeDefinition> attributes,
             Modifiers modifiers,
             TypeKind kind,
             TypeName name,
             IReadOnlyList<TypeName> bases,
             IReadOnlyList<TypeParameterConstraint> constraints )
         {
+            Attributes = attributes ?? Array.Empty<AttributeDefinition>();
             Modifiers = modifiers;
             Kind = kind;
             Name = name;
@@ -51,7 +55,15 @@ namespace CK.CodeGen
 
         public StringBuilder Write( StringBuilder b )
         {
+            foreach( var a in Attributes ) a.Write( b );
             Modifiers.Write( b );
+            switch(Kind)
+            {
+                case TypeKind.Class: b.Append( "class " ); break;
+                case TypeKind.Interface: b.Append( "interface " ); break;
+                case TypeKind.Struct: b.Append( "struct " ); break;
+                case TypeKind.Enum: b.Append( "enum " ); break;
+            }
             Name.Write( b );
             bool already = false;
             if( BaseTypes.Count > 0 )
@@ -64,13 +76,16 @@ namespace CK.CodeGen
                     t.Write( b );
                 }
             }
-            b.Append( ' ' );
-            already = false;
-            foreach( var c in Constraints )
+            if( Constraints.Count > 0 )
             {
-                if( already ) b.Append( ' ' );
-                else already = true;
-                c.Write( b );
+                b.Append( ' ' );
+                already = false;
+                foreach( var c in Constraints )
+                {
+                    if( already ) b.Append( ' ' );
+                    else already = true;
+                    c.Write( b );
+                }
             }
             return b;
         }
@@ -101,33 +116,19 @@ namespace CK.CodeGen
         public bool Equals( TypeDefinition other )
         {
             return Modifiers == other.Modifiers
-                    && Name == other.Name
+                    && Name.Equals( other.Name )
                     && BaseTypes.Count == other.BaseTypes.Count
                     && Constraints.Count == other.Constraints.Count
                     && BaseTypes.SequenceEqual( other.BaseTypes )
                     && Constraints.SequenceEqual( Constraints );
         }
 
-        public override bool Equals( object obj )
-        {
-            return obj is TypeDefinition o && Equals( o );
-        }
+        public override bool Equals( object obj ) => obj is TypeDefinition o && Equals( o );
 
         public override int GetHashCode() => _hash;
 
-        class NamedBasedEqualityComparer : EqualityComparer<TypeDefinition>
-        {
-            public override bool Equals( TypeDefinition x, TypeDefinition y )
-            {
-                if( x == null && y == null ) return true;
-                if( x == null || y == null ) return false;
-                return x.Name.Equals( y.Name );
-            }
+        public override string ToString() => Write( new StringBuilder() ).ToString();
 
-            public override int GetHashCode( TypeDefinition obj )
-            {
-                return obj != null ? obj.GetHashCode() : 0;
-            }
-        }
+
     }
 }

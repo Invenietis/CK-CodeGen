@@ -41,7 +41,6 @@ namespace CK.CodeGen
             Debug.Assert( Name == null );
             Debug.Assert( Parent != null );
             Debug.Assert( !String.IsNullOrWhiteSpace( name ) );
-            Debug.Assert( NamespaceScopeImpl.RemoveWhiteSpaces( name ) == name );
             Name = name;
             FullName = Parent.Parent != null
                         ? Parent.FullName + '.' + name
@@ -53,16 +52,19 @@ namespace CK.CodeGen
             if( !String.IsNullOrEmpty( code ) ) _code.Add( code );
         }
 
-        internal void MergeWith( NamedScopeImpl other )
+        protected void MergeCode( NamedScopeImpl other )
         {
             Debug.Assert( other != null );
             _code.AddRange( other._code );
         }
 
-        public abstract StringBuilder Build( StringBuilder b, bool closeScope );
+        StringBuilder INamedScope.Build( StringBuilder b, bool closeScope ) => Build( new SmarterStringBuilder( b ), closeScope ).Builder;
 
-        protected StringBuilder BuildCode( StringBuilder b )
+        internal protected abstract SmarterStringBuilder Build( SmarterStringBuilder b, bool closeScope );
+
+        protected SmarterStringBuilder BuildCode( SmarterStringBuilder b )
         {
+            b.AppendLine();
             foreach( var c in _code ) b.Append( c );
             return b;
         }

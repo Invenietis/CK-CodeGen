@@ -34,10 +34,10 @@ namespace CK.CodeGen
                                                         .ToDictionary( v => Enum.GetName( typeof( Modifiers ), v ).ToLowerInvariant() );
         static readonly string[] _names = _map.OrderBy( kv => kv.Value ).Select( kv => kv.Key ).ToArray();
 
-        internal static bool Combine( this Modifiers @this, string m )
+        internal static bool Combine( ref Modifiers m, string text )
         {
-            if( !_map.TryGetValue( m, out var v ) ) return false;
-            @this |= (Modifiers)v;
+            if( !_map.TryGetValue( text, out var v ) ) return false;
+            m |= (Modifiers)v;
             return true;
         }
 
@@ -71,6 +71,7 @@ namespace CK.CodeGen
             {
                 @this = @this & ~(Modifiers.Public);
             }
+            if( @this == Modifiers.Private ) @this = Modifiers.None;
             return @this;
         }
 

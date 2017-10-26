@@ -28,10 +28,12 @@ namespace CK.CodeGen
         internal void MergeWith( NamespaceScopeImpl other )
         {
             Debug.Assert( other != null );
-            foreach( var u in other._usings )
+            foreach ( var u in other._usings )
             {
                 DoEnsureUsing( u.Key, u.Value.Key, u.Value.Value );
             }
+            MergeCode( other );
+            MergeTypes( other );
             foreach( var oNS in other._subNamespaces )
             {
                 var my = _subNamespaces.FirstOrDefault( x => x.Name == oNS.Name );
@@ -41,12 +43,6 @@ namespace CK.CodeGen
                     _subNamespaces.Add( my );
                 }
                 my.MergeWith( oNS );
-            }
-
-            foreach( var ns in _subNamespaces )
-            {
-                var o = other._subNamespaces.FirstOrDefault( x => x.Name == ns.Name );
-                if( o != null ) ns.MergeWith( o );
             }
         }
 
@@ -159,12 +155,17 @@ namespace CK.CodeGen
 
         public IReadOnlyCollection<INamespaceScope> Namespaces => _subNamespaces;
 
-        public override StringBuilder Build( StringBuilder b, bool closeScope )
+        internal protected override SmarterStringBuilder Build( SmarterStringBuilder b, bool closeScope )
         {
-            if( Workspace.Global != this ) b.Append( "namespace " ).AppendLine( Name ).AppendLine( "{" );
+            b.AppendLine();
+            if( Workspace.Global != this ) b.Append( "namespace " )
+                                            .Append( Name )
+                                            .AppendLine()
+                                            .Append( '{' )
+                                            .AppendLine();
             foreach( var e in _usings )
             {
-                b.Append( "using " ).Append( e.Key );
+                b.AppendLine().Append( "using " ).Append( e.Key );
                 if( e.Value.Value == null ) b.Append( ';' );
                 else b.Append( " = " ).Append( e.Value.Value );
                 b.AppendLine();
@@ -175,7 +176,7 @@ namespace CK.CodeGen
                 ns.Build( b, true );
             }
             BuildTypes( b );
-            if( Workspace.Global != this && closeScope ) b.AppendLine( "}" );
+            if( Workspace.Global != this && closeScope ) b.AppendLine().Append( "}" );
             return b;
         }
         
