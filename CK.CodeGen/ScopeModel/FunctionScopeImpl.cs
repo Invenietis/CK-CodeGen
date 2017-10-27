@@ -43,7 +43,7 @@ namespace CK.CodeGen
 
         public string ReturnType => _mDef.ReturnType?.ToString();
 
-        public IFunctionName FunctionName => throw new NotImplementedException();
+        public IFunctionName FunctionName => _name;
 
         internal void MergeWith( FunctionScopeImpl other )
         {

@@ -7,7 +7,7 @@ namespace CK.CodeGen.Abstractions
 {
     /// <summary>
     /// A type definer scope is a generic named piece of source code that can be enclosed
-    /// in another <see cref="Parent"/> code scope.
+    /// in another <see cref="INamedScope.Parent">Parent</see> code scope.
     /// It generalizes <see cref="ITypeScope"/> that defines a Type (class, struct, enum, etc.)
     /// a <see cref="INamespaceScope"/> that defines a namespace or a <see cref="IFunctionScope"/>
     /// for functions or methods.
