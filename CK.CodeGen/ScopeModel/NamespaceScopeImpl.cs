@@ -124,7 +124,7 @@ namespace CK.CodeGen
             return result;
         }
 
-        static public string CheckAndNormalizeNamespace( string ns )
+        static string CheckAndNormalizeNamespace( string ns )
         {
             return String.Join( ".", CheckAndGetNamespaceParts( ns ) );
         }

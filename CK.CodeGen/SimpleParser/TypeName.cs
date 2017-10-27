@@ -83,9 +83,8 @@ namespace CK.CodeGen
 
         public string TypeKey { get; }
 
-        public StringBuilder Write( StringBuilder b )
+        public StringBuilder WriteGenArgs( StringBuilder b )
         {
-            b.Append( _name );
             if( _genArgs.Count > 0 )
             {
                 b.Append( '<' );
@@ -98,6 +97,13 @@ namespace CK.CodeGen
                 }
                 b.Append( '>' );
             }
+            return b;
+        }
+
+        public StringBuilder Write( StringBuilder b )
+        {
+            b.Append( _name );
+            WriteGenArgs( b );
             foreach( int d in _arrayDims )
             {
                 b.Append( '[' ).Append( ',', d ).Append( ']' );

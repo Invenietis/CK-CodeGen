@@ -34,6 +34,10 @@ namespace CK.CodeGen.Abstractions.Tests
         [TestCase( "interface I<T1,out T2> : Z, B, A {", "interface I<T1,out T2> : Z, A, B" )]
         [TestCase( " private enum   I< T1 ,out T2>:Z,B,A where Z:A where Y:A where X:Z,B,A {", "enum I<T1,out T2> : Z, A, B where X : Z, A, B where Y : A where Z : A" )]
         [TestCase( " private public struct I:Z,B,A where Z:A,new() where Y:A where X:Z,new(),B,A {", "public struct I : Z, A, B where X : Z, A, B, new() where Y : A where Z : A, new()" )]
+        [TestCase( "[ Att ( 1 , @\" a \"\"str\"\" \" ) ] class A", "[Att(1,@\" a \"\"str\"\" \")]class A" )]
+        [TestCase( "[ Z . K ( ) , Y , XAttribute ( \" a \\\"str\\\" \" ) ] class A", "[X(\" a \\\"str\\\" \"), Y, Z.K]class A" )]
+        [TestCase( "[Z.K(1)][Y()][X(2)] class A", "[X(2), Y, Z.K(1)]class A" )]
+        [TestCase( "[return:Z.K(' ')][Y()][return:X('\\'')] class A", "[return: X('\\''), Z.K(' ')][Y]class A" )]
         public void created_type_has_normalized_ToString_signature( string decl, string toString )
         {
             ITypeDefinerScope scope = CreateTypeDefinerScope();
@@ -45,6 +49,7 @@ namespace CK.CodeGen.Abstractions.Tests
         [TestCase( "public interface I<in T1, out T2> where T1 : struct { //...", "I<TKey,TValue>" )]
         [TestCase( "public interface I<in T1, out T2> where T1 : struct { //...", "I<,>" )]
         [TestCase( "class C<T<K,V>> where T1 : struct { //...", "C<>" )]
+        [TestCase( "[A,B]class C", "[Other(\"str\")]C" )]
         public void creating_type_and_finding_them_back( string decl, string finder )
         {
             ITypeDefinerScope scope = CreateTypeDefinerScope();
@@ -62,6 +67,9 @@ namespace CK.CodeGen.Abstractions.Tests
         [TestCase( "public sealed class" )]
         [TestCase( "public sealed class where T : struct" )]
         [TestCase( "public sealed class<T> where T : struct" )]
+        [TestCase( "[] class C" )]
+        [TestCase( "[-] class C" )]
+        [TestCase( "[2] class C" )]
         public void create_type_with_invalid_header( string header )
         {
             ITypeDefinerScope scope = CreateTypeDefinerScope();
@@ -79,7 +87,7 @@ namespace CK.CodeGen.Abstractions.Tests
             scope.Types.Should().BeEquivalentTo( t1, t2 );
         }
 
-        [TestCase( "public class C", "internal class C" )]
+        [TestCase( "public class C", "[A,B]internal class C" )]
         [TestCase( "public class C<T>", "public class C<TKey> : Base.X where TKey : K" )]
         [TestCase( "public class C", "struct C" )]
         [TestCase( "public class C", "class C {" )]

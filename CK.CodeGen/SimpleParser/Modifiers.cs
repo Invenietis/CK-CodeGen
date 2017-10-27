@@ -5,6 +5,7 @@ using System.Text;
 
 namespace CK.CodeGen
 {
+    [Flags]
     enum Modifiers
     {
         None = 0,

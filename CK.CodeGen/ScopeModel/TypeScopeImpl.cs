@@ -11,7 +11,6 @@ namespace CK.CodeGen
 {
     sealed class TypeScopeImpl : TypeDefinerScopeImpl, ITypeScope
     {
-        const string HeaderTypeError = @"Unable to parse type declaration from: '{0}'.";
         readonly FunctionDefiner _funcs;
 
         TypeDefinition _typeDef;
@@ -71,7 +70,7 @@ namespace CK.CodeGen
             m.SkipWhiteSpacesAndJSComments();
             if( !m.MatchTypeDefinition( out _typeDef, IsNestedType, out bool hasCodeOpener ) )
             {
-                throw new InvalidOperationException( string.Format( HeaderTypeError, _declaration ) );
+                throw new InvalidOperationException( $"Error: {m.ErrorMessage} Unable to parse type declaration {_declaration}" );
             }
             if( hasCodeOpener )
             {

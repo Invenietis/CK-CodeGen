@@ -27,12 +27,12 @@ namespace CK.CodeGen
             return false;
         }
 
-        static void EatCompileTimeStuff( this StringMatcher @this, out string stuff )
+        static bool EatRawCode( this StringMatcher @this, out string stuff, bool removeWhiteSpaces = true )
         {
             int depth = 0;
             StringBuilder b = new StringBuilder();
             while( !@this.IsEnd
-                    && (depth != 0 || (@this.Head != ')' && @this.Head != ']' || @this.Head != '}' || @this.Head != ',') ) )
+                    && (depth != 0 || (@this.Head != ')' && @this.Head != ']' && @this.Head != '}' && @this.Head != ',')) )
             {
                 if( @this.Head == '(' || @this.Head == '[' || @this.Head == '{' )
                 {
@@ -40,7 +40,7 @@ namespace CK.CodeGen
                     b.Append( @this.Head );
                     @this.UncheckedMove( 1 );
                 }
-                else if( @this.Head == ')' || @this.Head == ']' )
+                else if( @this.Head == ')' || @this.Head == ']' || @this.Head == '}' )
                 {
                     --depth;
                     b.Append( @this.Head );
@@ -54,13 +54,19 @@ namespace CK.CodeGen
                 {
                     b.Append( str );
                 }
-                else if( !Char.IsWhiteSpace( @this.Head ) )
+                else
                 {
-                    b.Append( @this.Head );
+                    if( !(removeWhiteSpaces && Char.IsWhiteSpace( @this.Head )) ) b.Append( @this.Head );
                     @this.UncheckedMove( 1 );
                 }
             }
+            if( b.Length == 0 )
+            {
+                stuff = null;
+                return false;
+            }
             stuff = b.ToString();
+            return true;
         }
 
         static bool TryMatchCSharpString( this StringMatcher @this, out string s )
@@ -73,26 +79,30 @@ namespace CK.CodeGen
             {
                 return @this.EatVerbatimString( 2, out s );
             }
-            if( @this.Head == '"' )
+            if( @this.TryMatchChar( '"' ) )
             {
-                return @this.EatString( out s );
+                return @this.EatString( out s, '"' );
+            }
+            if( @this.TryMatchChar( '\'' ) )
+            {
+                return @this.EatString( out s, '\'' );
             }
             s = null;
             return false;
         }
 
-        static bool EatString( this StringMatcher @this, out string s )
+        static bool EatString( this StringMatcher @this, out string s, char mark )
         {
-            int startIdx = @this.StartIndex;
+            int startIdx = @this.StartIndex - 1;
             while( !@this.IsEnd )
             {
-                if( @this.Head == '"' )
+                if( @this.Head == mark )
                 {
                     @this.UncheckedMove( 1 );
                     s = @this.GetText( startIdx, @this.StartIndex - startIdx );
                     return true;
                 }
-                if( @this.Head == '\\' ) @this.UncheckedMove( 2 );
+                @this.UncheckedMove( @this.Head == '\\' ? 2 : 1 );
             }
             s = null;
             return false;
@@ -107,10 +117,15 @@ namespace CK.CodeGen
                 {
                     @this.UncheckedMove( 1 );
                     if( @this.IsEnd ) break;
-                    if( @this.Head == '"' ) continue;
+                    if (@this.Head == '"')
+                    {
+                        @this.UncheckedMove( 1 );
+                        continue;
+                    }
                     s = @this.GetText( startIdx, @this.StartIndex - startIdx );
                     return true;
                 }
+                @this.UncheckedMove( 1 );
             }
             s = null;
             return false;
@@ -122,10 +137,29 @@ namespace CK.CodeGen
             while( @this.TryMatchAttribute( out var a ) )
             {
                 if( attributes == null ) attributes = new List<AttributeDefinition>();
-                attributes.Add( a );
+                int existTargetIdx = attributes.FindIndex( x => x.Target == a.Target );
+                if( existTargetIdx >= 0 ) attributes[existTargetIdx] = attributes[existTargetIdx].Merge( a );
+                else attributes.Add( a );
                 @this.SkipWhiteSpacesAndJSComments();
             }
             return !@this.IsError;
+        }
+
+        static string MapAttributeTarget( string s )
+        {
+            switch( s )
+            {
+                case "assembly": return "assembly";
+                case "module": return "module";
+                case "field": return "field";
+                case "event": return "event";
+                case "method": return "method";
+                case "param": return "param";
+                case "property": return "property";
+                case "return": return "return";
+                case "type": return "type";
+                default: return null;
+            }
         }
 
         internal static bool TryMatchAttribute( this StringMatcher @this, out AttributeDefinition attr )
@@ -133,26 +167,19 @@ namespace CK.CodeGen
             attr = null;
             if( !@this.TryMatchChar( '[' ) ) return false;
             @this.SkipWhiteSpacesAndJSComments();
-            if( !@this.TryMatchCSharpIdentifier( out string target ) ) return @this.AddError( "Attribute definition expected." );
-            if( target == "assembly"
-                || target == "module"
-                || target == "field"
-                || target == "event"
-                || target == "method"
-                || target == "param"
-                || target == "property"
-                || target == "return"
-                || target == "type" )
+            if( !@this.TryMatchCSharpIdentifier( out string targetOrName ) ) return @this.AddError( "Attribute definition expected." );
+            var target = MapAttributeTarget( targetOrName );
+            if( target != null )
             {
                 if( !@this.MatchChar( ':' ) ) return false;
-                target = null;
-                @this.SkipWhiteSpacesAndJSComments();
+                targetOrName = null;
             }
             List<AttributeDefinition.OneAttribute> attributes = new List<AttributeDefinition.OneAttribute>();
             do
             {
-                if( !@this.MatchTypeName( out TypeName name, target ) ) return @this.AddError( "Attribute definition expected." );
-                target = null;
+                @this.SkipWhiteSpacesAndJSComments();
+                if( !@this.MatchTypeName( out TypeName name, targetOrName ) ) return @this.AddError( "Attribute definition expected." );
+                targetOrName = null;
                 if( name.Name.EndsWith( "Attribute", StringComparison.Ordinal ) )
                 {
                     name = new TypeName( name.Name.Remove( name.Name.Length - 9 ), name.GenArgs, name.ArrayDims );
@@ -164,18 +191,86 @@ namespace CK.CodeGen
                     @this.SkipWhiteSpacesAndJSComments();
                     while( !@this.TryMatchChar( ')' ) )
                     {
-                        @this.EatCompileTimeStuff( out string stuff );
+                        if( !@this.EatRawCode( out string stuff ) ) return @this.SetError( "Values expected." );
                         values.Add( stuff );
-                        @this.SkipWhiteSpacesAndJSComments();
                         // Allow training comma. Don't care.
                         if( @this.TryMatchChar( ',' ) ) @this.SkipWhiteSpacesAndJSComments();
                     }
                 }
                 attributes.Add( new AttributeDefinition.OneAttribute( name, values ) );
+                @this.SkipWhiteSpacesAndJSComments();
             }
-            while( @this.TryMatchChar( ',' ) );
+            while ( @this.TryMatchChar( ',' ) );
+            @this.SkipWhiteSpacesAndJSComments();
             if( !@this.MatchChar( ']' ) ) return false;
+            attributes.Sort();
             attr = new AttributeDefinition( target, attributes );
+            return true;
+        }
+
+        internal static bool MatchMethodDefinition( this StringMatcher @this, out MethodDefinition mDef, out bool hasCodeOpener )
+        {
+            mDef = null;
+            hasCodeOpener = false;
+
+            if( !@this.MatchPotentialAttributes( out var attributes ) ) return false;
+
+            var startName = CollectModifiersUntilIdentifier( @this, out var modifiers );
+            modifiers = modifiers.NormalizeMemberProtection();
+
+            @this.SkipWhiteSpacesAndJSComments();
+            if( !@this.MatchTypeName( out var returnType, startName ) ) return false;
+
+            @this.SkipWhiteSpacesAndJSComments();
+            bool isIndexer = false;
+            TypeName methodName;
+            if( @this.TryMatchChar( '(' ) )
+            {
+                methodName = returnType;
+                returnType = null;
+            }
+            else
+            {
+                if( !@this.MatchTypeName( out methodName ) ) return false;
+                @this.SkipWhiteSpacesAndJSComments();
+                if( !@this.MatchChar( '(' ) && !(isIndexer = @this.TryMatchChar( '[' ) ) ) return false;
+            }
+            @this.SkipWhiteSpacesAndJSComments();
+            List<MethodDefinition.Parameter> parameters = new List<MethodDefinition.Parameter>();
+            while( !@this.TryMatchChar( isIndexer ? ']' : ')' ) )
+            {
+                do
+                {
+                    @this.SkipWhiteSpacesAndJSComments();
+                    if( !@this.MatchPotentialAttributes( out var pAttr ) ) return false;
+                    if( !@this.TryMatchCSharpIdentifier( out var pTypeStart ) ) return @this.SetError( "Expected identifier." );
+                    MethodDefinition.ParameterModifier mod = MethodDefinition.ParameterModifier.None;
+                    switch( pTypeStart )
+                    {
+                        case "this": mod = MethodDefinition.ParameterModifier.This; pTypeStart = null; break;
+                        case "params": mod = MethodDefinition.ParameterModifier.Params; pTypeStart = null; break;
+                        case "out": mod = MethodDefinition.ParameterModifier.Out; pTypeStart = null; break;
+                        case "ref": mod = MethodDefinition.ParameterModifier.Ref; pTypeStart = null; break;
+                    }
+                    @this.SkipWhiteSpacesAndJSComments();
+                    if( !@this.MatchTypeName( out var pType, pTypeStart ) ) return false;
+                    @this.SkipWhiteSpacesAndJSComments();
+                    if( !@this.TryMatchCSharpIdentifier( out var pName ) ) return false;
+                    @this.SkipWhiteSpacesAndJSComments();
+                    string defVal = null;
+                    if( @this.TryMatchChar( '=' ) )
+                    {
+                        if( !@this.EatRawCode( out defVal ) ) return false;
+                    }
+                    else @this.SkipWhiteSpacesAndJSComments();
+                    parameters.Add( new MethodDefinition.Parameter( pAttr, mod, pType, pName, defVal ) );
+                }
+                while( @this.TryMatchChar( ',' ) );
+            }
+            @this.SkipWhiteSpacesAndJSComments();
+            List<TypeParameterConstraint> wheres;
+            if( !@this.MatchWhereConstraints( out hasCodeOpener, out wheres ) ) return false;
+            mDef = new MethodDefinition( attributes, modifiers, returnType, methodName, isIndexer, parameters, wheres );
             return true;
         }
 
@@ -212,7 +307,7 @@ namespace CK.CodeGen
         {
             typeDef = null;
             hasCodeOpener = false;
-            
+
             if( !@this.MatchPotentialAttributes( out var attributes ) ) return false;
 
             TypeDefinition.TypeKind kind;
@@ -237,8 +332,16 @@ namespace CK.CodeGen
                 @this.SkipWhiteSpacesAndJSComments();
                 if( !@this.MatchBaseTypesOrConstraints( out baseTypes ) ) return false;
             }
-            List<TypeParameterConstraint> wheres = null;
             @this.SkipWhiteSpacesAndJSComments();
+            List<TypeParameterConstraint> wheres;
+            if( !@this.MatchWhereConstraints( out hasCodeOpener, out wheres ) ) return false;
+            typeDef = new TypeDefinition( attributes, modifiers, kind, name, baseTypes, wheres );
+            return true;
+        }
+
+        static bool MatchWhereConstraints( this StringMatcher @this, out bool hasCodeOpener, out List<TypeParameterConstraint> wheres )
+        {
+            wheres = null;
             while( !(hasCodeOpener = @this.TryMatchChar( '{' )) && !@this.IsEnd )
             {
                 if( !@this.MatchTypeParameterConstraint( out var c ) ) return false;
@@ -248,7 +351,6 @@ namespace CK.CodeGen
                 @this.SkipWhiteSpacesAndJSComments();
             }
             if( wheres != null ) wheres.Sort();
-            typeDef = new TypeDefinition( attributes, modifiers, kind, name, baseTypes, wheres );
             return true;
         }
 

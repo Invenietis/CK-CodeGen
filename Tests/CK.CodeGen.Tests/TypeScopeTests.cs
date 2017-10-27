@@ -23,18 +23,31 @@ namespace CK.CodeGen.Tests
             f.ReturnType.Should().Be( returnType );
         }
 
-        [TestCase( "void M(int i)", "M(inti)" )]
-        [TestCase( "L < T1, T2 > M<T>( int i, List< T > a )", "M<T>(inti,List<T>a)" )]
-        [TestCase( "List<T,Dictionary<A,B>> M<L<T>,H<K>>( N<H> i, List<T> a )", "M<L<T>,H<K>>(N<H>i,List<T>a)" )]
-        [TestCase( "ACONSTRuctor( N<H> i, List<T> a )", "ACONSTRuctor(N<H>i,List<T>a)" )]
-        [TestCase("System.Int32 MMM()", "MMM()")]
-        [TestCase( "public override System.Data.SqlClient.SqlCommand Do( ref System.Nullable<int> i )", "Do(refSystem.Nullable<int>i)" )]
-        public void CreateFunction_has_a_currently_very_stupid_name_handling( string header, string name )
+        [TestCase( "void M(int i)", "M(int i)" )]
+        [TestCase( "L < T1, T2 > M < T > ( int i , List < T >a )", "M<T>(int i, List<T> a)" )]
+        [TestCase( "List<T,Dictionary<A,B>> M<L<T>,H<K>>( N < H > i , List<T> a )", "M<L<T>,H<K>>(N<H> i, List<T> a)" )]
+        [TestCase( "ACONSTRuctor( N<H> i, List<T> a )", "ACONSTRuctor(N<H> i, List<T> a)" )]
+        [TestCase( "System.Int32 MMM()", "MMM()" )]
+        [TestCase( "public override System.Data.SqlClient.SqlCommand Do( ref System.Nullable<int> i )", "Do(ref System.Nullable<int> i)" )]
+        [TestCase( "R M( [ A ( 1 ) ] [ A ] ref System . Nullable < int > i = \"\",params K[,,] p = new(){ nimp, 0x9876UL })", "M(ref System.Nullable<int> i, params K[,,] p)" )]
+        public void CreateFunction_normalizes_the_function_name( string header, string name )
         {
             var t = CreateTypeScope();
             var f = t.CreateFunction( header );
             f.Should().NotBeNull();
             f.Name.Should().Be( name );
+        }
+
+        [TestCase( "M(int i)", "M(int i)" )]
+        [TestCase( "M(int i)", " M ( int i ) where K : class {" )]
+        [TestCase( "M(int i = 9)", " M ( int i=10)" )]
+        [TestCase( "M<T>(int i = 9)", " M <T> ( int i)" )]
+        public void CreateFunction_clashes_on_same_name( string original, string clash )
+        {
+            var t = CreateTypeScope();
+            var f = t.CreateFunction( original );
+            f.Should().NotBeNull();
+            t.Invoking( x => x.CreateFunction( clash ) ).ShouldThrow<ArgumentException>();
         }
 
         protected override ITypeDefinerScope CreateTypeDefinerScope() => CreateTypeScope();

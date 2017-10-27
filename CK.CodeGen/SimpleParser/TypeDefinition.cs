@@ -49,6 +49,7 @@ namespace CK.CodeGen
             BaseTypes = bases ?? Array.Empty<TypeName>();
             Constraints = constraints ?? Array.Empty<TypeParameterConstraint>();
             _hash = Modifiers.GetHashCode() ^ Kind.GetHashCode() ^ Name.GetHashCode();
+            foreach( var a in Attributes ) _hash ^= a.GetHashCode();
             foreach( var b in BaseTypes ) _hash ^= b.GetHashCode();
             foreach( var c in Constraints ) _hash ^= c.GetHashCode();
         }
@@ -96,6 +97,13 @@ namespace CK.CodeGen
             if( cmp != 0 ) return cmp;
             cmp = StringComparer.Ordinal.Compare( Name, other.Name );
             if( cmp != 0 ) return cmp;
+            cmp = Attributes.Count - other.Attributes.Count;
+            if( cmp != 0 ) return cmp;
+            for( int i = 0; i < Attributes.Count; ++i )
+            {
+                cmp = Attributes[i].CompareTo( other.Attributes[i] );
+                if( cmp != 0 ) return cmp;
+            }
             cmp = BaseTypes.Count - other.BaseTypes.Count;
             if( cmp != 0 ) return cmp;
             for( int i = 0; i < BaseTypes.Count; ++i )
@@ -117,10 +125,12 @@ namespace CK.CodeGen
         {
             return Modifiers == other.Modifiers
                     && Name.Equals( other.Name )
+                    && Attributes.Count == other.Attributes.Count
                     && BaseTypes.Count == other.BaseTypes.Count
                     && Constraints.Count == other.Constraints.Count
                     && BaseTypes.SequenceEqual( other.BaseTypes )
-                    && Constraints.SequenceEqual( Constraints );
+                    && Constraints.SequenceEqual( Constraints )
+                    && Attributes.SequenceEqual( Attributes );
         }
 
         public override bool Equals( object obj ) => obj is TypeDefinition o && Equals( o );
