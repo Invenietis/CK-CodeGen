@@ -11,6 +11,11 @@ namespace CK.CodeGen
     public static class CodeWorkspace 
     {
         /// <summary>
+        /// Gets an empty workspace factory.
+        /// </summary>
+        public static readonly Func<ICodeWorkspace> Factory = () => Create();
+
+        /// <summary>
         /// Creates a root workspace.
         /// </summary>
         /// <param name="initialSource">Optional initial <see cref="ICodeWorkspace.Global"/> source code.</param>

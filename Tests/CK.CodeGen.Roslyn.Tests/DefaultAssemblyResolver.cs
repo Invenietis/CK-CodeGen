@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-namespace CK.CodeGen.Tests
+namespace CK.CodeGen.Roslyn.Tests
 {
     public class DefaultAssemblyResolver : IAssemblyResolver
     {

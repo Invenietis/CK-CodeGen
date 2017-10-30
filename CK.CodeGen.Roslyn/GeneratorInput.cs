@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text;
 
@@ -30,12 +31,18 @@ namespace CK.CodeGen
         /// <summary>
         /// Combines code workspaces and modules into a <see cref="GeneratorInput"/>.
         /// </summary>
+        /// <param name="workspaceFactory">Factory for <see cref="ICodeWorkspace"/> implementations. Must not be null.</param>
         /// <param name="code">Original code. Can be null or empty.</param>
         /// <param name="modules">Code modules. Can be null or empty.</param>
         /// <param name="addRuntimeAssembly">True to automatically add the typeof(object)'s assembly.</param>
         /// <returns>A generator input.</returns>
-        internal static GeneratorInput Create( ICodeWorkspace code, IEnumerable<ICodeGeneratorModule> modules, bool addRuntimeAssembly )
+        internal static GeneratorInput Create(
+            Func<ICodeWorkspace> workspaceFactory,
+            ICodeWorkspace code,
+            IEnumerable<ICodeGeneratorModule> modules,
+            bool addRuntimeAssembly)
         {
+            Debug.Assert( workspaceFactory != null );
             var assemblies = new HashSet<Assembly>();
             if( addRuntimeAssembly ) assemblies.Add( typeof( object ).Assembly );
             var trees = new List<SyntaxTree>();
@@ -50,7 +57,7 @@ namespace CK.CodeGen
                         trees.Clear();
                         trees.AddRange( transformed );
                     }
-                    var wM = CodeWorkspace.Create();
+                    var wM = workspaceFactory();
                     m.Inject( wM );
                     CombineWorkspace( assemblies, trees, wM );
                 }

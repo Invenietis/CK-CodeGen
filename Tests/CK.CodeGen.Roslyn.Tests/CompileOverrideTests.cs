@@ -8,7 +8,7 @@ using System.Linq;
 using FluentAssertions;
 using CK.CodeGen.Abstractions;
 
-namespace CK.CodeGen.Tests
+namespace CK.CodeGen.Roslyn.Tests
 {
     public abstract class BaseToBeOverridden
     {

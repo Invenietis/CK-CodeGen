@@ -6,7 +6,7 @@ using FluentAssertions;
 namespace CK.CodeGen.Tests
 {
     [TestFixture]
-    public class TypeScopeTests : Abstractions.Tests.TypeDefinerScopeTests
+    public class TypeScopeTests : CommonTypeDefinerScopeTests
     {
         [TestCase( "void M(int i)", "void" )]
         [TestCase( "L < T1, T2 > M<T>( int i, List<T> a )", "L<T1,T2>" )]

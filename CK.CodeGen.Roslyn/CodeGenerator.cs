@@ -16,22 +16,21 @@ namespace CK.CodeGen
     /// </summary>
     public class CodeGenerator
     {
+        readonly Func<ICodeWorkspace> _workspaceFactory;
         readonly CSharpCompilationOptions _options;
-
-        /// <summary>
-        /// Initializes a new <see cref="CodeGenerator"/> with defult options.
-        /// </summary>
-        public CodeGenerator()
-            : this( null )
-        {
-        }
 
         /// <summary>
         /// Initializes a new <see cref="CodeGenerator"/> with options.
         /// </summary>
-        /// <param name="options">Compilation options.</param>
-        public CodeGenerator( CSharpCompilationOptions options )
+        /// <param name="workspaceFactory">
+        /// Factory for <see cref="ICodeWorkspace"/> implementations.
+        /// Must not be null.
+        /// </param>
+        /// <param name="options">Optional compilation options.</param>
+        public CodeGenerator( Func<ICodeWorkspace> workspaceFactory, CSharpCompilationOptions options = null )
         {
+            if( workspaceFactory == null ) throw new ArgumentNullException( nameof( workspaceFactory ) );
+            _workspaceFactory = workspaceFactory;
             if( options == null ) options = new CSharpCompilationOptions( OutputKind.DynamicallyLinkedLibrary );
             _options = options;
         }
@@ -63,7 +62,10 @@ namespace CK.CodeGen
         /// <returns>Encapsulation of the result.</returns>
         public GenerateResult Generate( string sourceCode, string assemblyPath, IEnumerable<Assembly> someReferences, IAssemblyResolver resolver, Func<string, Assembly> loader = null )
         {
-            return Generate( CodeWorkspace.Create( sourceCode, someReferences.ToArray() ), assemblyPath, resolver, loader );
+            var w = _workspaceFactory();
+            if( !String.IsNullOrWhiteSpace( sourceCode ) ) w.Global.Append( sourceCode );
+            foreach( var a in someReferences ) w.DoEnsureAssemblyReference( a );
+            return Generate( w, assemblyPath, resolver, loader );
         }
 
         /// <summary>
@@ -81,7 +83,7 @@ namespace CK.CodeGen
             if( resolver == null ) throw new ArgumentNullException( nameof( resolver ) );
             using( CK.Core.WeakAssemblyNameResolver.TempInstall() )
             {
-                var input = GeneratorInput.Create( code, Modules, AutoRegisterRuntimeAssembly );
+                var input = GeneratorInput.Create(_workspaceFactory, code, Modules, AutoRegisterRuntimeAssembly);
                 Modules.Clear();
                 var closureResult = resolver.GetAssembliesClosure( input.Assemblies );
                 return Generate(

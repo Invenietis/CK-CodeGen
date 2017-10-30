@@ -1,16 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
-using System.Text;
-using NUnit.Framework;
-using NUnit.Framework.Constraints;
-using System.Threading.Tasks;
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using Microsoft.CodeAnalysis;
-using FluentAssertions;
 using CK.Core;
 
 namespace CK.CodeGen.Tests
@@ -35,39 +25,6 @@ namespace CK.CodeGen.Tests
                 if( _solutionFolder == null ) InitalizePaths();
                 return _solutionFolder;
             }
-        }
-
-        public static string BinFolder => AppContext.BaseDirectory;
-
-        public static string RandomDllPath => Path.Combine( BinFolder, $"Test-{Guid.NewGuid().ToString().Substring( 0, 8 )}.dll" );
-
-        public static Assembly CreateAssembly( string sourceCode, IEnumerable<Assembly> references, params ICodeGeneratorModule[] modules )
-        {
-            var g = new CodeGenerator();
-            g.Modules.AddRange( modules );
-            return HandleCreateResult(
-                sourceCode,
-                g.Generate( sourceCode, RandomDllPath,
-                            references, DefaultAssemblyResolver.Default,
-                            GetAssemblyLoader() ) );
-        }
-
-        static Assembly HandleCreateResult( string sourceCode, GenerateResult result )
-        {
-            result.LogResult( TestHelper.Monitor );
-            result.Success.Should().BeTrue();
-            return result.Assembly;
-        }
-
-        private static Func<string, Assembly> GetAssemblyLoader()
-        {
-            Func<string, Assembly> loader;
-#if NET461
-            loader = Assembly.LoadFrom;
-#else
-            loader = System.Runtime.Loader.AssemblyLoadContext.Default.LoadFromAssemblyPath;
-#endif
-            return loader;
         }
 
         static void InitalizePaths()

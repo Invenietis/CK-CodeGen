@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using CK.Text;
 using CK.CodeGen.Abstractions;
 
-namespace CK.CodeGen.Tests
+namespace CK.CodeGen.Roslyn.Tests
 {
     [TestFixture]
     public class CompileToSourceStringTests

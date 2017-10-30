@@ -20,7 +20,7 @@ namespace System
     }
 }
 
-namespace CK.CodeGen.Tests
+namespace CK.CodeGen.Roslyn.Tests
 {
 
     [TestFixture]
@@ -90,7 +90,7 @@ namespace CK.CodeGen.Tests
                 .CreateType( "public static class DBNullWillBeReplaced" )
                 .Append( "public static object V = DBNull.Value;" ).NewLine();
 
-            var gen = new CodeGenerator();
+            var gen = new CodeGenerator( CodeWorkspace.Factory );
             gen.Modules.Add( new DoChangeDBNull() );
             gen.Modules.Add( new ThisModuleUsesTheRealDBNullValue() );
 

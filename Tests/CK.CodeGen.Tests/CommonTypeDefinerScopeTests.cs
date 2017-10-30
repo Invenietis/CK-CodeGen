@@ -1,10 +1,11 @@
 using System;
 using FluentAssertions;
 using NUnit.Framework;
+using CK.CodeGen.Abstractions;
 
-namespace CK.CodeGen.Abstractions.Tests
+namespace CK.CodeGen.Tests
 {
-    public abstract class TypeDefinerScopeTests
+    public abstract class CommonTypeDefinerScopeTests
     {
         [TestCase( "  public class ClassName", "ClassName" )]
         [TestCase( "public class ClassName : Truc . Machin<T>", "ClassName" )]

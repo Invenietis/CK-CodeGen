@@ -11,7 +11,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using CK.CodeGen.Abstractions;
 
-namespace CK.CodeGen.Tests
+namespace CK.CodeGen.Roslyn.Tests
 {
     public abstract class SimpleBase
     {

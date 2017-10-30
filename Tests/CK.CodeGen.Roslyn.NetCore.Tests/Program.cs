@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace CK.CodeGen.NetCore.Tests
+namespace CK.CodeGen.Roslyn.Tests
 {
     public static class Program
     {

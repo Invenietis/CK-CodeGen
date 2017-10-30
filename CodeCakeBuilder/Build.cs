@@ -108,23 +108,28 @@ namespace CodeCake
                     Cake.CreateDirectory( releasesDir );
 
                     Cake.Information( "Testing: CK.CodeGen.Tests (Net461)." );
+                    Cake.NUnit( $"Tests/CK.CodeGen.Tests/bin/{configuration}/net461/CK.CodeGen.Tests.dll",
+                        new NUnitSettings()
+                        {
+                            Framework = "v4.5",
+                            ResultsFile = "Tests/CK.CodeGen.Tests/TestResults.xml"
+                        } );
+
+                    Cake.Information( "Testing: CK.CodeGen.Roslyn.Tests (Net461/win)." );
+                    Cake.NUnit( $"Tests/CK.CodeGen.Roslyn.Tests/bin/{configuration}/net461/win/CK.CodeGen.Roslyn.Tests.dll",
+                        new NUnitSettings()
+                        {
+                            Framework = "v4.5",
+                            ResultsFile = "Tests/CK.CodeGen.Roslyn.Tests/TestResults.xml"
+                        } );
+
+                    Cake.Information( "Testing: CK.CodeGen.NetCore.Tests & CK.CodeGen.NetCore.Roslyn.Tests (NetCoreApp 2.0)." );
                     {
-                        var p = projects.Single( x => x.Name == "CK.CodeGen.Tests" );
-                        var path = p.Path.GetDirectory()
-                                    .CombineWithFilePath( "bin/" + configuration + "/net461/win/" + p.Name + ".dll" )
-                                    .FullPath;
-                        Cake.NUnit( path, new NUnitSettings()
-                                    {
-                                        Framework = "v4.5"
-                                    } );
-                    }
-                    Cake.Information( "Testing: CK.CodeGen.NetCore.Tests (NetCoreApp 2.0)." );
-                    {
-                        var p = projects.Single( x => x.Name == "CK.CodeGen.NetCore.Tests" );
-                        var path = p.Path.GetDirectory()
-                                    .CombineWithFilePath( "bin/" + configuration + "/netcoreapp2.0/" + p.Name + ".dll" )
-                                    .FullPath;
-                        Cake.DotNetCoreExecute( path );
+                        var p = projects.Where( x => x.Name == "CK.CodeGen.NetCore.Tests" || x.Name == "CK.CodeGen.Roslyn.NetCore.Tests" );
+                        var paths = p.Select( x => x.Path.GetDirectory()
+                                                    .CombineWithFilePath( "bin/" + configuration + "/netcoreapp2.0/" + x.Name + ".dll" )
+                                                    .FullPath );
+                        foreach( var path in paths ) Cake.DotNetCoreExecute( path );
                     }
                 } );
 
