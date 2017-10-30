@@ -7,7 +7,7 @@ namespace CK.CodeGen.Abstractions
     /// <summary>
     /// A function is defined in a <see cref="ITypeScope"/> or in another <see cref="IFunctionScope"/>.
     /// </summary>
-    public interface IFunctionScope : IFunctionDefinerScope
+    public interface IFunctionScope : IFunctionDefinerScope, ICodeWriter
     {
         /// <summary>
         /// Gets the function name description.

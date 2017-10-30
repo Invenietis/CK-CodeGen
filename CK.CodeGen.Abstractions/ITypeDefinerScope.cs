@@ -14,7 +14,7 @@ namespace CK.CodeGen.Abstractions
     /// It is itself a <see cref="ICodeWriter"/>: raw code can be appendend to it as needed
     /// that will appear at the top of the final type, namespace or function source code.
     /// </summary>
-    public interface ITypeDefinerScope : INamedScope
+    public interface ITypeDefinerScope : INamedScope, ICodeWriter
     {
         /// <summary>
         /// Creates a <see cref="ITypeScope"/> inside this scope.

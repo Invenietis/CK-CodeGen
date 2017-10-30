@@ -25,7 +25,7 @@ namespace CK.CodeGen
         {
             if( assembly == null ) throw new ArgumentNullException( nameof( assembly ) );
             _assemblies.Add( assembly );
-        }
+        } 
 
         public void MergeWith( ICodeWorkspace other )
         {
