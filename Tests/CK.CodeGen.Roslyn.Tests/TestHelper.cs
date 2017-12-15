@@ -48,7 +48,7 @@ namespace CK.CodeGen.Roslyn.Tests
             return HandleCreateResult(
                 sourceCode,
                 g.Generate( sourceCode, RandomDllPath,
-                            references, DefaultAssemblyResolver.Default,
+                            references,
                             GetAssemblyLoader() ) );
         }
 

@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Description></Description>
   </PropertyGroup>
 
   <Import Project="..\Common\Shared.props" />
 
   <ItemGroup>
-    <PackageReference Include="CK.Text" Version="6.0.1" />
+    <PackageReference Include="CK.Text" Version="6.1.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -21,9 +21,10 @@ namespace CK.CodeGen
         public readonly Assembly Assembly;
 
         /// <summary>
-        /// Collection of load failures while resolving assembly dependencies.
+        /// List of <see cref="AssemblyLoadConflict"/> that occured while
+        /// resolving assembly dependencies.
         /// </summary>
-        public readonly IReadOnlyCollection<AssemblyLoadFailure> LoadFailures;
+        public readonly IReadOnlyCollection<AssemblyLoadConflict> LoadConflicts;
 
         /// <summary>
         /// List of final Syntax trees that have been compiled.
@@ -46,7 +47,7 @@ namespace CK.CodeGen
         public readonly Exception AssemblyLoadError;
 
         /// <summary>
-        /// Gets whether the the generation succeeds.
+        /// Gets whether the generation succeeds.
         /// </summary>
         public bool Success => EmitResult?.Success == true && AssemblyLoadError == null;
 
@@ -59,14 +60,14 @@ namespace CK.CodeGen
         /// <param name="a">Loaded assembly if any.</param>
         /// <param name="e">Load error if any.</param>
         /// <param name="f">Load failures.</param>
-        public GenerateResult(Exception eE, IReadOnlyList<SyntaxTree> sources, EmitResult r, Assembly a, Exception e, IReadOnlyCollection<AssemblyLoadFailure> f)
+        public GenerateResult( Exception eE, IReadOnlyList<SyntaxTree> sources, EmitResult r, Assembly a, Exception e, IReadOnlyList<AssemblyLoadConflict> f )
         {
             EmitError = eE;
             Assembly = a;
             EmitResult = r;
             Sources = sources;
             AssemblyLoadError = e;
-            LoadFailures = f;
+            LoadConflicts = f;
         }
 
         /// <summary>
@@ -79,12 +80,22 @@ namespace CK.CodeGen
             if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
             using( monitor.OpenInfo( "Code Generation information." ) )
             {
-                if( LoadFailures.Count > 0 )
+                if( LoadConflicts.Count > 0 )
                 {
-                    using( monitor.OpenWarn( $"{LoadFailures.Count} assembly load failure(s)." ) )
-                        foreach( var e in LoadFailures )
-                            if( e.SuccessfulWeakFallback != null ) monitor.Warn( $"'{e.Name}' load failed, used '{e.SuccessfulWeakFallback}' instead." );
-                            else monitor.Error( $"'{e.Name}' load failed." );
+                    using( monitor.OpenWarn( $"{LoadConflicts.Count} assembly load conflict(s)." ) )
+                    {
+                        foreach( var e in LoadConflicts )
+                        {
+                            if( e.Resolved != null )
+                            {
+                                monitor.Warn( e.ToString() );
+                            }
+                            else
+                            {
+                                monitor.Error( e.ToString() );
+                            }
+                        }
+                    }
                 }
                 if( Success )
                 {
@@ -119,10 +130,9 @@ namespace CK.CodeGen
                 {
                     monitor.Error( "Generated assembly load failed.", AssemblyLoadError );
                 }
-                else if( Assembly != null )
-                {
-                    monitor.Trace( "Generated assembly successfuly loaded." );
-                }
+                monitor.CloseGroup( Assembly != null
+                                            ? "Generated assembly successfuly loaded."
+                                            : (Success ? "Succeeded." : "Failed.") );
             }
         }
 
@@ -143,6 +153,6 @@ namespace CK.CodeGen
             }
         }
 
-        internal GenerateResult WithLoadFailures(IReadOnlyCollection<AssemblyLoadFailure> f) => new GenerateResult(EmitError, Sources, EmitResult, Assembly, AssemblyLoadError, f);
+        internal GenerateResult WithLoadFailures( IReadOnlyList<AssemblyLoadConflict> f ) => new GenerateResult( EmitError, Sources, EmitResult, Assembly, AssemblyLoadError, f );
     }
 }

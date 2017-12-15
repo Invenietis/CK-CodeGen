@@ -94,7 +94,7 @@ namespace CK.CodeGen.Roslyn.Tests
             gen.Modules.Add( new DoChangeDBNull() );
             gen.Modules.Add( new ThisModuleUsesTheRealDBNullValue() );
 
-            var r = gen.Generate( workspace, TestHelper.RandomDllPath, DefaultAssemblyResolver.Default, Assembly.LoadFrom );
+            var r = gen.Generate( workspace, TestHelper.RandomDllPath, Assembly.LoadFrom );
             r.LogResult( TestHelper.Monitor );
             r.Success.Should().BeTrue();
             gen.Modules.Should().BeEmpty();
