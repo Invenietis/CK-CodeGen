@@ -8,7 +8,7 @@
   <Import Project="..\Common\Shared.props" />
 
   <ItemGroup>
-    <PackageReference Include="CK.Text" Version="6.2.0" />
+    <PackageReference Include="CK.Text" Version="6.2.1" />
   </ItemGroup>
 
   <ItemGroup>
