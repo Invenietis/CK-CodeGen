@@ -16,7 +16,7 @@ namespace CK.CodeGen.Tests
         public void appending_an_unknown_typed_object_is_an_error()
         {
             var w = new StringCodeWriter();
-            w.Invoking( x => x.Append( this ) ).ShouldThrow<ArgumentException>();
+            w.Invoking( x => x.Append( this ) ).Should().Throw<ArgumentException>();
         }
 
 #pragma warning disable CS0693

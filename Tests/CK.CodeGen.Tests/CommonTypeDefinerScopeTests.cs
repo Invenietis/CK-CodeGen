@@ -29,7 +29,7 @@ namespace CK.CodeGen.Tests
 
             scope.FindType( typeName ).Should().BeSameAs( type );
 
-            scope.Invoking( sut => sut.CreateType( decl ) ).ShouldThrow<ArgumentException>();
+            scope.Invoking( sut => sut.CreateType( decl ) ).Should().Throw<ArgumentException>();
         }
 
         [TestCase( "interface I<T1,out T2> : Z, B, A {", "interface I<T1,out T2> : Z, A, B" )]
@@ -58,7 +58,7 @@ namespace CK.CodeGen.Tests
 
             scope.FindType( finder ).Should().BeSameAs( type );
 
-            scope.Invoking( sut => sut.CreateType( decl ) ).ShouldThrow<ArgumentException>();
+            scope.Invoking( sut => sut.CreateType( decl ) ).Should().Throw<ArgumentException>();
         }
 
         [TestCase( "public sealed MissingKind" )]
@@ -75,7 +75,7 @@ namespace CK.CodeGen.Tests
         {
             ITypeDefinerScope scope = CreateTypeDefinerScope();
             scope.Invoking( sut => sut.CreateType( h => h.Append( header ) ) )
-                     .ShouldThrow<InvalidOperationException>();
+                     .Should().Throw<InvalidOperationException>();
         }
 
         [Test]
@@ -100,7 +100,7 @@ namespace CK.CodeGen.Tests
         {
             ITypeDefinerScope scope = CreateTypeDefinerScope();
             scope.CreateType( original );
-            scope.Invoking( sut => sut.CreateType( clash ) ).ShouldThrow<ArgumentException>();
+            scope.Invoking( sut => sut.CreateType( clash ) ).Should().Throw<ArgumentException>();
         }
 
         protected abstract ITypeDefinerScope CreateTypeDefinerScope();

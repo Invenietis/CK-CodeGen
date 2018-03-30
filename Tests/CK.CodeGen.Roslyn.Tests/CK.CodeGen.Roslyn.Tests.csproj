@@ -1,26 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <Import Project="..\..\Common\Shared.props" />
-
   <PropertyGroup>
     <TargetFrameworks>net461</TargetFrameworks>
   </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\CK.CodeGen.Roslyn\CK.CodeGen.Roslyn.csproj" />
     <ProjectReference Include="..\..\CK.CodeGen\CK.CodeGen.csproj" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="4.19.4" />
+    <PackageReference Include="FluentAssertions" Version="5.2.0" />
     <PackageReference Include="NUnit" Version="[2.6.4]" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
   </ItemGroup>
-
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
-
 </Project>

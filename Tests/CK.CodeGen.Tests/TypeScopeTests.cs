@@ -47,7 +47,7 @@ namespace CK.CodeGen.Tests
             var t = CreateTypeScope();
             var f = t.CreateFunction( original );
             f.Should().NotBeNull();
-            t.Invoking( x => x.CreateFunction( clash ) ).ShouldThrow<ArgumentException>();
+            t.Invoking( x => x.CreateFunction( clash ) ).Should().Throw<ArgumentException>();
         }
 
         protected override ITypeDefinerScope CreateTypeDefinerScope() => CreateTypeScope();
