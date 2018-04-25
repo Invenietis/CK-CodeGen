@@ -5,7 +5,7 @@
   </PropertyGroup>
   <Import Project="..\Common\Shared.props" />
   <ItemGroup>
-    <PackageReference Include="CK.Text" Version="6.2.2-Cblank-0024" />
+    <PackageReference Include="CK.Text" Version="6.2.2-Cdevelop-0032" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.CodeGen.Abstractions\CK.CodeGen.Abstractions.csproj" />
