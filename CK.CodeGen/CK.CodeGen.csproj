@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Description></Description>
+  </PropertyGroup>
+  <Import Project="..\Common\Shared.props" />
+  <ItemGroup>
+    <PackageReference Include="CK.Text" Version="7.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CK.CodeGen.Abstractions\CK.CodeGen.Abstractions.csproj" />
+  </ItemGroup>
+</Project>

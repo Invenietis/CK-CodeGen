@@ -250,3 +250,5 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+CodeCakeBuilder/Tools/
+Tests/**/TestResult*.xml
