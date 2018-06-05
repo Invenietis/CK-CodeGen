@@ -12,7 +12,7 @@
     <PackageReference Include="FluentAssertions" Version="5.3.2" />
     <PackageReference Include="NUnitLite" Version="3.10.1" />
     <PackageReference Include="NUnit" Version="3.10.1" />
-    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="10.0.1-C0021-local" />
+    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="10.0.1-C0031-develop" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\$(OriginProjectName)\**\*.cs" Exclude="..\$(OriginProjectName)\obj\**">
