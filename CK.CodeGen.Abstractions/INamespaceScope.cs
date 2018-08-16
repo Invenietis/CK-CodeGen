@@ -46,6 +46,12 @@ namespace CK.CodeGen.Abstractions
         /// Gets the list of direct subordinated namespaces.
         /// </summary>
         IReadOnlyCollection<INamespaceScope> Namespaces { get; }
+
+        /// <summary>
+        /// Creates a segment of code inside this namespace.
+        /// </summary>
+        /// <returns>The namespace part to use.</returns>
+        INamespaceScopePart CreatePart();
         
     }
 }

@@ -16,5 +16,12 @@ namespace CK.CodeGen.Abstractions
         /// (or in a <see cref="INamespaceScope"/>).
         /// </summary>
         bool IsNestedType { get; }
+
+
+        /// <summary>
+        /// Creates a segment of code inside this type.
+        /// </summary>
+        /// <returns>The type part to use.</returns>
+        ITypeScopePart CreatePart();
     }
 }

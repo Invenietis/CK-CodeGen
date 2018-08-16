@@ -49,9 +49,9 @@ namespace CK.CodeGen
             }
             if( other._codeStartIdx > 0 )
             {
-                Code.Add( other._declaration.Substring( _codeStartIdx ) );
+                CodePart.Code.Add( other._declaration.Substring( _codeStartIdx ) );
             }
-            MergeCode( other );
+            CodePart.MergeWith( other.CodePart );
             MergeTypes( other );
             _funcs.MergeWith( Workspace, this, other._funcs );
         }
@@ -64,8 +64,8 @@ namespace CK.CodeGen
         {
             var b = new SmarterStringBuilder( null );
             // We store the declaration and clears the code buffer.
-            _declaration = BuildCode( b ).ToString();
-            Code.Clear();
+            _declaration = CodePart.Build( b ).ToString();
+            CodePart.Code.Clear();
             var m = new StringMatcher( _declaration );
             m.SkipWhiteSpacesAndJSComments();
             if( !m.MatchTypeDefinition( out _typeDef, IsNestedType, out bool hasCodeOpener ) )
@@ -84,7 +84,7 @@ namespace CK.CodeGen
         {
             b.AppendLine().Append( _declaration );
             if( _codeStartIdx == 0 ) b.AppendLine().Append( '{' ).AppendLine();
-            BuildCode( b );
+            CodePart.Build( b );
             _funcs.Build( b );
             BuildTypes( b );
             if( closeScope ) b.AppendLine().Append( '}' ).AppendLine();
@@ -97,5 +97,39 @@ namespace CK.CodeGen
         }
 
         public override string ToString() => _typeDef.Write( new StringBuilder() ).ToString();
+
+        public ITypeScopePart CreatePart()
+        {
+            var p = new Part( this );
+            CodePart.Code.Add( p );
+            return p;
+        }
+
+        class Part : TypeDefinerPart, ITypeScopePart
+        {
+            public Part( ITypeScope owner )
+                : base( owner )
+            {
+            }
+
+            public new ITypeScopePart PartOwner => (ITypeScopePart)base.PartOwner;
+
+            public INamespaceScope Namespace => PartOwner.Namespace;
+
+            public bool IsNestedType => PartOwner.IsNestedType;
+
+            public IFunctionScope CreateFunction( Action<IFunctionScope> header ) => PartOwner.CreateFunction( header );
+
+            public ITypeScopePart CreatePart() => PartOwner.CreatePart();
+
+            public ITypeScopePart CreateSubPart()
+            {
+                var p = new Part( this );
+                Code.Add( p );
+                return p;
+            }
+
+        }
+
     }
 }

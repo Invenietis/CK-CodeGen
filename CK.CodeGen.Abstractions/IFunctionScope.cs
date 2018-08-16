@@ -34,5 +34,12 @@ namespace CK.CodeGen.Abstractions
         /// Null when <see cref="IsConstructor"/> is true.
         /// </summary>
         string ReturnType { get; }
+
+
+        /// <summary>
+        /// Creates a segment of code inside this function.
+        /// </summary>
+        /// <returns>The function part to use.</returns>
+        IFunctionScopePart CreatePart();
     }
 }
