@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CK.CodeGen.Abstractions;
+using CK.Text;
 
 namespace CK.CodeGen.Tests
 {
@@ -78,7 +79,7 @@ namespace CK.CodeGen.Tests
             c1.MergeWith( c2 );
 
             string code = c1.GetGlobalSource();
-            code.Trim().Should().Be( @"
+            code.Trim().NormalizeEOL().Should().Be( @"
 Hop! (Later but in a sup part of the first part).
 1 - n°0
 1 - n°1
@@ -92,7 +93,7 @@ n°1
 !2 - n°1
 !n°0
 !n°1
-".Trim() );
+".NormalizeEOL().Trim() );
         }
     }
 }
