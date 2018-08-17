@@ -89,7 +89,7 @@ namespace CK.CodeGen
             m.SkipWhiteSpacesAndJSComments();
             if( !m.MatchMethodDefinition( out _mDef, out bool hasCodeOpener ) )
             {
-                throw new InvalidOperationException( $"Error: {m.ErrorMessage} Unable to parse function declaration {_declaration}" );
+                throw new InvalidOperationException( $"Error: {m.ErrorMessage} Unable to parse function or constructor declaration {_declaration}" );
             }
             if( hasCodeOpener )
             {

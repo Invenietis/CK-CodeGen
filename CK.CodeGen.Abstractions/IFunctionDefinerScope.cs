@@ -12,11 +12,12 @@ namespace CK.CodeGen.Abstractions
     public interface IFunctionDefinerScope : INamedScope
     {
         /// <summary>
-        /// Creates a <see cref="IFunctionScope"/> inside this scope.
+        /// Creates a <see cref="IFunctionScope"/> (that can be a constructor) inside
+        /// this scope.
         /// Its name is automatically extracted from the header that may contain the
         /// opening curly brace '{' or not (in such case it is automatically appended).
         /// </summary>
-        /// <param name="header">Configure the header. Must not be null.</param>
+        /// <param name="header">Configure the header or more (the body can be generated here). Must not be null.</param>
         /// <returns>The new type scope.</returns>
         IFunctionScope CreateFunction( Action<IFunctionScope> header );
 
