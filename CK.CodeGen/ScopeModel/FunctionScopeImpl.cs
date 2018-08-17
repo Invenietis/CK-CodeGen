@@ -122,6 +122,8 @@ namespace CK.CodeGen
             return p;
         }
 
+        public override string ToString() => Build( new StringBuilder(), true ).ToString();
+
         class Part : CodePart, IFunctionScopePart
         {
             public Part( IFunctionScope owner )
