@@ -90,9 +90,9 @@ namespace CK.CodeGen.Tests
 
         [TestCase( "public class C", "[A,B]internal class C" )]
         [TestCase( "public class C<T>", "public class C<TKey> : Base.X where TKey : K" )]
-        [TestCase( "public class C", "struct C" )]
+        [TestCase( "public class C", "readonly ref struct C" )]
         [TestCase( "public class C", "class C {" )]
-        [TestCase( "public class C", "enum C {" )]
+        [TestCase( "public readonly ref struct C", "enum C {" )]
         [TestCase( "public class C", "enum C : byte" )]
         [TestCase( "class C < T1 , T2 >", "public class C<T1,T2>" )]
         [TestCase( "interface C<in T1, out T2>", "interface C<T1,T2>" )]
