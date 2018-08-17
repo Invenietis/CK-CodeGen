@@ -53,6 +53,8 @@ namespace CK.CodeGen
 
         internal protected abstract SmarterStringBuilder Build( SmarterStringBuilder b, bool closeScope );
 
+        public override string ToString() => Build( new StringBuilder(), true ).ToString();
+
         public static string RemoveWhiteSpaces( string s )
         {
             return Regex.Replace( s, "\\s+", String.Empty, RegexOptions.CultureInvariant );

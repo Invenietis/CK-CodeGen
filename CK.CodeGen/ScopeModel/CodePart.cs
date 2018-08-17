@@ -31,6 +31,7 @@ namespace CK.CodeGen
                 if( c is CodePart p ) p.Build( b );
                 else b.Append( (string)c );
             }
+            b.AppendLine();
             return b;
         }
 
@@ -55,5 +56,6 @@ namespace CK.CodeGen
             }
         }
 
+        public override string ToString() => BuildPart( new StringBuilder() ).ToString();
     }
 }

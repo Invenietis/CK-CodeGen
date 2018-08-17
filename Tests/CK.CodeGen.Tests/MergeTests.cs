@@ -78,8 +78,8 @@ namespace CK.CodeGen.Tests
 
             c1.MergeWith( c2 );
 
-            string code = c1.GetGlobalSource();
-            code.Trim().NormalizeEOL().Should().Be( @"
+            string code = c1.GetGlobalSource().Trim();
+            code.Should().Be( @"
 Hop! (Later but in a sup part of the first part).
 1 - n°0
 1 - n°1
@@ -93,7 +93,7 @@ n°1
 !2 - n°1
 !n°0
 !n°1
-".NormalizeEOL().Trim() );
+".Trim().NormalizeEOL() );
         }
     }
 }

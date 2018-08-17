@@ -6,7 +6,7 @@ namespace CK.CodeGen.Abstractions
     /// <summary>
     /// Handles code part composites in a <see cref="ITypeScopePart"/>.
     /// </summary>
-    public interface ITypeScopePart : ICodePart<ITypeScopePart>, ITypeScope
+    public interface ITypeScopePart : ICodePart<ITypeScope>, ITypeScope
     {
         /// <summary>
         /// Creates a subordinated part of code in this part of code.

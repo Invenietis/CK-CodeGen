@@ -96,7 +96,7 @@ namespace CK.CodeGen
             return _funcs.Create( Workspace, this, header );
         }
 
-        public override string ToString() => _typeDef.Write( new StringBuilder() ).ToString();
+        public string TypeHeader => _typeDef.Write( new StringBuilder() ).ToString();
 
         public ITypeScopePart CreatePart()
         {
@@ -112,11 +112,13 @@ namespace CK.CodeGen
             {
             }
 
-            public new ITypeScopePart PartOwner => (ITypeScopePart)base.PartOwner;
+            public new ITypeScope PartOwner => (ITypeScope)base.PartOwner;
 
             public INamespaceScope Namespace => PartOwner.Namespace;
 
             public bool IsNestedType => PartOwner.IsNestedType;
+
+            public string TypeHeader => PartOwner.TypeHeader;
 
             public IFunctionScope CreateFunction( Action<IFunctionScope> header ) => PartOwner.CreateFunction( header );
 
