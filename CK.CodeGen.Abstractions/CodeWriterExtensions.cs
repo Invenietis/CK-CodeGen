@@ -93,7 +93,7 @@ namespace CK.CodeGen
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
-        /// <param name="t">The type to obtain.</param>
+        /// <param name="t">The type to append.</param>
         /// <param name="typeDeclaration">True to include generic parameter names in the output.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
         public static T AppendCSharpName<T>( this T @this, Type t, bool typeDeclaration = true ) where T : ICodeWriter
@@ -144,6 +144,23 @@ namespace CK.CodeGen
                 else @this.Append( n );
             }
             return @this;
+        }
+
+
+        /// <summary>
+        /// Appends "typeof(<see cref="AppendCSharpName"/>)" with the type name in is non declaration form:
+        /// for the open generic dictionary this is "typeof(System.Collections.Generic.Dictionary&lt;,&gt)".
+        /// When <paramref name="t"/> is null, null is appended.
+        /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
+        /// <param name="this">This code writer.</param>
+        /// <param name="t">The type to append with typeof operator. When null, "null" will be appended.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
+        public static T AppendTypeOf<T>( this T @this, Type t ) where T : ICodeWriter
+        {
+            return t == null
+                    ? @this.Append( "null" )
+                    : @this.Append( "typeof(" ).AppendCSharpName( t, false ).Append( ")" );
         }
 
         /// <summary>
