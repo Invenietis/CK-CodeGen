@@ -122,9 +122,7 @@ namespace CK.CodeGen
 
             public IFunctionScope CreateFunction( Action<IFunctionScope> header ) => PartOwner.CreateFunction( header );
 
-            public ITypeScopePart CreatePart() => PartOwner.CreatePart();
-
-            public ITypeScopePart CreateSubPart()
+            public ITypeScopePart CreatePart()
             {
                 var p = new Part( this );
                 Code.Add( p );

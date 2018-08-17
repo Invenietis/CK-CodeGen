@@ -200,9 +200,7 @@ namespace CK.CodeGen
 
             public IReadOnlyCollection<INamespaceScope> Namespaces => PartOwner.Namespaces;
 
-            public INamespaceScopePart CreatePart() => PartOwner.CreatePart();
-
-            public INamespaceScopePart CreateSubPart() 
+            public INamespaceScopePart CreatePart()
             {
                 var p = new Part( this );
                 Code.Add( p );

@@ -8,10 +8,5 @@ namespace CK.CodeGen.Abstractions
     /// </summary>
     public interface ITypeScopePart : ICodePart<ITypeScope>, ITypeScope
     {
-        /// <summary>
-        /// Creates a subordinated part of code in this part of code.
-        /// </summary>
-        /// <returns>The type part to use.</returns>
-        ITypeScopePart CreateSubPart();
     }
 }

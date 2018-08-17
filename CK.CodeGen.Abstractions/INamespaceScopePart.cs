@@ -8,10 +8,5 @@ namespace CK.CodeGen.Abstractions
     /// </summary>
     public interface INamespaceScopePart : ICodePart<INamespaceScope>, INamespaceScope
     {
-        /// <summary>
-        /// Creates a part of code in this part of code.
-        /// </summary>
-        /// <returns>The namespace part to use.</returns>
-        INamespaceScopePart CreateSubPart();
     }
 }

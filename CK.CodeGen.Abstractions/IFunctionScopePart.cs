@@ -8,10 +8,5 @@ namespace CK.CodeGen.Abstractions
     /// </summary>
     public interface IFunctionScopePart : ICodePart<IFunctionScope>, IFunctionScope
     {
-        /// <summary>
-        /// Creates a part of code in this part of code.
-        /// </summary>
-        /// <returns>The function part to use.</returns>
-        IFunctionScopePart CreateSubPart();
     }
 }

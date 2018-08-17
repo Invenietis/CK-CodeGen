@@ -56,7 +56,7 @@ namespace CK.CodeGen.Tests
             var c2 = CodeWorkspace.Create();
 
             INamespaceScopePart c1Part1 = c1.Global.CreatePart();
-            INamespaceScope c1Part1Sub = c1Part1.CreateSubPart();
+            INamespaceScope c1Part1Sub = c1Part1.CreatePart();
 
             c1.Global.Append( "n°0 (but after having created the 2 parts!)" ).NewLine();
             INamespaceScope c1Part2 = c1.Global.CreatePart();
