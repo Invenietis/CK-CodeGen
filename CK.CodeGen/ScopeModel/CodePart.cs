@@ -8,25 +8,25 @@ namespace CK.CodeGen
     class CodePart : ICodeWriter, INamedScope
     {
         readonly INamedScope _owner;
-        internal readonly List<object> Code;
+        internal readonly List<object> Parts;
 
         public CodePart( INamedScope owner )
         {
             _owner = owner;
-            Code = new List<object>();
+            Parts = new List<object>();
         }
 
         public INamedScope PartOwner => _owner;
 
         public void DoAdd( string code )
         {
-            if( !String.IsNullOrEmpty( code ) ) Code.Add( code );
+            if( !String.IsNullOrEmpty( code ) ) Parts.Add( code );
         }
 
         internal SmarterStringBuilder Build( SmarterStringBuilder b )
         {
             b.AppendLine();
-            foreach( var c in Code )
+            foreach( var c in Parts )
             {
                 if( c is CodePart p ) p.Build( b );
                 else b.Append( (string)c );
@@ -49,10 +49,10 @@ namespace CK.CodeGen
 
         internal void MergeWith( CodePart other )
         {
-            foreach( var c in other.Code )
+            foreach( var c in other.Parts )
             {
                 if( c is CodePart p ) MergeWith( p );
-                else Code.Add( (string)c );
+                else Parts.Add( (string)c );
             }
         }
 

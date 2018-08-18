@@ -39,9 +39,9 @@ namespace CK.CodeGen
 
         public bool IsLocalFunction => Parent is IFunctionScope;
 
-        public bool IsConstructor => _mDef.ReturnType == null;
+        public bool IsConstructor => _mDef?.ReturnType == null;
 
-        public string ReturnType => _mDef.ReturnType?.ToString();
+        public string ReturnType => _mDef?.ReturnType?.ToString();
 
         public IFunctionName FunctionName => _name;
 
@@ -50,7 +50,7 @@ namespace CK.CodeGen
             Debug.Assert( other != null );
             if( other._codeStartIdx > 0 )
             {
-                CodePart.Code.Add( other._declaration.Substring( _codeStartIdx ) );
+                CodePart.Parts.Add( other._declaration.Substring( _codeStartIdx ) );
             }
             CodePart.MergeWith( other.CodePart );
             _funcs.MergeWith( Workspace, this, other._funcs );
@@ -84,7 +84,7 @@ namespace CK.CodeGen
             var b = new SmarterStringBuilder( null );
             // We store the declaration and clears the code buffer.
             _declaration = CodePart.Build( b ).ToString();
-            CodePart.Code.Clear();
+            CodePart.Parts.Clear();
             var m = new StringMatcher( _declaration );
             m.SkipWhiteSpacesAndJSComments();
             if( !m.MatchMethodDefinition( out _mDef, out bool hasCodeOpener ) )
@@ -102,11 +102,15 @@ namespace CK.CodeGen
 
         internal protected override SmarterStringBuilder Build( SmarterStringBuilder b, bool closeScope )
         {
-            b.AppendLine().Append( _declaration );
-            if( _codeStartIdx == 0 ) b.AppendLine().Append( '{' ).AppendLine();
-            CodePart.Build( b );
-            _funcs.Build( b );
-            if( closeScope ) b.AppendLine().Append( "}" );
+            if( _declaration == null ) CodePart.Build( b );
+            else
+            {
+                b.AppendLine().Append( _declaration );
+                if( _codeStartIdx == 0 ) b.AppendLine().Append( '{' ).AppendLine();
+                CodePart.Build( b );
+                _funcs.Build( b );
+                if( closeScope ) b.AppendLine().Append( "}" );
+            }
             return b;
         }
 
@@ -115,14 +119,13 @@ namespace CK.CodeGen
             return _funcs.Create( Workspace, this, header );
         }
 
-        public IFunctionScopePart CreatePart()
+        public IFunctionScopePart CreatePart( bool top )
         {
             var p = new Part( this );
-            CodePart.Code.Add( p );
+            if( top ) CodePart.Parts.Insert( 0, p );
+            else CodePart.Parts.Add( p );
             return p;
         }
-
-        public override string ToString() => Build( new StringBuilder(), true ).ToString();
 
         class Part : CodePart, IFunctionScopePart
         {
@@ -145,10 +148,11 @@ namespace CK.CodeGen
 
             public IFunctionScope CreateFunction( Action<IFunctionScope> header ) => PartOwner.CreateFunction( header );
 
-            public IFunctionScopePart CreatePart() 
+            public IFunctionScopePart CreatePart( bool top ) 
             {
                 var p = new Part( this );
-                Code.Add( p );
+                if( top ) Parts.Insert( 0, p );
+                else Parts.Add( p );
                 return p;
             }
 

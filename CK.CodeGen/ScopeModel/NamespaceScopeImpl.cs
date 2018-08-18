@@ -180,10 +180,11 @@ namespace CK.CodeGen
             return b;
         }
 
-        public INamespaceScopePart CreatePart()
+        public INamespaceScopePart CreatePart( bool top )
         {
             var p = new Part( this );
-            CodePart.Code.Add( p );
+            if( top ) CodePart.Parts.Insert( 0, p );
+            else CodePart.Parts.Add( p );
             return p;
         }
 
@@ -200,10 +201,11 @@ namespace CK.CodeGen
 
             public IReadOnlyCollection<INamespaceScope> Namespaces => PartOwner.Namespaces;
 
-            public INamespaceScopePart CreatePart()
+            public INamespaceScopePart CreatePart( bool top )
             {
                 var p = new Part( this );
-                Code.Add( p );
+                if( top ) Parts.Insert( 0, p );
+                else Parts.Add( p );
                 return p;
             }
 

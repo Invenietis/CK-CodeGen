@@ -3,7 +3,7 @@ using System.Text;
 namespace CK.CodeGen.Abstractions
 {
     /// <summary>
-    /// A code part is enable any <see cref="INamedScope"/> to be segmented
+    /// A code part enables any <see cref="INamedScope"/> to be segmented
     /// in as many parts as needed.
     /// </summary>
     public interface ICodePart<T> : ICodeWriter where T : INamedScope

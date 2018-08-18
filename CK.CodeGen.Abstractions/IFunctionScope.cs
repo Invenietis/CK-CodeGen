@@ -39,7 +39,11 @@ namespace CK.CodeGen.Abstractions
         /// <summary>
         /// Creates a segment of code inside this function.
         /// </summary>
+        /// <param name="top">
+        /// Optionally creates the new part at the start of the code instead of at the
+        /// current writing position in the code.
+        /// </param>
         /// <returns>The function part to use.</returns>
-        IFunctionScopePart CreatePart();
+        IFunctionScopePart CreatePart( bool top = false );
     }
 }

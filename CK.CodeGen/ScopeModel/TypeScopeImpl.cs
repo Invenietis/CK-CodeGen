@@ -49,7 +49,7 @@ namespace CK.CodeGen
             }
             if( other._codeStartIdx > 0 )
             {
-                CodePart.Code.Add( other._declaration.Substring( _codeStartIdx ) );
+                CodePart.Parts.Add( other._declaration.Substring( _codeStartIdx ) );
             }
             CodePart.MergeWith( other.CodePart );
             MergeTypes( other );
@@ -65,7 +65,7 @@ namespace CK.CodeGen
             var b = new SmarterStringBuilder( null );
             // We store the declaration and clears the code buffer.
             _declaration = CodePart.Build( b ).ToString();
-            CodePart.Code.Clear();
+            CodePart.Parts.Clear();
             var m = new StringMatcher( _declaration );
             m.SkipWhiteSpacesAndJSComments();
             if( !m.MatchTypeDefinition( out _typeDef, IsNestedType, out bool hasCodeOpener ) )
@@ -82,12 +82,16 @@ namespace CK.CodeGen
 
         internal protected override SmarterStringBuilder Build( SmarterStringBuilder b, bool closeScope )
         {
-            b.AppendLine().Append( _declaration );
-            if( _codeStartIdx == 0 ) b.AppendLine().Append( '{' ).AppendLine();
-            CodePart.Build( b );
-            _funcs.Build( b );
-            BuildTypes( b );
-            if( closeScope ) b.AppendLine().Append( '}' ).AppendLine();
+            if( _declaration == null ) CodePart.Build( b );
+            else
+            {
+                b.AppendLine().Append( _declaration );
+                if( _codeStartIdx == 0 ) b.AppendLine().Append( '{' ).AppendLine();
+                CodePart.Build( b );
+                _funcs.Build( b );
+                BuildTypes( b );
+                if( closeScope ) b.AppendLine().Append( '}' ).AppendLine();
+            }
             return b;
         }
 
@@ -98,10 +102,11 @@ namespace CK.CodeGen
 
         public string TypeHeader => _typeDef.Write( new StringBuilder() ).ToString();
 
-        public ITypeScopePart CreatePart()
+        public ITypeScopePart CreatePart( bool top )
         {
             var p = new Part( this );
-            CodePart.Code.Add( p );
+            if( top ) CodePart.Parts.Insert( 0, p );
+            else CodePart.Parts.Add( p );
             return p;
         }
 
@@ -122,10 +127,11 @@ namespace CK.CodeGen
 
             public IFunctionScope CreateFunction( Action<IFunctionScope> header ) => PartOwner.CreateFunction( header );
 
-            public ITypeScopePart CreatePart()
+            public ITypeScopePart CreatePart( bool top )
             {
                 var p = new Part( this );
-                Code.Add( p );
+                if( top ) Parts.Insert( 0, p );
+                else Parts.Add( p );
                 return p;
             }
 

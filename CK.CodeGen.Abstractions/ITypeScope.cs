@@ -26,7 +26,11 @@ namespace CK.CodeGen.Abstractions
         /// <summary>
         /// Creates a segment of code inside this type.
         /// </summary>
+        /// <param name="top">
+        /// Optionally creates the new part at the start of the code instead of at the
+        /// current writing position in the code.
+        /// </param>
         /// <returns>The type part to use.</returns>
-        ITypeScopePart CreatePart();
+        ITypeScopePart CreatePart( bool top = false );
     }
 }
