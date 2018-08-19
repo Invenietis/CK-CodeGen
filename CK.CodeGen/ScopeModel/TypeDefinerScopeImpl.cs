@@ -68,5 +68,20 @@ namespace CK.CodeGen
         {
             return _variantOutIn.Replace( s, String.Empty );
         }
+
+        private protected abstract class TypeDefinerPart : CodePart, ITypeDefinerScope
+        {
+            public TypeDefinerPart( ITypeDefinerScope owner )
+                : base( owner )
+            {
+            }
+            ITypeDefinerScope O => (INamespaceScope)base.PartOwner;
+
+            public IReadOnlyCollection<ITypeScope> Types => O.Types;
+
+            public ITypeScope CreateType( Action<ITypeScope> header ) => O.CreateType( header );
+
+            public ITypeScope FindType( string name ) => O.FindType( name );
+        }
     }
 }

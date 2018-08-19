@@ -49,9 +49,9 @@ namespace CK.CodeGen
             }
             if( other._codeStartIdx > 0 )
             {
-                Code.Add( other._declaration.Substring( _codeStartIdx ) );
+                CodePart.Parts.Add( other._declaration.Substring( _codeStartIdx ) );
             }
-            MergeCode( other );
+            CodePart.MergeWith( other.CodePart );
             MergeTypes( other );
             _funcs.MergeWith( Workspace, this, other._funcs );
         }
@@ -64,8 +64,8 @@ namespace CK.CodeGen
         {
             var b = new SmarterStringBuilder( null );
             // We store the declaration and clears the code buffer.
-            _declaration = BuildCode( b ).ToString();
-            Code.Clear();
+            _declaration = CodePart.Build( b ).ToString();
+            CodePart.Parts.Clear();
             var m = new StringMatcher( _declaration );
             m.SkipWhiteSpacesAndJSComments();
             if( !m.MatchTypeDefinition( out _typeDef, IsNestedType, out bool hasCodeOpener ) )
@@ -82,12 +82,16 @@ namespace CK.CodeGen
 
         internal protected override SmarterStringBuilder Build( SmarterStringBuilder b, bool closeScope )
         {
-            b.AppendLine().Append( _declaration );
-            if( _codeStartIdx == 0 ) b.AppendLine().Append( '{' ).AppendLine();
-            BuildCode( b );
-            _funcs.Build( b );
-            BuildTypes( b );
-            if( closeScope ) b.AppendLine().Append( '}' ).AppendLine();
+            if( _declaration == null ) CodePart.Build( b );
+            else
+            {
+                b.AppendLine().Append( _declaration );
+                if( _codeStartIdx == 0 ) b.AppendLine().Append( '{' ).AppendLine();
+                CodePart.Build( b );
+                _funcs.Build( b );
+                BuildTypes( b );
+                if( closeScope ) b.AppendLine().Append( '}' ).AppendLine();
+            }
             return b;
         }
 
@@ -96,6 +100,42 @@ namespace CK.CodeGen
             return _funcs.Create( Workspace, this, header );
         }
 
-        public override string ToString() => _typeDef.Write( new StringBuilder() ).ToString();
+        public string TypeHeader => _typeDef.Write( new StringBuilder() ).ToString();
+
+        public ITypeScopePart CreatePart( bool top )
+        {
+            var p = new Part( this );
+            if( top ) CodePart.Parts.Insert( 0, p );
+            else CodePart.Parts.Add( p );
+            return p;
+        }
+
+        class Part : TypeDefinerPart, ITypeScopePart
+        {
+            public Part( ITypeScope owner )
+                : base( owner )
+            {
+            }
+
+            public new ITypeScope PartOwner => (ITypeScope)base.PartOwner;
+
+            public INamespaceScope Namespace => PartOwner.Namespace;
+
+            public bool IsNestedType => PartOwner.IsNestedType;
+
+            public string TypeHeader => PartOwner.TypeHeader;
+
+            public IFunctionScope CreateFunction( Action<IFunctionScope> header ) => PartOwner.CreateFunction( header );
+
+            public ITypeScopePart CreatePart( bool top )
+            {
+                var p = new Part( this );
+                if( top ) Parts.Insert( 0, p );
+                else Parts.Add( p );
+                return p;
+            }
+
+        }
+
     }
 }

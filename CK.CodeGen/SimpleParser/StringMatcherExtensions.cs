@@ -251,6 +251,7 @@ namespace CK.CodeGen
                         case "params": mod = MethodDefinition.ParameterModifier.Params; pTypeStart = null; break;
                         case "out": mod = MethodDefinition.ParameterModifier.Out; pTypeStart = null; break;
                         case "ref": mod = MethodDefinition.ParameterModifier.Ref; pTypeStart = null; break;
+                        case "in": mod = MethodDefinition.ParameterModifier.In; pTypeStart = null; break;
                     }
                     @this.SkipWhiteSpacesAndJSComments();
                     if( !@this.MatchTypeName( out var pType, pTypeStart ) ) return false;
@@ -268,6 +269,30 @@ namespace CK.CodeGen
                 while( @this.TryMatchChar( ',' ) );
             }
             @this.SkipWhiteSpacesAndJSComments();
+            if( returnType == null )
+            {
+                if( @this.TryMatchChar( ':' ) )
+                {
+                    @this.SkipWhiteSpacesAndJSComments();
+                    bool success = @this.TryMatchText( "this", StringComparison.Ordinal );
+                    if( success || @this.TryMatchText( "base", StringComparison.Ordinal ) )
+                    {
+                        @this.SkipWhiteSpacesAndJSComments();
+                        if( success = @this.MatchChar( '(' ) )
+                        {
+                            @this.SkipWhiteSpacesAndJSComments();
+                            while( !@this.TryMatchChar( ')' ) )
+                            {
+                                if( !@this.EatRawCode( out _ ) ) return @this.SetError( "Values expected." );
+                                // Allow training comma. Don't care.
+                                if( @this.TryMatchChar( ',' ) ) @this.SkipWhiteSpacesAndJSComments();
+                            }
+                            @this.SkipWhiteSpacesAndJSComments();
+                        }
+                    }
+                    if( !success ) return @this.SetError( "this(...) or base(...) expected." );
+                }
+            }
             List<TypeParameterConstraint> wheres;
             if( !@this.MatchWhereConstraints( out hasCodeOpener, out wheres ) ) return false;
             mDef = new MethodDefinition( attributes, modifiers, returnType, methodName, isIndexer, parameters, wheres );

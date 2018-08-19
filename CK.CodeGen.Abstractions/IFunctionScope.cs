@@ -6,6 +6,7 @@ namespace CK.CodeGen.Abstractions
 {
     /// <summary>
     /// A function is defined in a <see cref="ITypeScope"/> or in another <see cref="IFunctionScope"/>.
+    /// A function can be a constructor.
     /// </summary>
     public interface IFunctionScope : IFunctionDefinerScope, ICodeWriter
     {
@@ -34,5 +35,15 @@ namespace CK.CodeGen.Abstractions
         /// Null when <see cref="IsConstructor"/> is true.
         /// </summary>
         string ReturnType { get; }
+
+        /// <summary>
+        /// Creates a segment of code inside this function.
+        /// </summary>
+        /// <param name="top">
+        /// Optionally creates the new part at the start of the code instead of at the
+        /// current writing position in the code.
+        /// </param>
+        /// <returns>The function part to use.</returns>
+        IFunctionScopePart CreatePart( bool top = false );
     }
 }

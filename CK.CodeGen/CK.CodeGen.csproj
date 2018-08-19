@@ -2,10 +2,11 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description></Description>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
   <Import Project="..\Common\Shared.props" />
   <ItemGroup>
-    <PackageReference Include="CK.Text" Version="7.0.1-C0040-local" />
+    <PackageReference Include="CK.Text" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.CodeGen.Abstractions\CK.CodeGen.Abstractions.csproj" />

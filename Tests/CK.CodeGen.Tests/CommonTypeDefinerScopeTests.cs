@@ -39,12 +39,12 @@ namespace CK.CodeGen.Tests
         [TestCase( "[ Z . K ( ) , Y , XAttribute ( \" a \\\"str\\\" \" ) ] class A", "[X(\" a \\\"str\\\" \"), Y, Z.K]class A" )]
         [TestCase( "[Z.K(1)][Y()][X(2)] class A", "[X(2), Y, Z.K(1)]class A" )]
         [TestCase( "[return:Z.K(' ')][Y()][return:X('\\'')] class A", "[return: X('\\''), Z.K(' ')][Y]class A" )]
-        public void created_type_has_normalized_ToString_signature( string decl, string toString )
+        public void created_type_has_normalized_ToString_signature( string decl, string typeHeader )
         {
             ITypeDefinerScope scope = CreateTypeDefinerScope();
             ITypeScope type = scope.CreateType( decl );
 
-            type.ToString().Should().Be( toString );
+            type.TypeHeader.Should().Be( typeHeader );
         }
 
         [TestCase( "public interface I<in T1, out T2> where T1 : struct { //...", "I<TKey,TValue>" )]
@@ -90,9 +90,9 @@ namespace CK.CodeGen.Tests
 
         [TestCase( "public class C", "[A,B]internal class C" )]
         [TestCase( "public class C<T>", "public class C<TKey> : Base.X where TKey : K" )]
-        [TestCase( "public class C", "struct C" )]
+        [TestCase( "public class C", "readonly ref struct C" )]
         [TestCase( "public class C", "class C {" )]
-        [TestCase( "public class C", "enum C {" )]
+        [TestCase( "public readonly ref struct C", "enum C {" )]
         [TestCase( "public class C", "enum C : byte" )]
         [TestCase( "class C < T1 , T2 >", "public class C<T1,T2>" )]
         [TestCase( "interface C<in T1, out T2>", "interface C<T1,T2>" )]

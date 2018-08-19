@@ -13,7 +13,8 @@ namespace CK.CodeGen
             Out = 1<<0,
             Ref = 1<<1,
             Params = 1<<2,
-            This = 1<<3 
+            This = 1 << 3,
+            In = 1 << 4
         }
 
         public class Parameter
@@ -85,6 +86,7 @@ namespace CK.CodeGen
                     case ParameterModifier.This: b.Append( "this " ); break;
                     case ParameterModifier.Ref: b.Append( "ref " ); break;
                     case ParameterModifier.Params: b.Append( "params " ); break;
+                    case ParameterModifier.In: b.Append( "in " ); break;
                 }
                 p.Type.Write( b ).Append( ' ' ).Append( p.Name );
                 if( withDefaultValues && p.DefaultValue.Length > 0 )

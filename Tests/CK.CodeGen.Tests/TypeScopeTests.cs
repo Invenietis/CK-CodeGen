@@ -50,6 +50,27 @@ namespace CK.CodeGen.Tests
             t.Invoking( x => x.CreateFunction( clash ) ).Should().Throw<ArgumentException>();
         }
 
+        [TestCase( "public C()" )]
+        [TestCase( "public C() : base( 3 )" )]
+        [TestCase( "public C(X a) : this( a*a )" )]
+        [TestCase( "public C() : base( new[]{ new O(), (null) }, Kilo )" )]
+        [TestCase( @"public S1()
+: base( typeof( SFront1 ),
+new[]{
+new StObjServiceParameterInfo( typeof(ISBase), 0, @""next"", I0)
+} )" )]
+        public void handling_constructors( string text )
+        {
+            var t = CreateTypeScope();
+            var c = t.CreateFunction( ctor =>
+            {
+                ctor.Append( text );
+            } );
+            c.IsConstructor.Should().BeTrue();
+            string result = text + Environment.NewLine + "{" + Environment.NewLine + "}";
+            c.ToString().Should().Be( result );
+        }
+
         protected override ITypeDefinerScope CreateTypeDefinerScope() => CreateTypeScope();
 
         ITypeScope CreateTypeScope()
