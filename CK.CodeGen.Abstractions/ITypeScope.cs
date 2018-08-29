@@ -12,9 +12,25 @@ namespace CK.CodeGen.Abstractions
         INamespaceScope Namespace { get; }
 
         /// <summary>
+        /// Gets this type header that contains the modifiers, attributes, type name and generic constraints
+        /// if any.
+        /// </summary>
+        string TypeHeader { get; }
+
+        /// <summary>
         /// Gets whether this type is defined in another <see cref="ITypeScope"/>
         /// (or in a <see cref="INamespaceScope"/>).
         /// </summary>
         bool IsNestedType { get; }
+
+        /// <summary>
+        /// Creates a segment of code inside this type.
+        /// </summary>
+        /// <param name="top">
+        /// Optionally creates the new part at the start of the code instead of at the
+        /// current writing position in the code.
+        /// </param>
+        /// <returns>The type part to use.</returns>
+        ITypeScopePart CreatePart( bool top = false );
     }
 }

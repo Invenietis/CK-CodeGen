@@ -25,7 +25,8 @@ namespace CK.CodeGen
         Implicit = 1 << 13,
         Unsafe = 1 << 14,
         Volatile = 1 << 15,
-        Async = 1 << 16
+        Async = 1 << 16,
+        Ref = 1 << 17
     }
 
     static class ModifiersExtension
@@ -50,6 +51,7 @@ namespace CK.CodeGen
                         | Modifiers.Abstract
                         | Modifiers.Sealed
                         | Modifiers.Static
+                        | Modifiers.Ref | Modifiers.Readonly
                     );
         }
 
@@ -63,14 +65,6 @@ namespace CK.CodeGen
             if( (@this & Modifiers.Public) != 0 )
             {
                 @this = @this & ~(Modifiers.Private | Modifiers.Internal | Modifiers.Protected);
-            }
-            else if( (@this & Modifiers.Private) != 0 )
-            {
-                @this = @this & ~(Modifiers.Public | Modifiers.Internal);
-            }
-            else if( (@this & Modifiers.Protected) != 0 )
-            {
-                @this = @this & ~(Modifiers.Public);
             }
             if( @this == Modifiers.Private ) @this = Modifiers.None;
             return @this;

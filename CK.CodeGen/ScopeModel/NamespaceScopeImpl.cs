@@ -12,7 +12,7 @@ namespace CK.CodeGen
     sealed class NamespaceScopeImpl : TypeDefinerScopeImpl, INamespaceScope
     {
         readonly static Regex _nsName = new Regex( @"^\s*(?<1>\w+)(\s*\.\s*(?<1>\w+))*\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture );
-        readonly Dictionary<string,KeyValuePair<string,string>> _usings;
+        readonly Dictionary<string, KeyValuePair<string, string>> _usings;
         readonly List<NamespaceScopeImpl> _subNamespaces;
 
         internal NamespaceScopeImpl( CodeWorkspaceImpl ws, INamespaceScope parent, string name )
@@ -28,16 +28,16 @@ namespace CK.CodeGen
         internal void MergeWith( NamespaceScopeImpl other )
         {
             Debug.Assert( other != null );
-            foreach ( var u in other._usings )
+            foreach( var u in other._usings )
             {
                 DoEnsureUsing( u.Key, u.Value.Key, u.Value.Value );
             }
-            MergeCode( other );
+            CodePart.MergeWith( other.CodePart );
             MergeTypes( other );
             foreach( var oNS in other._subNamespaces )
             {
                 var my = _subNamespaces.FirstOrDefault( x => x.Name == oNS.Name );
-                if( my == null ) 
+                if( my == null )
                 {
                     my = new NamespaceScopeImpl( Workspace, this, oNS.Name );
                     _subNamespaces.Add( my );
@@ -170,7 +170,7 @@ namespace CK.CodeGen
                 else b.Append( " = " ).Append( e.Value.Value );
                 b.AppendLine();
             }
-            BuildCode( b );
+            CodePart.Build( b );
             foreach( var ns in _subNamespaces )
             {
                 ns.Build( b, true );
@@ -179,7 +179,43 @@ namespace CK.CodeGen
             if( Workspace.Global != this && closeScope ) b.AppendLine().Append( "}" );
             return b;
         }
-        
-        
+
+        public INamespaceScopePart CreatePart( bool top )
+        {
+            var p = new Part( this );
+            if( top ) CodePart.Parts.Insert( 0, p );
+            else CodePart.Parts.Add( p );
+            return p;
+        }
+
+        class Part : TypeDefinerPart, INamespaceScopePart
+        {
+            public Part( INamespaceScope owner )
+                : base( owner )
+            {
+            }
+
+            public new INamespaceScope PartOwner => (INamespaceScope)base.PartOwner;
+
+            public INamespaceScope Parent => PartOwner.Parent;
+
+            public IReadOnlyCollection<INamespaceScope> Namespaces => PartOwner.Namespaces;
+
+            public INamespaceScopePart CreatePart( bool top )
+            {
+                var p = new Part( this );
+                if( top ) Parts.Insert( 0, p );
+                else Parts.Add( p );
+                return p;
+            }
+
+            public INamespaceScope EnsureUsing( string ns ) => PartOwner.EnsureUsing( ns );
+
+            public INamespaceScope EnsureUsingAlias( string alias, string definition ) => PartOwner.EnsureUsingAlias( alias, definition );
+
+            public INamespaceScope FindOrCreateNamespace( string ns ) => PartOwner.FindOrCreateNamespace( ns );
+
+        }
+
     }
 }

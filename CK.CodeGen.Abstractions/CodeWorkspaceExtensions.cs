@@ -64,6 +64,7 @@ namespace CK.CodeGen.Abstractions
 
         /// <summary>
         /// Gets the current <see cref="ICodeWorkspace.Global">Global</see> source code.
+        /// This is the same as calling ToString() on the Global namespace.
         /// </summary>
         /// <param name="this">This wokspace.</param>
         /// <returns>The current code source for this workspace.</returns>
