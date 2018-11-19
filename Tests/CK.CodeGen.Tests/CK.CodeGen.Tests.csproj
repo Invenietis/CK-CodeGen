@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.4.1" />
     <PackageReference Include="NUnit" Version="[2.6.4]" />
-    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="10.1.2--0034-local" />
+    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="10.1.2--0036-local" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
