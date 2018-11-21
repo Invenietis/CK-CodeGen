@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\Common\Shared.props" />
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputType>Exe</OutputType>
     <OriginProjectName>CK.CodeGen.Tests</OriginProjectName>
   </PropertyGroup>
@@ -12,7 +12,7 @@
     <PackageReference Include="FluentAssertions" Version="5.4.1" />
     <PackageReference Include="NUnitLite" Version="3.10.1" />
     <PackageReference Include="NUnit" Version="3.10.1" />
-    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="10.1.2--0022-develop" />
+    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="10.1.2--0042-local" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\$(OriginProjectName)\**\*.cs" Exclude="..\$(OriginProjectName)\obj\**">
