@@ -1,7 +1,7 @@
 
 version: build{build}
 image: Visual Studio 2017
-clone_folder: C:\CK-World\CK-Database-Projects\CK-CodeGen
+clone_folder: C:\CKli-World\CK-Database-Projects\CK-CodeGen
 branches:
   only:
     - master
