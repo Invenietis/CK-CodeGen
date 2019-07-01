@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <OutputType>Exe</OutputType>
     <OriginProjectName>CK.CodeGen.Roslyn.Tests</OriginProjectName>
+    <IsPackable>False</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\CK.CodeGen.Roslyn\CK.CodeGen.Roslyn.csproj" />
@@ -11,8 +12,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.6.0" />
-    <PackageReference Include="NUnitLite" Version="3.11.0" />
-    <PackageReference Include="NUnit" Version="3.11.0" />
+    <PackageReference Include="NUnitLite" Version="3.12.0" />
+    <PackageReference Include="NUnit" Version="3.12.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.6.0" />
   </ItemGroup>
   <ItemGroup>
