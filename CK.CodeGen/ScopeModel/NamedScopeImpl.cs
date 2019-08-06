@@ -47,7 +47,10 @@ namespace CK.CodeGen
                         : name;
         }
 
+        
         public void DoAdd( string code ) => CodePart.DoAdd( code );
+
+        public IDictionary<object, object> Memory => CodePart.Memory;
 
         public StringBuilder Build( StringBuilder b, bool closeScope ) => Build( new SmarterStringBuilder( b ), closeScope ).Builder;
 

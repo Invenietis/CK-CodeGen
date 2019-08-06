@@ -2,7 +2,6 @@
   <Import Project="..\..\Common\Shared.props" />
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <OutputType>Exe</OutputType>
     <OriginProjectName>CK.CodeGen.Roslyn.Tests</OriginProjectName>
     <IsPackable>False</IsPackable>
   </PropertyGroup>
