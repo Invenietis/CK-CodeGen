@@ -149,7 +149,7 @@ namespace CK.CodeGen
 
         /// <summary>
         /// Appends "typeof(<see cref="AppendCSharpName"/>)" with the type name in is non declaration form:
-        /// for the open generic dictionary this is "typeof(System.Collections.Generic.Dictionary&lt;,&gt)".
+        /// for the open generic dictionary this is "typeof(System.Collections.Generic.Dictionary&lt;,&gt;)".
         /// When <paramref name="t"/> is null, null is appended.
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
