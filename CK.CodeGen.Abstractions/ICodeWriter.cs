@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace CK.CodeGen.Abstractions
 {
     /// <summary>
@@ -10,5 +12,6 @@ namespace CK.CodeGen.Abstractions
         /// </summary>
         /// <param name="code">Raw C# code. Can be null or empty.</param>
         void DoAdd( string code );
+
     }
 }

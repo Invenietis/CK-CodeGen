@@ -45,5 +45,13 @@ namespace CK.CodeGen.Abstractions
         /// <param name="closeScope">True to close the scope before returning the builder.</param>
         /// <returns>The string builder.</returns>
         StringBuilder Build( StringBuilder b, bool closeScope );
+
+
+        /// <summary>
+        /// Gets a memory associated to this scope.
+        /// It can contain any data that need to be associated to this scope.
+        /// </summary>
+        IDictionary<object, object> Memory { get; }
+
     }
 }

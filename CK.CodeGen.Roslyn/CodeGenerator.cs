@@ -18,7 +18,6 @@ namespace CK.CodeGen
     public class CodeGenerator
     {
         readonly Func<ICodeWorkspace> _workspaceFactory;
-        readonly CSharpCompilationOptions _options;
 
         /// <summary>
         /// Initializes a new <see cref="CodeGenerator"/> with options.
@@ -27,14 +26,24 @@ namespace CK.CodeGen
         /// Factory for <see cref="ICodeWorkspace"/> implementations.
         /// Must not be null.
         /// </param>
-        /// <param name="options">Optional compilation options.</param>
-        public CodeGenerator( Func<ICodeWorkspace> workspaceFactory, CSharpCompilationOptions options = null )
+        public CodeGenerator( Func<ICodeWorkspace> workspaceFactory )
         {
             if( workspaceFactory == null ) throw new ArgumentNullException( nameof( workspaceFactory ) );
             _workspaceFactory = workspaceFactory;
-            if( options == null ) options = new CSharpCompilationOptions( OutputKind.DynamicallyLinkedLibrary );
-            _options = options;
+            CompilationOptions = new CSharpCompilationOptions( OutputKind.DynamicallyLinkedLibrary );
         }
+
+        /// <summary>
+        /// Gets or sets the parse options to use.
+        /// Default to null: all default applies, the language version is <see cref="LanguageVersion.Default"/>.
+        /// </summary>
+        public CSharpParseOptions ParseOptions { get; set; }
+
+        /// <summary>
+        /// Gets or sets a <see cref="CSharpCompilationOptions"/>.
+        /// Defaults to the option default initialized to produce <see cref="OutputKind.DynamicallyLinkedLibrary"/> output.
+        /// </summary>
+        public CSharpCompilationOptions CompilationOptions { get; set; }
 
         /// <summary>
         /// Gets or sets whether the assembly that defines the object type is
@@ -52,8 +61,7 @@ namespace CK.CodeGen
         public List<ICodeGeneratorModule> Modules { get; } = new List<ICodeGeneratorModule>();
 
         /// <summary>
-        /// Generates an assembly from a source, a minimal list of required reference assemblies and, with the help 
-        /// of the <paramref name="resolver"/>, computes all required dependencies.
+        /// Generates an assembly from a source, a minimal list of required reference assemblies.
         /// </summary>
         /// <param name="sourceCode">The source code. Must be valid C# code.</param>
         /// <param name="assemblyPath">The full final assembly path (including the .dll extension).</param>
@@ -69,8 +77,7 @@ namespace CK.CodeGen
         }
 
         /// <summary>
-        /// Generates an assembly from a source, a minimal list of required reference assemblies and, with the help 
-        /// of the <paramref name="resolver"/>, computes all required dependencies.
+        /// Generates an assembly from a source, a minimal list of required reference assemblies.
         /// </summary>
         /// <param name="code">The source code.</param>
         /// <param name="assemblyPath">The full final assembly path (including the .dll extension).</param>
@@ -81,14 +88,14 @@ namespace CK.CodeGen
             if( code == null ) throw new ArgumentNullException( nameof( code ) );
             using( var weakLoader = WeakAssemblyNameResolver.TemporaryInstall() )
             {
-                var input = GeneratorInput.Create( _workspaceFactory, code, Modules, AutoRegisterRuntimeAssembly );
+                var input = GeneratorInput.Create( _workspaceFactory, code, Modules, AutoRegisterRuntimeAssembly, ParseOptions );
                 Modules.Clear();
                 var collector = new HashSet<Assembly>();
                 foreach( var a in input.Assemblies )
                 {
                     if( collector.Add( a ) ) Discover( a, collector );
                 }
-                return Generate( _options,
+                return Generate( CompilationOptions,
                                  input.Trees,
                                  assemblyPath,
                                  collector.Select( a => MetadataReference.CreateFromFile( new Uri( a.CodeBase ).LocalPath ) ),

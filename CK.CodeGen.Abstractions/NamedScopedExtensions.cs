@@ -20,5 +20,20 @@ namespace CK.CodeGen.Abstractions
             return @this.Build( new StringBuilder(), closeScope ).ToString();
         }
 
+        /// <summary>
+        /// Small helper that works like <see cref="HashSet{T}.Add(T)"/> on the <see cref="INamedScope.Memory"/>
+        /// dictionary.
+        /// </summary>
+        /// <param name="this">This scope.</param>
+        /// <param name="key">The memory key. Must not be null or empty.</param>
+        /// <returns>True if the key is new to the memory (and has been added), false if the key is already known.</returns>
+        public static bool MemorizeOnce( this INamedScope @this, string key )
+        {
+            if( String.IsNullOrEmpty( key ) ) throw new ArgumentException( "Key must not be null or white space.", nameof( key ) );
+            if( @this.Memory.ContainsKey( key ) ) return false;
+            @this.Memory.Add( key, null );
+            return true;
+     }
+
     }
 }

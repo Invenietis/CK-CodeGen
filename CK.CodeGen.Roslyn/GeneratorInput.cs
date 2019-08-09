@@ -35,18 +35,20 @@ namespace CK.CodeGen
         /// <param name="code">Original code. Can be null or empty.</param>
         /// <param name="modules">Code modules. Can be null or empty.</param>
         /// <param name="addRuntimeAssembly">True to automatically add the typeof(object)'s assembly.</param>
+        /// <param name="options">The optional parse options to use.</param>
         /// <returns>A generator input.</returns>
         internal static GeneratorInput Create(
             Func<ICodeWorkspace> workspaceFactory,
             ICodeWorkspace code,
             IEnumerable<ICodeGeneratorModule> modules,
-            bool addRuntimeAssembly)
+            bool addRuntimeAssembly,
+            CSharpParseOptions options )
         {
             Debug.Assert( workspaceFactory != null );
             var assemblies = new HashSet<Assembly>();
             if( addRuntimeAssembly ) assemblies.Add( typeof( object ).Assembly );
             var trees = new List<SyntaxTree>();
-            if( code != null ) CombineWorkspace( assemblies, trees, code );
+            if( code != null ) CombineWorkspace( assemblies, trees, code, options );
             if( modules != null )
             {
                 foreach( var m in modules )
@@ -59,17 +61,17 @@ namespace CK.CodeGen
                     }
                     var wM = workspaceFactory();
                     m.Inject( wM );
-                    CombineWorkspace( assemblies, trees, wM );
+                    CombineWorkspace( assemblies, trees, wM, options );
                 }
             }
             return new GeneratorInput( assemblies, trees );
         }
 
-        static void CombineWorkspace( HashSet<Assembly> assemblies, List<SyntaxTree> trees, ICodeWorkspace c )
+        static void CombineWorkspace( HashSet<Assembly> assemblies, List<SyntaxTree> trees, ICodeWorkspace c, CSharpParseOptions options )
         {
             foreach( var a in c.AssemblyReferences ) assemblies.Add( a );
             var s = c.GetGlobalSource();
-            if( !String.IsNullOrWhiteSpace( s ) ) trees.Add( SyntaxFactory.ParseSyntaxTree( s ) );
+            if( !String.IsNullOrWhiteSpace( s ) ) trees.Add( SyntaxFactory.ParseSyntaxTree( s, options ) );
         }
     }
 

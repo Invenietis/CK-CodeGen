@@ -39,6 +39,25 @@ namespace CK.CodeGen
         }
 
         /// <summary>
+        /// Appends raw C# code only once: the code itself is used as a key in <see cref="INamedScope.Memory"/> to
+        /// avoid adding it twice.
+        /// </summary>
+        /// <typeparam name="T">Must be both a <see cref="ICodeWriter"/> and <see cref="INamedScope"/>.</typeparam>
+        /// <param name="this">This named scope and code writer.</param>
+        /// <param name="code">Raw code to append. Must not be null, empty or white space.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
+        static public T AppendOnce<T>( this T @this, string code ) where T : ICodeWriter, INamedScope
+        {
+            if( String.IsNullOrWhiteSpace( code ) ) throw new ArgumentException( "To guaranty AppendOnce semantics, code must not be null or white space.", nameof( code ) );
+            if( !@this.Memory.ContainsKey( code ) )
+            {
+                @this.Append( code );
+                @this.Memory.Add( code, null );
+            }
+            return @this;
+        }
+
+        /// <summary>
         /// Appends raw C# code.
         /// This is the most basic Append method to use.
         /// Use <see cref="AppendSourceString{T}(T, string)"/> to append the source string representation.
@@ -149,7 +168,7 @@ namespace CK.CodeGen
 
         /// <summary>
         /// Appends "typeof(<see cref="AppendCSharpName"/>)" with the type name in is non declaration form:
-        /// for the open generic dictionary this is "typeof(System.Collections.Generic.Dictionary&lt;,&gt)".
+        /// for the open generic dictionary this is "typeof(System.Collections.Generic.Dictionary&lt;,&gt;)".
         /// When <paramref name="t"/> is null, null is appended.
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>

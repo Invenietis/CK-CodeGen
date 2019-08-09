@@ -9,6 +9,7 @@ namespace CK.CodeGen
     {
         readonly INamedScope _owner;
         internal readonly List<object> Parts;
+        Dictionary<object, object> _memory;
 
         public CodePart( INamedScope owner )
         {
@@ -55,6 +56,8 @@ namespace CK.CodeGen
                 else Parts.Add( (string)c );
             }
         }
+
+        public IDictionary<object, object> Memory => _memory ?? (_memory = new Dictionary<object, object>());
 
         public override string ToString() => BuildPart( new StringBuilder() ).ToString();
     }
