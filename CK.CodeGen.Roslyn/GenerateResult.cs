@@ -106,7 +106,7 @@ namespace CK.CodeGen
             if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
             using( monitor.OpenInfo( "Code Generation information." ) )
             {
-                if( LoadConflicts.Count > 0 )
+                if( LoadConflicts != null && LoadConflicts.Count > 0 )
                 {
                     using( monitor.OpenWarn( $"{LoadConflicts.Count} assembly load conflict(s)." ) )
                     {
@@ -125,12 +125,12 @@ namespace CK.CodeGen
                 }
                 if( Success )
                 {
-                    monitor.Info( "Source code generation and compilation succeeded." );
+                    monitor.Info( CompilationSkipped ? "Source code generation succeeded." : "Source code generation and compilation succeeded." );
                     DumpSources( monitor, dumpSourceLevel );
                 }
                 else
                 {
-                    using( monitor.OpenError( "Generation failed." ) )
+                    using( monitor.OpenError( "Compilation failed." ) )
                     {
                         if( EmitError != null )
                         {
