@@ -49,6 +49,7 @@ namespace CK.CodeGen.Roslyn.Tests
                 sourceCode,
                 g.Generate( sourceCode, RandomDllPath,
                             references,
+                            false,
                             GetAssemblyLoader() ) );
         }
 

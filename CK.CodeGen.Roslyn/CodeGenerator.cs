@@ -66,30 +66,35 @@ namespace CK.CodeGen
         /// <param name="sourceCode">The source code. Must be valid C# code.</param>
         /// <param name="assemblyPath">The full final assembly path (including the .dll extension).</param>
         /// <param name="someReferences">List of reference assemblies that can be a subset of the actual dependencies.</param>
+        /// <param name="skipCompilation">True to skip the compilation. Only the parsing and the source generation is done.</param>
         /// <param name="loader">Optional loader function to load the final emitted assembly.</param>
         /// <returns>Encapsulation of the result.</returns>
-        public GenerateResult Generate( string sourceCode, string assemblyPath, IEnumerable<Assembly> someReferences, Func<string, Assembly> loader = null )
+        public GenerateResult Generate( string sourceCode, string assemblyPath, IEnumerable<Assembly> someReferences, bool skipCompilation, Func<string, Assembly> loader = null )
         {
             var w = _workspaceFactory();
             if( !String.IsNullOrWhiteSpace( sourceCode ) ) w.Global.Append( sourceCode );
             foreach( var a in someReferences ) w.DoEnsureAssemblyReference( a );
-            return Generate( w, assemblyPath, loader );
+            return Generate( w, assemblyPath, skipCompilation, loader );
         }
 
         /// <summary>
-        /// Generates an assembly from a source, a minimal list of required reference assemblies.
+        /// Generates an assembly from a source and a minimal list of required reference assemblies.
         /// </summary>
         /// <param name="code">The source code.</param>
         /// <param name="assemblyPath">The full final assembly path (including the .dll extension).</param>
+        /// <param name="skipCompilation">True to skip the compilation. Only the parsing and the source generation is done.</param>
         /// <param name="loader">Optional loader function to load the final emitted assembly.</param>
         /// <returns>Encapsulation of the result.</returns>
-        public GenerateResult Generate( ICodeWorkspace code, string assemblyPath, Func<string, Assembly> loader = null )
+        public GenerateResult Generate( ICodeWorkspace code, string assemblyPath, bool skipCompilation, Func<string, Assembly> loader = null )
         {
             if( code == null ) throw new ArgumentNullException( nameof( code ) );
             using( var weakLoader = WeakAssemblyNameResolver.TemporaryInstall() )
             {
-                var input = GeneratorInput.Create( _workspaceFactory, code, Modules, AutoRegisterRuntimeAssembly, ParseOptions );
+                var input = GeneratorInput.Create( _workspaceFactory, code, Modules, skipCompilation && AutoRegisterRuntimeAssembly, ParseOptions );
                 Modules.Clear();
+
+                if( skipCompilation ) return new GenerateResult( null, input.Trees, null, null, null, null );
+
                 var collector = new HashSet<Assembly>();
                 foreach( var a in input.Assemblies )
                 {
