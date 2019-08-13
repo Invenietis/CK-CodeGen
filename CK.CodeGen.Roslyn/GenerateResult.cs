@@ -87,7 +87,7 @@ namespace CK.CodeGen
         /// <param name="sources">Sources.</param>
         internal GenerateResult( IReadOnlyList<SyntaxTree> sources )
         {
-            CompilationSkipped = false;
+            CompilationSkipped = true;
             EmitError = null;
             Assembly = null;
             EmitResult = null;
