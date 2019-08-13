@@ -90,7 +90,7 @@ namespace CK.CodeGen
             if( code == null ) throw new ArgumentNullException( nameof( code ) );
             using( var weakLoader = WeakAssemblyNameResolver.TemporaryInstall() )
             {
-                var input = GeneratorInput.Create( _workspaceFactory, code, Modules, skipCompilation && AutoRegisterRuntimeAssembly, ParseOptions );
+                var input = GeneratorInput.Create( _workspaceFactory, code, Modules, !skipCompilation && AutoRegisterRuntimeAssembly, ParseOptions );
                 Modules.Clear();
 
                 if( skipCompilation ) return new GenerateResult( null, input.Trees, null, null, null, null );
