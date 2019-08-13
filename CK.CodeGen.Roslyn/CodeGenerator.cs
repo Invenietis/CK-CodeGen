@@ -64,7 +64,7 @@ namespace CK.CodeGen
         /// Generates an assembly from a source, a minimal list of required reference assemblies.
         /// </summary>
         /// <param name="sourceCode">The source code. Must be valid C# code.</param>
-        /// <param name="assemblyPath">The full final assembly path (including the .dll extension).</param>
+        /// <param name="assemblyPath">The full final assembly path (including the .dll extension). Can be null if skipCompilation is true.</param>
         /// <param name="someReferences">List of reference assemblies that can be a subset of the actual dependencies.</param>
         /// <param name="skipCompilation">True to skip the compilation. Only the parsing and the source generation is done.</param>
         /// <param name="loader">Optional loader function to load the final emitted assembly.</param>
@@ -81,7 +81,7 @@ namespace CK.CodeGen
         /// Generates an assembly from a source and a minimal list of required reference assemblies.
         /// </summary>
         /// <param name="code">The source code.</param>
-        /// <param name="assemblyPath">The full final assembly path (including the .dll extension).</param>
+        /// <param name="assemblyPath">The full final assembly path (including the .dll extension). Can be null if skipCompilation is true.</param>
         /// <param name="skipCompilation">True to skip the compilation. Only the parsing and the source generation is done.</param>
         /// <param name="loader">Optional loader function to load the final emitted assembly.</param>
         /// <returns>Encapsulation of the result.</returns>
@@ -93,7 +93,7 @@ namespace CK.CodeGen
                 var input = GeneratorInput.Create( _workspaceFactory, code, Modules, !skipCompilation && AutoRegisterRuntimeAssembly, ParseOptions );
                 Modules.Clear();
 
-                if( skipCompilation ) return new GenerateResult( null, input.Trees, null, null, null, null );
+                if( skipCompilation ) return new GenerateResult( input.Trees );
 
                 var collector = new HashSet<Assembly>();
                 foreach( var a in input.Assemblies )
@@ -139,6 +139,7 @@ namespace CK.CodeGen
             IEnumerable<MetadataReference> allReferences,
             Func<string, Assembly> loader = null )
         {
+            if( assemblyPath == null ) throw new ArgumentNullException( nameof( assemblyPath ) );
             try
             {
                 var option = compileOptions.WithAssemblyIdentityComparer( DesktopAssemblyIdentityComparer.Default );
