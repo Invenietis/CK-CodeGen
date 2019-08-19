@@ -14,6 +14,25 @@ namespace CK.CodeGen.Roslyn.Tests
     [TestFixture]
     public class CompileToSourceStringTests
     {
+
+        [Test]
+        public void skipCompilation_tests()
+        {
+            var workspace = CodeWorkspace.Create();
+            var global = workspace.Global;
+            global.EnsureUsing( "System" );
+            global.CreateType( "public class Tester" )
+                     .Append( "public bool OK => true;" ).NewLine();
+
+            Assembly a = TestHelper.CreateAssembly( workspace.GetGlobalSource(), workspace.AssemblyReferences );
+            a.Should().NotBeNull();
+
+            var g = new CodeGenerator( CodeWorkspace.Factory );
+            var r = g.Generate( workspace, null, true );
+            r.Success.Should().BeTrue();
+            r.Sources.Should().HaveCount( 1 );
+        }
+
         [Test]
         public void writing_and_reading_simple_values_of_all_known_types()
         {

@@ -13,8 +13,15 @@ namespace CK.CodeGen
     /// <summary>
     /// Captures generation result.
     /// </summary>
-    public struct GenerateResult
+    public readonly struct GenerateResult
     {
+        /// <summary>
+        /// Gets whether the actual compilation has been skipped: only the
+        /// source is available in <see cref="Sources"/>.
+        /// When compilation has been skipped, only the Sources are relevant.
+        /// </summary>
+        public readonly bool CompilationSkipped;
+
         /// <summary>
         /// The loaded assembly (optional).
         /// </summary>
@@ -23,16 +30,19 @@ namespace CK.CodeGen
         /// <summary>
         /// List of <see cref="AssemblyLoadConflict"/> that occured while
         /// resolving assembly dependencies.
+        /// Defaults to null.
         /// </summary>
         public readonly IReadOnlyCollection<AssemblyLoadConflict> LoadConflicts;
 
         /// <summary>
-        /// List of final Syntax trees that have been compiled.
+        /// List of final Syntax trees that have been generated, parsed (and compiled
+        /// if compilation has not been skipped).
         /// </summary>
         public readonly IReadOnlyList<SyntaxTree> Sources;
 
         /// <summary>
         /// The Roselyn result.
+        /// Null if <see cref="CompilationSkipped"/> is true.
         /// </summary>
         public readonly EmitResult EmitResult;
 
@@ -49,10 +59,10 @@ namespace CK.CodeGen
         /// <summary>
         /// Gets whether the generation succeeds.
         /// </summary>
-        public bool Success => EmitResult?.Success == true && AssemblyLoadError == null;
+        public bool Success => CompilationSkipped || (EmitResult?.Success == true && AssemblyLoadError == null);
 
         /// <summary>
-        /// Initializes a new result.
+        /// Initializes a new compilation result (CompilationSkipped is false).
         /// </summary>
         /// <param name="eE">Emit exception.</param>
         /// <param name="sources">Sources.</param>
@@ -60,14 +70,30 @@ namespace CK.CodeGen
         /// <param name="a">Loaded assembly if any.</param>
         /// <param name="e">Load error if any.</param>
         /// <param name="f">Load failures.</param>
-        public GenerateResult( Exception eE, IReadOnlyList<SyntaxTree> sources, EmitResult r, Assembly a, Exception e, IReadOnlyList<AssemblyLoadConflict> f )
+        internal GenerateResult( Exception eE, IReadOnlyList<SyntaxTree> sources, EmitResult r, Assembly a, Exception e, IReadOnlyList<AssemblyLoadConflict> f )
         {
+            CompilationSkipped = false;
             EmitError = eE;
             Assembly = a;
             EmitResult = r;
             Sources = sources;
             AssemblyLoadError = e;
             LoadConflicts = f;
+        }
+
+        /// <summary>
+        /// Initializes a new result when CompilationSkipped is true.
+        /// </summary>
+        /// <param name="sources">Sources.</param>
+        internal GenerateResult( IReadOnlyList<SyntaxTree> sources )
+        {
+            CompilationSkipped = true;
+            EmitError = null;
+            Assembly = null;
+            EmitResult = null;
+            Sources = sources;
+            AssemblyLoadError = null;
+            LoadConflicts = null;
         }
 
         /// <summary>
@@ -80,7 +106,7 @@ namespace CK.CodeGen
             if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
             using( monitor.OpenInfo( "Code Generation information." ) )
             {
-                if( LoadConflicts.Count > 0 )
+                if( LoadConflicts != null && LoadConflicts.Count > 0 )
                 {
                     using( monitor.OpenWarn( $"{LoadConflicts.Count} assembly load conflict(s)." ) )
                     {
@@ -99,12 +125,12 @@ namespace CK.CodeGen
                 }
                 if( Success )
                 {
-                    monitor.Info( "Source code generation and compilation succeeded." );
+                    monitor.Info( CompilationSkipped ? "Source code generation succeeded." : "Source code generation and compilation succeeded." );
                     DumpSources( monitor, dumpSourceLevel );
                 }
                 else
                 {
-                    using( monitor.OpenError( "Generation failed." ) )
+                    using( monitor.OpenError( "Compilation failed." ) )
                     {
                         if( EmitError != null )
                         {
