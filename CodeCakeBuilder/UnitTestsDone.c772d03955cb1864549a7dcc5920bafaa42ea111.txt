@@ -1,0 +1,4 @@
+C:/Dev/CK/CK-Database-Projects/CK-CodeGen/Tests/CK.CodeGen.Tests/bin/Debug/net461/CK.CodeGen.Tests.dll
+C:/Dev/CK/CK-Database-Projects/CK-CodeGen/Tests/CK.CodeGen.NetCore.Tests/bin/Debug/netcoreapp2.1/CK.CodeGen.NetCore.Tests.dll
+C:/Dev/CK/CK-Database-Projects/CK-CodeGen/Tests/CK.CodeGen.Roslyn.Tests/bin/Debug/net461/CK.CodeGen.Roslyn.Tests.dll
+C:/Dev/CK/CK-Database-Projects/CK-CodeGen/Tests/CK.CodeGen.Roslyn.NetCore.Tests/bin/Debug/netcoreapp2.1/CK.CodeGen.Roslyn.NetCore.Tests.dll
