@@ -6,7 +6,7 @@
   <Import Project="..\Common\Shared.props" />
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.3.0" />
-    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="11.1.3--0015-develop" />
+    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="11.1.3--0016-develop" />
     <PackageReference Include="CK.WeakAssemblyNameResolver" Version="0.5.2--0018-develop" />
   </ItemGroup>
   <ItemGroup>
