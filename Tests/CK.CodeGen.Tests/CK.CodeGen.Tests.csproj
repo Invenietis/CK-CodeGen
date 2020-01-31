@@ -11,7 +11,7 @@
     <PackageReference Include="FluentAssertions" Version="5.9.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
     <PackageReference Include="NUnit" Version="3.12.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.16.0" />
-    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="13.0.0-a00-00-0003-develop" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.16.1" />
+    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="13.0.0-a00-00-0018-develop" />
   </ItemGroup>
 </Project>
