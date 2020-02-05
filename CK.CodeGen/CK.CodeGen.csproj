@@ -6,7 +6,7 @@
   </PropertyGroup>
   <Import Project="..\Common\Shared.props" />
   <ItemGroup>
-    <PackageReference Include="CK.Text" Version="9.0.0-a00-00-0006-develop" />
+    <PackageReference Include="CK.Text" Version="9.0.0-a00-00-0008-develop" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.0" />
   </ItemGroup>
   <ItemGroup>
