@@ -6,8 +6,8 @@
   <Import Project="..\Common\Shared.props" />
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.4.0" />
-    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="13.0.0" />
-    <PackageReference Include="CK.WeakAssemblyNameResolver" Version="0.6.0" />
+    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="13.1.0" />
+    <PackageReference Include="CK.WeakAssemblyNameResolver" Version="0.5.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.CodeGen.Abstractions\CK.CodeGen.Abstractions.csproj" />
