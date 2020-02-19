@@ -1,13 +1,22 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\Common\Shared.props" />
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>False</IsPackable>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <Compile Remove="TestCodeProject\**" />
+    <EmbeddedResource Remove="TestCodeProject\**" />
+    <None Remove="TestCodeProject\**" />
+  </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\..\CK.CodeGen\CK.CodeGen.csproj" />
   </ItemGroup>
+  
   <ItemGroup>
+    <PackageReference Include="CK.Testing.Monitoring" Version="0.16.0" />
     <PackageReference Include="FluentAssertions" Version="5.10.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
     <PackageReference Include="NUnit" Version="3.12.0" />

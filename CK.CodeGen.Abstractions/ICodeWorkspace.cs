@@ -5,12 +5,13 @@ namespace CK.CodeGen.Abstractions
 {
     /// <summary>
     /// Root interface that contains a <see cref="Global"/> <see cref="INamespaceScope"/>
-    /// and referneced assemblies.
+    /// and referenced assemblies.
     /// </summary>
     public interface ICodeWorkspace
     {
         /// <summary>
         /// Gets the global name space.
+        /// This namespace has a null <see cref="INamedScope.Parent"/> and an empty <see cref="INamedScope.FullName"/>.
         /// </summary>
         INamespaceScope Global { get; }
 

@@ -62,7 +62,7 @@ namespace CK.CodeGen
         /// </summary>
         internal void Initialize()
         {
-            var b = new SmarterStringBuilder( null );
+            var b = new SmarterStringBuilder( new StringBuilder() );
             // We store the declaration and clears the code buffer.
             _declaration = CodePart.Build( b ).ToString();
             CodePart.Parts.Clear();
@@ -86,11 +86,11 @@ namespace CK.CodeGen
             else
             {
                 b.AppendLine().Append( _declaration );
-                if( _codeStartIdx == 0 ) b.AppendLine().Append( '{' ).AppendLine();
+                if( _codeStartIdx == 0 ) b.AppendLine().Append( "{" ).AppendLine();
                 CodePart.Build( b );
                 _funcs.Build( b );
                 BuildTypes( b );
-                if( closeScope ) b.AppendLine().Append( '}' ).AppendLine();
+                if( closeScope ) b.AppendLine().Append( "}" ).AppendLine();
             }
             return b;
         }

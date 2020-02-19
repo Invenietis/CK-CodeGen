@@ -38,6 +38,14 @@ namespace CK.CodeGen.Abstractions
         string FullName { get; }
 
         /// <summary>
+        /// Collects the whole code into a string collector, optionnaly closing the
+        /// scope with a trailing '}' or leaving it opened.
+        /// </summary>
+        /// <param name="collector">The string collector to write to.</param>
+        /// <param name="closeScope">True to close the scope.</param>
+        void Build( Action<string> collector, bool closeScope );
+
+        /// <summary>
         /// Collects the whole code into a <see cref="StringBuilder"/>, optionnaly closing the
         /// scope with a trailing '}' or leaving it opened.
         /// </summary>
@@ -45,7 +53,6 @@ namespace CK.CodeGen.Abstractions
         /// <param name="closeScope">True to close the scope before returning the builder.</param>
         /// <returns>The string builder.</returns>
         StringBuilder Build( StringBuilder b, bool closeScope );
-
 
         /// <summary>
         /// Gets a memory associated to this scope.
