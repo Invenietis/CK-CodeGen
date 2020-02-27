@@ -513,6 +513,35 @@ namespace CK.CodeGen
         }
 
         /// <summary>
+        /// Appends the code source of an enumeration value.
+        /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
+        /// <typeparam name="E">Type of the <see cref="Enum"/>.</typeparam>
+        /// <param name="this">This code writer.</param>
+        /// <param name="o">The enum value.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
+        static public T Append<T, E>( this T @this, E o ) where T : ICodeWriter where E : Enum => AppendEnumValue( @this, typeof( E ), o );
+
+        static T AppendEnumValue<T>( T @this, Type t, object o ) where T : ICodeWriter
+        {
+            @this.Append( "((" ).Append( t.FullName ).Append( ')' );
+            char tU = Enum.GetUnderlyingType( t ).Name[0];
+            if( tU == 'U' || tU == 'B' )
+            {
+                // An enum based on byte (enum EByte : byte) or any other unsigned integral type shorter than a ulong
+                // cannot be cast into a ulong...
+                @this.Append( Convert.ToUInt64( o ) );
+            }
+            else
+            {
+                long v = Convert.ToInt64( o );
+                if( v >= 0 ) @this.Append( v );
+                else @this.Append( '(' ).Append( v ).Append( ')' );
+            }
+            return @this.Append( ')' );
+        }
+
+        /// <summary>
         /// Appends the code source for an untyped object.
         /// Only types that are implemented throug one of the existing Append extension methods
         /// are supported: an <see cref="ArgumentException"/> is thrown for unsuported type.
@@ -524,6 +553,7 @@ namespace CK.CodeGen
         static public T Append<T>( this T @this, object o ) where T : ICodeWriter
         {
             if( o == Type.Missing ) return @this.Append( "System.Type.Missing" );
+            if( o == DBNull.Value ) return @this.Append( "System.DBNull.Value" );           
             switch( o )
             {
                 case null: return @this.Append( "null" );
@@ -548,6 +578,8 @@ namespace CK.CodeGen
                 case DateTimeOffset x: return Append( @this, x );
                 case IEnumerable x: return AppendCollection( @this, x );
             }
+            Type t = o.GetType();
+            if( t.IsEnum ) return AppendEnumValue( @this, t, o );
             throw new ArgumentException( "Unknown type: " + o.GetType().AssemblyQualifiedName );
         }
     }

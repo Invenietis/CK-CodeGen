@@ -57,12 +57,12 @@ namespace CK.CodeGen.Roslyn.Tests
                     .EnsureUsing( "System.Reflection" )
                     .Append(
                       @"static class CKFixDBNull
-                            { 
-                                // This was the original required code (before netcoreapp2.0):
-                                // public static object Value = typeof( object ).Assembly.GetType( ""System.DBNull"" ).GetField( ""Value"" ).GetValue( null );
-                                // Here we use a stupid value for the demo.
-                                public static object Value = ""I'm the DBNull."";
-                            }" );
+                        { 
+                            // This was the original required code (before netcoreapp2.0):
+                            // public static object Value = typeof( object ).Assembly.GetType( ""System.DBNull"" ).GetField( ""Value"" ).GetValue( null );
+                            // Here we use a stupid value for the demo.
+                            public static object Value = ""I'm the DBNull."";
+                        }" );
             }
         }
 
