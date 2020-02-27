@@ -6,7 +6,7 @@ using System.Reflection;
 namespace CK.CodeGen.Abstractions
 {
     /// <summary>
-    /// Simple immutable package reference that exposes a centralized mapping from <see cref="Assem"/>.
+    /// Simple immutable package reference that exposes a centralized mapping from <see cref="Assembly"/> to their packages.
     /// Offers association from <see cref="Assembly"/> to its package thanks to <see cref="SetAssemblyPackage(string, PackageReference)"/>
     /// and <see cref="FromAssembly(Assembly)"/> methods.
     /// </summary>
@@ -45,7 +45,7 @@ namespace CK.CodeGen.Abstractions
         /// Associates a <see cref="PackageReference"/> to use for an <see cref="Assembly"/>.
         /// This method is thread safe.
         /// </summary>
-        /// <param name="assemblyName">The assembly's full name or short name.</param>
+        /// <param name="assemblyName">The assembly's full name or short name (ie. <see cref="AssemblyName.Name"/>).</param>
         /// <param name="package">The package that must be used.</param>
         public static void SetAssemblyPackage( string assemblyName, PackageReference package )
         {
@@ -56,8 +56,8 @@ namespace CK.CodeGen.Abstractions
         }
 
         /// <summary>
-        /// Gets a package reference from an assembly. The package may have been explicitely registered via <see cref=""SetAssemblyPackage/>
-        /// or built from the <see cref="Assembly.Name"/> and <see cref="InformationalVersion.Version"/> or <see cref="AssemblyName.Version"/>.
+        /// Gets a package reference from an assembly. The package may have been explicitely registered via <see cref="SetAssemblyPackage"/>
+        /// or built from the <see cref="AssemblyName.Name"/> and <see cref="InformationalVersion.Version"/> or <see cref="AssemblyName.Version"/>.
         /// This method is thread safe.
         /// </summary>
         /// <param name="assembly">The assembly.</param>

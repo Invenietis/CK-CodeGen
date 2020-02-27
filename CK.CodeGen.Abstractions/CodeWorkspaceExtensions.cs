@@ -78,6 +78,7 @@ namespace CK.CodeGen.Abstractions
         /// Writes the current <see cref="ICodeWorkspace.Global">Global</see> source code into a <see cref="TextWriter"/>.
         /// </summary>
         /// <param name="this">This wokspace.</param>
+        /// <param name="w">Target TextWriter.</param>
         public static void WriteGlobalSource( this ICodeWorkspace @this, TextWriter w )
         {
             @this.Global.Build( w.Write, true );

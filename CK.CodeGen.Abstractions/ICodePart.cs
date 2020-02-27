@@ -17,7 +17,7 @@ namespace CK.CodeGen.Abstractions
         /// <summary>
         /// Collects the whole code of this part into a string collector.
         /// </summary>
-        /// <param name="b">The string collector where strings will be sent.</param>
+        /// <param name="collector">The string collector where strings will be sent.</param>
         void BuildPart( Action<string> collector );
     }
 }
