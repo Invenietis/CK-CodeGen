@@ -582,5 +582,72 @@ namespace CK.CodeGen
             if( t.IsEnum ) return AppendEnumValue( @this, t, o );
             throw new ArgumentException( "Unknown type: " + o.GetType().AssemblyQualifiedName );
         }
+
+        /// <summary>
+        /// Creates a segment of code inside this function.
+        /// This signature allows a fluent code to "emit" one or more insertion points.
+        /// </summary>
+        /// <typeparam name="T">The function scope type.</typeparam>
+        /// <param name="this">This function scope.</param>
+        /// <param name="part">The function part to use to inject code at this location (or at the top).</param>
+        /// <param name="top">Optionally creates the new part at the start of the code instead of at the current writing position in the code.</param>
+        /// <returns>This function scope writer to enable fluent syntax.</returns>
+        public static T CreatePart<T>( this T @this, out IFunctionScopePart part, bool top = false ) where T : IFunctionScope
+        {
+            part = @this.CreatePart( top );
+            return @this;
+        }
+
+        /// <summary>
+        /// Creates a segment of code inside this namespace.
+        /// This signature allows a fluent code to "emit" one or more insertion points.
+        /// </summary>
+        /// <typeparam name="T">The namespace scope type.</typeparam>
+        /// <param name="this">This namespace scope.</param>
+        /// <param name="part">The namespace part to use to inject code at this location (or at the top).</param>
+        /// <param name="top">Optionally creates the new part at the start of the code instead of at the current writing position in the code.</param>
+        /// <returns>This namespace scope writer to enable fluent syntax.</returns>
+        public static T CreatePart<T>( this T @this, out INamespaceScopePart part, bool top = false ) where T : INamespaceScope
+        {
+            part = @this.CreatePart( top );
+            return @this;
+        }
+
+        /// <summary>
+        /// Creates a segment of code inside this type.
+        /// This signature allows a fluent code to "emit" one or more insertion points.
+        /// </summary>
+        /// <typeparam name="T">The type scope type.</typeparam>
+        /// <param name="this">This type scope.</param>
+        /// <param name="part">The type part to use to inject code at this location (or at the top).</param>
+        /// <param name="top">Optionally creates the new part at the start of the code instead of at the current writing position in the code.</param>
+        /// <returns>This type scope writer to enable fluent syntax.</returns>
+        public static T CreatePart<T>( this T @this, out ITypeScopePart part, bool top = false ) where T : ITypeScope
+        {
+            part = @this.CreatePart( top );
+            return @this;
+        }
+
+        /// <summary>
+        /// Fluent function application: this enables a procedural fragment to be inlined in a fluent code.
+        /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
+        /// <param name="this">This code writer.</param>
+        /// <param name="f">Fluent function to apply.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
+        public static T Append<T>( this T @this, Func<T, T> f ) where T : ICodeWriter => f( @this );
+
+        /// <summary>
+        /// Fluent action application: this enables a procedural fragment to be inlined in a fluent code.
+        /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
+        /// <param name="this">This code writer.</param>
+        /// <param name="f">Actio to apply to this code writer.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
+        public static T Append<T>( this T @this, Action<T> f ) where T : ICodeWriter
+        {
+            f( @this );
+            return @this;
+        }
     }
 }
