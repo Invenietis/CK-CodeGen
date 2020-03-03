@@ -455,7 +455,7 @@ namespace CK.CodeGen
         /// <param name="this">This code writer.</param>
         /// <param name="e">Set of items for which code must be generated. Can be null.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T AppendCollection<T,TItem>( this T @this, IEnumerable<TItem> e ) where T : ICodeWriter
+        static public T AppendArray<T,TItem>( this T @this, IEnumerable<TItem> e ) where T : ICodeWriter
         {
             if( e == null ) return @this.Append( "null" );
             if( !e.Any() ) return @this.Append( "Array.Empty<" ).AppendCSharpName( typeof( TItem ), false ).Append( ">()" );
@@ -482,13 +482,12 @@ namespace CK.CodeGen
         /// <param name="this">This code writer.</param>
         /// <param name="e">Set of items for which code must be generated. Can be null.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T AppendCollection<T>( this T @this, IEnumerable e ) where T : ICodeWriter
+        static public T AppendArray<T>( this T @this, IEnumerable e ) where T : ICodeWriter
         {
             if( e == null ) return @this.Append( "null" );
             Type type = typeof( object );
             var eI = e.GetType()
-                        .GetTypeInfo()
-                        .ImplementedInterfaces
+                        .GetInterfaces()
                         .FirstOrDefault( iT => iT.IsGenericType && iT.GetGenericTypeDefinition() == typeof( IEnumerable<> ) );
             if( eI != null )
             {
@@ -514,6 +513,7 @@ namespace CK.CodeGen
 
         /// <summary>
         /// Appends the code source of an enumeration value.
+        /// The value is written as its integral type value casted into the enum type.
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <typeparam name="E">Type of the <see cref="Enum"/>.</typeparam>
@@ -529,11 +529,12 @@ namespace CK.CodeGen
             if( tU == 'U' || tU == 'B' )
             {
                 // An enum based on byte (enum EByte : byte) or any other unsigned integral type shorter than a ulong
-                // cannot be cast into a ulong...
+                // cannot be cast into a ulong... We must use Convert that handles this correctly.
                 @this.Append( Convert.ToUInt64( o ) );
             }
             else
             {
+                // Parentheses are required around negative values.
                 long v = Convert.ToInt64( o );
                 if( v >= 0 ) @this.Append( v );
                 else @this.Append( '(' ).Append( v ).Append( ')' );
@@ -543,8 +544,9 @@ namespace CK.CodeGen
 
         /// <summary>
         /// Appends the code source for an untyped object.
-        /// Only types that are implemented throug one of the existing Append extension methods
-        /// are supported: an <see cref="ArgumentException"/> is thrown for unsuported type.
+        /// Only types that are implemented throug one of the existing Append, AppendArray (all IEnumerable are
+        /// handled) and enum values.
+        /// extension methods are supported: an <see cref="ArgumentException"/> is thrown for unsuported type.
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
@@ -576,7 +578,8 @@ namespace CK.CodeGen
                 case DateTime x: return Append( @this, x );
                 case TimeSpan x: return Append( @this, x );
                 case DateTimeOffset x: return Append( @this, x );
-                case IEnumerable x: return AppendCollection( @this, x );
+                case IEnumerable<Type> x: return AppendArray( @this, x );
+                case IEnumerable x: return AppendArray( @this, x );
             }
             Type t = o.GetType();
             if( t.IsEnum ) return AppendEnumValue( @this, t, o );
@@ -649,5 +652,34 @@ namespace CK.CodeGen
             f( @this );
             return @this;
         }
+
+        /// <summary>
+        /// Appends an array with the given types.
+        /// When <paramref name="types"/> is null, "null" is written, when the enumerable
+        /// is empty, "<see cref="Type.EmptyTypes"/>" is written.
+        /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
+        /// <param name="this">This code writer.</param>
+        /// <param name="types">Types to <see cref="AppendTypeOf"/> in an array.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
+        public static T AppendArray<T>( this T @this, IEnumerable<Type> types ) where T : ICodeWriter
+        {
+            if( types == null ) return @this.Append( "null" );
+            bool atLeastOne = false;
+            foreach( var t in types )
+            {
+                if( atLeastOne ) @this.Append( ", " );
+                else
+                {
+                    @this.Append( "new[]{" );
+                    atLeastOne = true;
+                }
+                @this.AppendTypeOf( t );
+            }
+            if( atLeastOne ) @this.Append( "}" );
+            else @this.Append( "Type.EmptyTypes" );
+            return @this;
+        }
+
     }
 }
