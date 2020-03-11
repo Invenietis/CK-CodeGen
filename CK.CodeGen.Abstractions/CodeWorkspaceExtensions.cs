@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Text;
 
@@ -71,6 +72,16 @@ namespace CK.CodeGen.Abstractions
         public static string GetGlobalSource( this ICodeWorkspace @this )
         {
             return @this.Global.Build( new StringBuilder(), true ).ToString();
+        }
+
+        /// <summary>
+        /// Writes the current <see cref="ICodeWorkspace.Global">Global</see> source code into a <see cref="TextWriter"/>.
+        /// </summary>
+        /// <param name="this">This wokspace.</param>
+        /// <param name="w">Target TextWriter.</param>
+        public static void WriteGlobalSource( this ICodeWorkspace @this, TextWriter w )
+        {
+            @this.Global.Build( w.Write, true );
         }
 
     }

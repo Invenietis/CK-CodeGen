@@ -36,7 +36,9 @@ namespace CK.CodeGen
             return b;
         }
 
-        public StringBuilder BuildPart( StringBuilder b ) => Build( new SmarterStringBuilder() ).Builder;
+        public void BuildPart( Action<string> collector ) => Build( new SmarterStringBuilder( collector ) );
+
+        public StringBuilder Build( StringBuilder b, bool closeScope ) => Build( new SmarterStringBuilder( b ) ).Builder;
 
         ICodeWorkspace INamedScope.Workspace => _owner.Workspace;
 
@@ -46,7 +48,7 @@ namespace CK.CodeGen
 
         string INamedScope.FullName => _owner.FullName;
 
-        StringBuilder INamedScope.Build( StringBuilder b, bool closeScope ) => _owner.Build( b, closeScope );
+        void INamedScope.Build( Action<string> collector, bool closeScope ) => _owner.Build( collector, closeScope );
 
         internal void MergeWith( CodePart other )
         {
@@ -59,6 +61,6 @@ namespace CK.CodeGen
 
         public IDictionary<object, object> Memory => _memory ?? (_memory = new Dictionary<object, object>());
 
-        public override string ToString() => BuildPart( new StringBuilder() ).ToString();
+        public override string ToString() => Build( new SmarterStringBuilder( new StringBuilder() ) ).ToString();
     }
 }

@@ -161,12 +161,12 @@ namespace CK.CodeGen
             if( Workspace.Global != this ) b.Append( "namespace " )
                                             .Append( Name )
                                             .AppendLine()
-                                            .Append( '{' )
+                                            .Append( "{" )
                                             .AppendLine();
             foreach( var e in _usings )
             {
                 b.AppendLine().Append( "using " ).Append( e.Key );
-                if( e.Value.Value == null ) b.Append( ';' );
+                if( e.Value.Value == null ) b.Append( ";" );
                 else b.Append( " = " ).Append( e.Value.Value );
                 b.AppendLine();
             }

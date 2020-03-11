@@ -1,17 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.52" />
   <Import Project="..\..\Common\Shared.props" />
+
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>False</IsPackable>
   </PropertyGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\..\CK.CodeGen.Roslyn\CK.CodeGen.Roslyn.csproj" />
     <ProjectReference Include="..\..\CK.CodeGen\CK.CodeGen.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" Version="5.10.2" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
-    <PackageReference Include="NUnit" Version="3.12.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.16.1" />
+    <PackageReference Include="System.Data.SqlClient" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="NUnit" />
+    <PackageReference Include="NUnit3TestAdapter" />
   </ItemGroup>
 </Project>

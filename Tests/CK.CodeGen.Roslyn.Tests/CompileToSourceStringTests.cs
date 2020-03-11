@@ -122,7 +122,7 @@ namespace CK.CodeGen.Roslyn.Tests
                 typeof(Dictionary<string,int>),
             }; " )
                 .NewLine()
-                .Append( "var rewrite = " ).AppendCollection( array ).Append( ";" ).NewLine()
+                .Append( "var rewrite = " ).AppendArray( array ).Append( ";" ).NewLine()
                 .Append( @"
                    var diff = array
                                .Select( ( o, idx ) => new { O = o, T = rewrite[idx], I = idx } )

@@ -6,7 +6,7 @@ using System;
 namespace CK.CodeGen
 {
     /// <summary>
-    /// This class exposes the main entry point of the source code model.
+    /// This class exposes the main entry points of the source code model.
     /// </summary>
     public static class CodeWorkspace 
     {
@@ -24,9 +24,22 @@ namespace CK.CodeGen
         public static ICodeWorkspace Create( string initialSource = null, params Assembly[] assembly )
         {
             var w = new CodeWorkspaceImpl();
-            if( !String.IsNullOrWhiteSpace( initialSource) ) w.Global.Append( initialSource );
+            if( !String.IsNullOrWhiteSpace( initialSource ) ) w.Global.Append( initialSource );
             foreach( var a in assembly ) w.DoEnsureAssemblyReference( a );
             return w;
         }
+
+        /// <summary>
+        /// Creates a new <see cref="ICodeProject"/> with an optional initial code.
+        /// </summary>
+        /// <param name="projectName">The project name.</param>
+        /// <param name="code">Optional code. When null a new empty one is created.</param>
+        /// <returns>A new code project.</returns>
+        public static ICodeProject CreateProject( string projectName, ICodeWorkspace code = null )
+        {
+            if( String.IsNullOrWhiteSpace( projectName ) ) throw new ArgumentNullException( nameof( projectName ) );
+            return new CodeProjectImpl( projectName, code ?? CodeWorkspace.Create() );
+        }
+
     }
 }

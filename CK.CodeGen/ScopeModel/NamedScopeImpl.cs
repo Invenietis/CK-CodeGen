@@ -52,6 +52,8 @@ namespace CK.CodeGen
 
         public IDictionary<object, object> Memory => CodePart.Memory;
 
+        public void Build( Action<string> collector, bool closeScope ) => Build( new SmarterStringBuilder( collector ), closeScope );
+
         public StringBuilder Build( StringBuilder b, bool closeScope ) => Build( new SmarterStringBuilder( b ), closeScope ).Builder;
 
         internal protected abstract SmarterStringBuilder Build( SmarterStringBuilder b, bool closeScope );

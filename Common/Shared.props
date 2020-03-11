@@ -9,7 +9,7 @@
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
   <ItemGroup Condition=" '$(CakeBuild)' == 'true' ">
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>
   <!--</SourceLink>-->
 
@@ -19,6 +19,8 @@
     <IsInTestsFolder Condition="$(MSBuildProjectDirectoryNoRoot.Contains('\Tests\'))">true</IsInTestsFolder>
     <!-- SolutionDir is defined by Visual Studio, we unify the behavior here. -->
     <SolutionDir Condition=" $(SolutionDir) == '' ">$([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName($(MSBuildThisFileDirectory)))))\</SolutionDir>
+    <!-- Using Microsoft.Build.CentralPackageVersions: this avoids the Packages.props at the root of the repository. -->
+    <CentralPackagesFile>$(MSBuildThisFileDirectory)CentralPackages.props</CentralPackagesFile>
   </PropertyGroup>
   <!--</BasicDefinitions>-->
 
