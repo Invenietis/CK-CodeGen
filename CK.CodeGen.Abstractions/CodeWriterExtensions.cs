@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 using System.Reflection;
 using System.Collections;
@@ -180,6 +179,49 @@ namespace CK.CodeGen
             return t == null
                     ? @this.Append( "null" )
                     : @this.Append( "typeof(" ).AppendCSharpName( t, false ).Append( ")" );
+        }
+
+        /// <summary>
+        /// Appends a call to <see cref="Assembly.Load(string)"/> with the <see cref="Assembly.FullName"/>.
+        /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
+        /// <param name="this">This code writer.</param>
+        /// <param name="a">The assembly.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
+        static public T Append<T>( this T @this, Assembly? a ) where T : ICodeWriter
+        {
+            return a == null
+                    ? @this.Append( "null" )
+                    : @this.Append( "System.Reflection.Assembly.Load(" ).AppendSourceString( a.FullName ).Append( ")" );
+        }
+
+        /// <summary>
+        /// Appends what is needed to recover a <see cref="MemberInfo"/>: this applies to
+        /// <see cref="Type"/>, <see cref="MethodInfo"/>, <see cref="PropertyInfo"/>, <see cref="FieldInfo"/>, <see cref="EventInfo"/>
+        /// and <see cref="ConstructorInfo"/>.
+        /// Current implementation rely on <see cref="AppendTypeOf{T}(T, Type)"/> on the type (either the <paramref name="m"/> parameter
+        /// or the <see cref="MemberInfo.DeclaringType"/>): the type must be acessible from where it is used.
+        /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
+        /// <param name="this">This code writer.</param>
+        /// <param name="m">The member.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
+        static public T Append<T>( this T @this, MemberInfo? m ) where T : ICodeWriter
+        {
+            switch( m )
+            {
+                case null: @this.Append( "null" ); return @this;
+                case Type t: @this.AppendTypeOf( t ); return @this;
+                case MethodInfo method: @this.Append( "(System.Reflection.MethodInfo)" ); break;
+                case PropertyInfo prop: @this.Append( "(System.Reflection.PropertyInfo)" ); break;
+                case FieldInfo field: @this.Append( "(System.Reflection.FieldInfo)" ); break;
+                case EventInfo ev: @this.Append( "(System.Reflection.EventInfo)" ); break;
+                case ConstructorInfo c: @this.Append( "(System.Reflection.ConstructorInfo)" ); break;
+            }
+            return @this.AppendTypeOf( m.DeclaringType )
+                        .Append( ".GetMembers( System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.DeclaredOnly )[" )
+                        .Append( Array.IndexOf( m.DeclaringType.GetMembers( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly ), m ) )
+                        .Append( "]" );
         }
 
         /// <summary>
@@ -425,7 +467,7 @@ namespace CK.CodeGen
         /// <param name="strings">The string. Can be null or empty.</param>
         /// <param name="separator">Separator between the strings.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T Append<T>( this T @this, IEnumerable<string> strings, string separator = ", " ) where T : ICodeWriter
+        static public T Append<T>( this T @this, IEnumerable<string> strings, string? separator = ", " ) where T : ICodeWriter
         {
             if( strings != null )
             {
@@ -455,7 +497,7 @@ namespace CK.CodeGen
         /// <param name="this">This code writer.</param>
         /// <param name="e">Set of items for which code must be generated. Can be null.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T AppendArray<T,TItem>( this T @this, IEnumerable<TItem> e ) where T : ICodeWriter
+        static public T AppendArray<T,TItem>( this T @this, IEnumerable<TItem>? e ) where T : ICodeWriter
         {
             if( e == null ) return @this.Append( "null" );
             if( !e.Any() ) return @this.Append( "Array.Empty<" ).AppendCSharpName( typeof( TItem ), false ).Append( ">()" );
@@ -482,7 +524,7 @@ namespace CK.CodeGen
         /// <param name="this">This code writer.</param>
         /// <param name="e">Set of items for which code must be generated. Can be null.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T AppendArray<T>( this T @this, IEnumerable e ) where T : ICodeWriter
+        static public T AppendArray<T>( this T @this, IEnumerable? e ) where T : ICodeWriter
         {
             if( e == null ) return @this.Append( "null" );
             Type type = typeof( object );
@@ -552,7 +594,7 @@ namespace CK.CodeGen
         /// <param name="this">This code writer.</param>
         /// <param name="o">The object. Can be null.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T Append<T>( this T @this, object o ) where T : ICodeWriter
+        static public T Append<T>( this T @this, object? o ) where T : ICodeWriter
         {
             if( o == Type.Missing ) return @this.Append( "System.Type.Missing" );
             if( o == DBNull.Value ) return @this.Append( "System.DBNull.Value" );           
@@ -560,6 +602,7 @@ namespace CK.CodeGen
             {
                 case null: return @this.Append( "null" );
                 case Type x: return @this.Append( "typeof(" ).AppendCSharpName( x, false ).Append( ")" );
+                case MemberInfo m: return @this.Append( "typeof(" ).AppendCSharpName( m.DeclaringType, false ).Append( ")" );
                 case string x: return Append( @this, x.ToSourceString() );
                 case bool x: return Append( @this, x );
                 case int x: return Append( @this, x );
@@ -662,7 +705,7 @@ namespace CK.CodeGen
         /// <param name="this">This code writer.</param>
         /// <param name="types">Types to <see cref="AppendTypeOf"/> in an array.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        public static T AppendArray<T>( this T @this, IEnumerable<Type> types ) where T : ICodeWriter
+        public static T AppendArray<T>( this T @this, IEnumerable<Type>? types ) where T : ICodeWriter
         {
             if( types == null ) return @this.Append( "null" );
             bool atLeastOne = false;

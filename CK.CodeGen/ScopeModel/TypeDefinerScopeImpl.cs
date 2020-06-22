@@ -16,7 +16,7 @@ namespace CK.CodeGen
 
         readonly Dictionary<string, TypeScopeImpl> _types;
 
-        protected TypeDefinerScopeImpl( CodeWorkspaceImpl workspace, INamedScope parent )
+        protected TypeDefinerScopeImpl( CodeWorkspaceImpl workspace, INamedScope? parent )
             : base( workspace, parent )
         {
             _types = new Dictionary<string, TypeScopeImpl>();
@@ -37,7 +37,7 @@ namespace CK.CodeGen
             if( String.IsNullOrEmpty( name ) ) throw new ArgumentException( "Invalid null or empty type name.", nameof( name ) );
             var m = new StringMatcher( name );
             m.SkipWhiteSpacesAndJSComments();
-            if( !m.MatchTypeKey( out string key ) ) throw new ArgumentException( $"Invalid type name: {name}", nameof( name ) );
+            if( !m.MatchTypeKey( out string? key ) ) throw new ArgumentException( $"Invalid type name: {name}", nameof( name ) );
             TypeScopeImpl result;
             _types.TryGetValue( key, out result );
             return result;

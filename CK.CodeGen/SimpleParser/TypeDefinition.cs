@@ -35,12 +35,12 @@ namespace CK.CodeGen
         public IReadOnlyList<TypeParameterConstraint> Constraints { get; }
 
         internal TypeDefinition(
-            IReadOnlyList<AttributeDefinition> attributes,
+            IReadOnlyList<AttributeDefinition>? attributes,
             Modifiers modifiers,
             TypeKind kind,
             TypeName name,
-            IReadOnlyList<TypeName> bases,
-            IReadOnlyList<TypeParameterConstraint> constraints )
+            IReadOnlyList<TypeName>? bases,
+            IReadOnlyList<TypeParameterConstraint>? constraints )
         {
             Attributes = attributes ?? Array.Empty<AttributeDefinition>();
             Modifiers = modifiers;

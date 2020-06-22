@@ -21,7 +21,7 @@ namespace CK.CodeGen
             : base( ws, parent )
         {
             _funcs = new FunctionDefiner( true );
-            INamedScope p = parent;
+            INamedScope? p = parent;
             for(; ; )
             {
                 if( p is INamespaceScope ns )
@@ -68,10 +68,11 @@ namespace CK.CodeGen
             CodePart.Parts.Clear();
             var m = new StringMatcher( _declaration );
             m.SkipWhiteSpacesAndJSComments();
-            if( !m.MatchTypeDefinition( out _typeDef, IsNestedType, out bool hasCodeOpener ) )
+            if( !m.MatchTypeDefinition( out var typeDef, IsNestedType, out bool hasCodeOpener ) )
             {
                 throw new InvalidOperationException( $"Error: {m.ErrorMessage} Unable to parse type declaration {_declaration}" );
             }
+            _typeDef = typeDef;
             if( hasCodeOpener )
             {
                 m.MatchWhiteSpaces( 0 );

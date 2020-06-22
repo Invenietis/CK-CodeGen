@@ -34,7 +34,7 @@ namespace CK.CodeGen.Abstractions
         /// Gets the return type of the function.
         /// Null when <see cref="IsConstructor"/> is true.
         /// </summary>
-        string ReturnType { get; }
+        string? ReturnType { get; }
 
         /// <summary>
         /// Creates a segment of code inside this function.

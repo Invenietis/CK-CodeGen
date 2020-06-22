@@ -5,12 +5,13 @@ using CK.Text;
 using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CK.CodeGen
 {
     static class StringMatcherExtensions
     {
-        internal static bool TryMatchCSharpIdentifier( this StringMatcher @this, out string identifier, bool skipAtSign = false )
+        internal static bool TryMatchCSharpIdentifier( this StringMatcher @this, [NotNullWhen( true )]out string? identifier, bool skipAtSign = false )
         {
             identifier = null;
             if( @this.IsEnd ) return false;
@@ -27,7 +28,7 @@ namespace CK.CodeGen
             return false;
         }
 
-        static bool EatRawCode( this StringMatcher @this, out string stuff, bool removeWhiteSpaces = true )
+        static bool EatRawCode( this StringMatcher @this, [NotNullWhen( true )]out string? stuff, bool removeWhiteSpaces = true )
         {
             int depth = 0;
             StringBuilder b = new StringBuilder();
@@ -69,7 +70,7 @@ namespace CK.CodeGen
             return true;
         }
 
-        static bool TryMatchCSharpString( this StringMatcher @this, out string s )
+        static bool TryMatchCSharpString( this StringMatcher @this, [NotNullWhen( true )]out string? s )
         {
             if( @this.TryMatchText( "$@\"" ) )
             {
@@ -91,7 +92,7 @@ namespace CK.CodeGen
             return false;
         }
 
-        static bool EatString( this StringMatcher @this, out string s, char mark )
+        static bool EatString( this StringMatcher @this, [NotNullWhen( true )]out string? s, char mark )
         {
             int startIdx = @this.StartIndex - 1;
             while( !@this.IsEnd )
@@ -108,7 +109,7 @@ namespace CK.CodeGen
             return false;
         }
 
-        static bool EatVerbatimString( this StringMatcher @this, int start, out string s )
+        static bool EatVerbatimString( this StringMatcher @this, int start, [NotNullWhen( true )]out string? s )
         {
             int startIdx = @this.StartIndex - start;
             while( !@this.IsEnd )
@@ -131,7 +132,7 @@ namespace CK.CodeGen
             return false;
         }
 
-        internal static bool MatchPotentialAttributes( this StringMatcher @this, out List<AttributeDefinition> attributes )
+        internal static bool MatchPotentialAttributes( this StringMatcher @this, out List<AttributeDefinition>? attributes )
         {
             attributes = null;
             while( @this.TryMatchAttribute( out var a ) )
@@ -145,7 +146,7 @@ namespace CK.CodeGen
             return !@this.IsError;
         }
 
-        static string MapAttributeTarget( string s )
+        static string? MapAttributeTarget( string s )
         {
             switch( s )
             {
@@ -162,12 +163,12 @@ namespace CK.CodeGen
             }
         }
 
-        internal static bool TryMatchAttribute( this StringMatcher @this, out AttributeDefinition attr )
+        internal static bool TryMatchAttribute( this StringMatcher @this, [NotNullWhen( true )]out AttributeDefinition? attr )
         {
             attr = null;
             if( !@this.TryMatchChar( '[' ) ) return false;
             @this.SkipWhiteSpacesAndJSComments();
-            if( !@this.TryMatchCSharpIdentifier( out string targetOrName ) ) return @this.AddError( "Attribute definition expected." );
+            if( !@this.TryMatchCSharpIdentifier( out string? targetOrName ) ) return @this.AddError( "Attribute definition expected." );
             var target = MapAttributeTarget( targetOrName );
             if( target != null )
             {
@@ -178,7 +179,7 @@ namespace CK.CodeGen
             do
             {
                 @this.SkipWhiteSpacesAndJSComments();
-                if( !@this.MatchTypeName( out TypeName name, targetOrName ) ) return @this.AddError( "Attribute definition expected." );
+                if( !@this.MatchTypeName( out TypeName? name, targetOrName ) ) return @this.AddError( "Attribute definition expected." );
                 targetOrName = null;
                 if( name.Name.EndsWith( "Attribute", StringComparison.Ordinal ) )
                 {
@@ -191,7 +192,7 @@ namespace CK.CodeGen
                     @this.SkipWhiteSpacesAndJSComments();
                     while( !@this.TryMatchChar( ')' ) )
                     {
-                        if( !@this.EatRawCode( out string stuff ) ) return @this.SetError( "Values expected." );
+                        if( !@this.EatRawCode( out string? stuff ) ) return @this.SetError( "Values expected." );
                         values.Add( stuff );
                         // Allow training comma. Don't care.
                         if( @this.TryMatchChar( ',' ) ) @this.SkipWhiteSpacesAndJSComments();
@@ -208,7 +209,7 @@ namespace CK.CodeGen
             return true;
         }
 
-        internal static bool MatchMethodDefinition( this StringMatcher @this, out MethodDefinition mDef, out bool hasCodeOpener )
+        internal static bool MatchMethodDefinition( this StringMatcher @this, out MethodDefinition? mDef, out bool hasCodeOpener )
         {
             mDef = null;
             hasCodeOpener = false;
@@ -223,7 +224,7 @@ namespace CK.CodeGen
 
             @this.SkipWhiteSpacesAndJSComments();
             bool isIndexer = false;
-            TypeName methodName;
+            TypeName? methodName;
             if( @this.TryMatchChar( '(' ) )
             {
                 methodName = returnType;
@@ -258,7 +259,7 @@ namespace CK.CodeGen
                     @this.SkipWhiteSpacesAndJSComments();
                     if( !@this.TryMatchCSharpIdentifier( out var pName ) ) return false;
                     @this.SkipWhiteSpacesAndJSComments();
-                    string defVal = null;
+                    string? defVal = null;
                     if( @this.TryMatchChar( '=' ) )
                     {
                         if( !@this.EatRawCode( out defVal ) ) return false;
@@ -293,7 +294,7 @@ namespace CK.CodeGen
                     if( !success ) return @this.SetError( "this(...) or base(...) expected." );
                 }
             }
-            List<TypeParameterConstraint> wheres;
+            List<TypeParameterConstraint>? wheres;
             if( !@this.MatchWhereConstraints( out hasCodeOpener, out wheres ) ) return false;
             mDef = new MethodDefinition( attributes, modifiers, returnType, methodName, isIndexer, parameters, wheres );
             return true;
@@ -301,10 +302,10 @@ namespace CK.CodeGen
 
         #region TypeDefinition
 
-        internal static string CollectModifiersUntilIdentifier( this StringMatcher @this, out Modifiers modifiers )
+        internal static string? CollectModifiersUntilIdentifier( this StringMatcher @this, out Modifiers modifiers )
         {
             modifiers = Modifiers.None;
-            string id;
+            string? id;
             while( @this.TryMatchCSharpIdentifier( out id )
                    && ModifiersExtension.Combine( ref modifiers, id ) )
             {
@@ -313,11 +314,11 @@ namespace CK.CodeGen
             return id;
         }
 
-        internal static bool MatchTypeKey( this StringMatcher @this, out string key )
+        internal static bool MatchTypeKey( this StringMatcher @this, [NotNullWhen( true )]out string? key )
         {
             key = null;
             if( !@this.MatchPotentialAttributes( out var attributes ) ) return false;
-            string head = @this.CollectModifiersUntilIdentifier( out var modifiers );
+            string? head = @this.CollectModifiersUntilIdentifier( out var modifiers );
             if( head == "class" || head == "struct" || head == "interface" || head == "enum" )
             {
                 head = null;
@@ -328,7 +329,7 @@ namespace CK.CodeGen
             return true;
         }
 
-        internal static bool MatchTypeDefinition( this StringMatcher @this, out TypeDefinition typeDef, bool isNestedType, out bool hasCodeOpener )
+        internal static bool MatchTypeDefinition( this StringMatcher @this, [NotNullWhen( true )]out TypeDefinition? typeDef, bool isNestedType, out bool hasCodeOpener )
         {
             typeDef = null;
             hasCodeOpener = false;
@@ -350,7 +351,7 @@ namespace CK.CodeGen
 
             @this.SkipWhiteSpacesAndJSComments();
             if( !@this.MatchTypeName( out var name ) ) return false;
-            List<TypeName> baseTypes = null;
+            List<TypeName>? baseTypes = null;
             @this.SkipWhiteSpacesAndJSComments();
             if( @this.TryMatchChar( ':' ) )
             {
@@ -358,13 +359,13 @@ namespace CK.CodeGen
                 if( !@this.MatchBaseTypesOrConstraints( out baseTypes ) ) return false;
             }
             @this.SkipWhiteSpacesAndJSComments();
-            List<TypeParameterConstraint> wheres;
+            List<TypeParameterConstraint>? wheres;
             if( !@this.MatchWhereConstraints( out hasCodeOpener, out wheres ) ) return false;
             typeDef = new TypeDefinition( attributes, modifiers, kind, name, baseTypes, wheres );
             return true;
         }
 
-        static bool MatchWhereConstraints( this StringMatcher @this, out bool hasCodeOpener, out List<TypeParameterConstraint> wheres )
+        static bool MatchWhereConstraints( this StringMatcher @this, out bool hasCodeOpener, out List<TypeParameterConstraint>? wheres )
         {
             wheres = null;
             while( !(hasCodeOpener = @this.TryMatchChar( '{' )) && !@this.IsEnd )
@@ -383,7 +384,7 @@ namespace CK.CodeGen
         /// BaseTypeOrConstraint => TypeName | new()
         /// The "new()" is becomes the <see cref="TypeName.Name"/> of a pseudo type name.
         /// </summary>
-        static bool MatchBaseTypeOrConstraint( this StringMatcher @this, out TypeName t )
+        static bool MatchBaseTypeOrConstraint( this StringMatcher @this, [NotNullWhen( true )]out TypeName? t )
         {
             t = null;
             if( !@this.TryMatchCSharpIdentifier( out var baseName ) ) return @this.SetError( "Expected identifier." );
@@ -428,7 +429,7 @@ namespace CK.CodeGen
         /// <summary>
         /// TypeParameterConstraint => where : BaseTypesOrConstraints
         /// </summary>
-        static bool MatchTypeParameterConstraint( this StringMatcher @this, out TypeParameterConstraint c )
+        static bool MatchTypeParameterConstraint( this StringMatcher @this, [NotNullWhen( true )]out TypeParameterConstraint? c )
         {
             c = null;
             if( !@this.TryMatchCSharpIdentifier( out var name ) || name != "where" ) @this.SetError( "Expected where constraint." );
@@ -445,14 +446,14 @@ namespace CK.CodeGen
         #endregion
 
         #region TypeName
-        internal static bool MatchTypeName( this StringMatcher @this, out TypeName type, string knownName = null )
+        internal static bool MatchTypeName( this StringMatcher @this, [NotNullWhen( true )]out TypeName? type, string? knownName = null )
         {
             type = null;
             if( knownName != null
                 || @this.TryMatchCSharpIdentifier( out knownName ) )
             {
-                List<TypeName.GenParam> genArgs = null;
-                List<int> arrayDim = null;
+                List<TypeName.GenParam>? genArgs = null;
+                List<int>? arrayDim = null;
                 @this.SkipWhiteSpacesAndJSComments();
                 while( @this.TryMatchChar('.') )
                 {
@@ -479,7 +480,7 @@ namespace CK.CodeGen
                             break;
                         }
                         if( !MatchGenParam( @this, out var genArg ) ) return @this.AddError( "Expected generic type parameter." );
-                        genArgs.Add( genArg );
+                        genArgs.Add( genArg.Value );
                         @this.SkipWhiteSpacesAndJSComments();
                         if( @this.TryMatchChar( '>' ) )
                         {
@@ -508,10 +509,10 @@ namespace CK.CodeGen
             return @this.SetError( "Type name." );
         }
 
-        static bool MatchGenParam( StringMatcher @this, out TypeName.GenParam genArg )
+        static bool MatchGenParam( StringMatcher @this, [NotNullWhen( true )]out TypeName.GenParam? genArg )
         {
             genArg = TypeName.GenParam.Empty;
-            if( @this.TryMatchCSharpIdentifier( out string nameOrVariance ) )
+            if( @this.TryMatchCSharpIdentifier( out string? nameOrVariance ) )
             {
                 TypeName.VariantModifier v = TypeName.VariantModifier.None;
                 if( nameOrVariance == "out" )

@@ -24,7 +24,7 @@ namespace CK.CodeGen.Abstractions
         /// access protection builder. The default acces protection is "public ".
         /// </param>
         /// <returns>This type scope to enable fluent syntax.</returns>
-        public static ITypeScope AppendPassThroughConstructors( this ITypeScope @this, Type baseType, Func<ConstructorInfo, string> accessBuilder = null )
+        public static ITypeScope AppendPassThroughConstructors( this ITypeScope @this, Type baseType, Func<ConstructorInfo, string>? accessBuilder = null )
         {
             foreach( var c in baseType.GetConstructors( BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic )
                                       .Where( c => c.IsPublic || c.IsFamily || c.IsFamilyOrAssembly ) )
@@ -99,7 +99,7 @@ namespace CK.CodeGen.Abstractions
         /// <returns>This type scope to enable fluent syntax.</returns>
         public static ITypeScope AppendSignature( this ITypeScope @this, MethodInfo method, AccessProtectionOption access = AccessProtectionOption.All )
         {
-            Helper.DoAppendSignature( @this, access, null, method );
+            Helper.DoAppendSignature( @this, access, String.Empty, method );
             return @this;
         }
 

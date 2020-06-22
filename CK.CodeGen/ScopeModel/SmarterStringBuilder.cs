@@ -16,7 +16,7 @@ namespace CK.CodeGen
         /// Exposes the wrapped String builder or null if this
         /// builder is based on a Action{string} delegate.
         /// </summary>
-        public readonly StringBuilder Builder;
+        public readonly StringBuilder? Builder;
 
         bool _hasNewLine;
 

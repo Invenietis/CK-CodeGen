@@ -81,7 +81,7 @@ namespace CK.CodeGen.Abstractions
         static SVersion GetPackageVersion( Assembly a, AssemblyName n )
         {
             var info = InformationalVersion.ReadFromAssembly( a );
-            if( info.IsValidSyntax && info.Version.IsValid ) return info.Version;
+            if( info.IsValidSyntax && info.Version!.IsValid ) return info.Version;
             var v = n.Version;
             return SVersion.Create( v.Major, v.Minor, v.Build );
         }

@@ -9,7 +9,7 @@ namespace CK.CodeGen
     {
         readonly INamedScope _owner;
         internal readonly List<object> Parts;
-        Dictionary<object, object> _memory;
+        Dictionary<object, object?>? _memory;
 
         public CodePart( INamedScope owner )
         {
@@ -38,11 +38,11 @@ namespace CK.CodeGen
 
         public void BuildPart( Action<string> collector ) => Build( new SmarterStringBuilder( collector ) );
 
-        public StringBuilder Build( StringBuilder b, bool closeScope ) => Build( new SmarterStringBuilder( b ) ).Builder;
+        public StringBuilder Build( StringBuilder b, bool closeScope ) => Build( new SmarterStringBuilder( b ) ).Builder!;
 
         ICodeWorkspace INamedScope.Workspace => _owner.Workspace;
 
-        INamedScope INamedScope.Parent => _owner.Parent;
+        INamedScope? INamedScope.Parent => _owner.Parent;
 
         string INamedScope.Name => _owner.Name;
 
@@ -59,7 +59,7 @@ namespace CK.CodeGen
             }
         }
 
-        public IDictionary<object, object> Memory => _memory ?? (_memory = new Dictionary<object, object>());
+        public IDictionary<object, object?> Memory => _memory ?? (_memory = new Dictionary<object, object?>());
 
         public override string ToString() => Build( new SmarterStringBuilder( new StringBuilder() ) ).ToString();
     }

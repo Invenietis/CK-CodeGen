@@ -32,10 +32,10 @@ namespace CK.CodeGen.Abstractions
         /// "Module" (creates a module) and  "Winexe" (creates a Windows-based program).
         /// This defaults to null: no &lt;OutputType&gt; element exists.
         /// </summary>
-        string OutputType { get; set; }
+        string? OutputType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Sdk project attribute. Default to "Microsoft.NET.Sdk".
+        /// Gets or sets the Sdk project attribute. Defaults to "Microsoft.NET.Sdk".
         /// </summary>
         string Sdk { get; set; }
 
@@ -43,7 +43,7 @@ namespace CK.CodeGen.Abstractions
         /// Gets or sets the language version.
         /// Defaults to null.
         /// </summary>
-        string LangVersion { get; set; }
+        string? LangVersion { get; set; }
 
         /// <summary>
         /// Additional explicit package references to consider.

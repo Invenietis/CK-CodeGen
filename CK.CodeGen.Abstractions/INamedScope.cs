@@ -23,7 +23,7 @@ namespace CK.CodeGen.Abstractions
         /// The parent code scope.
         /// This is null for a root <see cref="INamespaceScope"/>.
         /// </summary>
-        INamedScope Parent { get; }
+        INamedScope? Parent { get; }
 
         /// <summary>
         /// The name of this scope: it is the leaf of the <see cref="FullName"/>.
@@ -58,7 +58,7 @@ namespace CK.CodeGen.Abstractions
         /// Gets a memory associated to this scope.
         /// It can contain any data that need to be associated to this scope.
         /// </summary>
-        IDictionary<object, object> Memory { get; }
+        IDictionary<object, object?> Memory { get; }
 
     }
 }

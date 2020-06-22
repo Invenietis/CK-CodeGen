@@ -13,7 +13,7 @@ namespace CK.CodeGen.Abstractions
         /// Gets the parent namespace.
         /// Null when this namespace is the <see cref="ICodeWorkspace.Global"/> namespace.
         /// </summary>
-        new INamespaceScope Parent { get; }
+        new INamespaceScope? Parent { get; }
 
         /// <summary>
         /// Ensures that a using is defined in this type scope or above.

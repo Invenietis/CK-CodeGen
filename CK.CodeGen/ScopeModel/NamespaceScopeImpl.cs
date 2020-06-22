@@ -12,15 +12,15 @@ namespace CK.CodeGen
     sealed class NamespaceScopeImpl : TypeDefinerScopeImpl, INamespaceScope
     {
         readonly static Regex _nsName = new Regex( @"^\s*(?<1>\w+)(\s*\.\s*(?<1>\w+))*\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture );
-        readonly Dictionary<string, KeyValuePair<string, string>> _usings;
+        readonly Dictionary<string, KeyValuePair<string?, string?>> _usings;
         readonly List<NamespaceScopeImpl> _subNamespaces;
 
-        internal NamespaceScopeImpl( CodeWorkspaceImpl ws, INamespaceScope parent, string name )
+        internal NamespaceScopeImpl( CodeWorkspaceImpl ws, INamespaceScope? parent, string name )
             : base( ws, parent )
         {
             Debug.Assert( (parent == null) == (name == "") );
             Debug.Assert( parent == null || parent is NamespaceScopeImpl );
-            _usings = new Dictionary<string, KeyValuePair<string, string>>();
+            _usings = new Dictionary<string, KeyValuePair<string?, string?>>();
             _subNamespaces = new List<NamespaceScopeImpl>();
             if( parent != null ) SetName( name );
         }
@@ -46,9 +46,9 @@ namespace CK.CodeGen
             }
         }
 
-        INamespaceScope INamespaceScope.Parent => Parent;
+        INamespaceScope? INamespaceScope.Parent => Parent;
 
-        internal new NamespaceScopeImpl Parent => (NamespaceScopeImpl)base.Parent;
+        internal new NamespaceScopeImpl? Parent => (NamespaceScopeImpl?)base.Parent;
 
         public INamespaceScope EnsureUsing( string ns )
         {
@@ -75,7 +75,7 @@ namespace CK.CodeGen
             return DoEnsureUsing( CheckAndNormalizeOneName( alias ), definition );
         }
 
-        INamespaceScope DoEnsureUsing( string alias, string definition )
+        INamespaceScope DoEnsureUsing( string alias, string? definition )
         {
             Debug.Assert(
                     (definition == null && CheckAndNormalizeNamespace( alias ) == alias)
@@ -84,6 +84,7 @@ namespace CK.CodeGen
             var keyDef = definition;
             if( keyDef != null )
             {
+                Debug.Assert( definition != null, "Obviously..." );
                 // We must normalize the trailing ;.
                 definition = definition.Trim();
                 if( definition.Length == 0 || definition == ";" ) throw new ArgumentException( $"'{definition}' is not a valid alias definition.", nameof( definition ) );
@@ -93,7 +94,8 @@ namespace CK.CodeGen
             }
             return DoEnsureUsing( alias, keyDef, definition );
         }
-        INamespaceScope DoEnsureUsing( string alias, string keyDef, string definition )
+
+        INamespaceScope DoEnsureUsing( string alias, string? keyDef, string? definition )
         {
             Debug.Assert( alias != null );
             Debug.Assert( (keyDef == null) == (definition == null) );
@@ -104,12 +106,12 @@ namespace CK.CodeGen
                 string newOne = definition != null ? " = " + definition : ";";
                 throw new ArgumentException( $"using {alias}{newOne} is already defined in this scope as: {alias}{existing}." );
             }
-            var scope = this;
+            NamespaceScopeImpl? scope = this;
             while( (scope = scope.Parent) != null )
             {
                 if( scope._usings.TryGetValue( alias, out defs ) && defs.Key == keyDef ) return this;
             }
-            _usings.Add( alias, new KeyValuePair<string, string>( keyDef, definition ) );
+            _usings.Add( alias, new KeyValuePair<string?, string?>( keyDef, definition ) );
             return this;
         }
 
@@ -197,7 +199,7 @@ namespace CK.CodeGen
 
             public new INamespaceScope PartOwner => (INamespaceScope)base.PartOwner;
 
-            public INamespaceScope Parent => PartOwner.Parent;
+            public INamespaceScope? Parent => PartOwner.Parent;
 
             public IReadOnlyCollection<INamespaceScope> Namespaces => PartOwner.Namespaces;
 

@@ -24,9 +24,9 @@ namespace CK.CodeGen
 
         public HashSet<string> TargetFrameworks { get; }
 
-        public string LangVersion { get; set; }
+        public string? LangVersion { get; set; }
 
-        public string OutputType { get; set; }
+        public string? OutputType { get; set; }
 
         public string Sdk { get; set; }
 

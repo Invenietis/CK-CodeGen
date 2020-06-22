@@ -63,7 +63,7 @@ namespace CK.CodeGen
             }
         }
 
-        public AttributeDefinition( string target, IReadOnlyList<OneAttribute> attributes )
+        public AttributeDefinition( string? target, IReadOnlyList<OneAttribute> attributes )
         {
             Target = target ?? String.Empty;
             Attributes = attributes ?? Array.Empty<OneAttribute>();

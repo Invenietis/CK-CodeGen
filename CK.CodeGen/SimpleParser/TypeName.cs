@@ -64,7 +64,7 @@ namespace CK.CodeGen
         readonly IReadOnlyList<int> _arrayDims;
         readonly int _hash;
 
-        internal TypeName( string n, IReadOnlyList<GenParam> gen, IReadOnlyList<int> arrayDims )
+        internal TypeName( string n, IReadOnlyList<GenParam>? gen, IReadOnlyList<int>? arrayDims )
         {
             _name = n;
             _genArgs = gen ?? Array.Empty<GenParam>();

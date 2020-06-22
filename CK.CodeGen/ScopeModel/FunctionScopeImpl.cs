@@ -13,7 +13,7 @@ namespace CK.CodeGen
     {
         readonly FunctionDefiner _funcs;
 
-        MethodDefinition _mDef;
+        MethodDefinition? _mDef;
         ExposedName _name;
         string _declaration;
         int _codeStartIdx;
@@ -22,7 +22,7 @@ namespace CK.CodeGen
             : base( ws, parent )
         {
             _funcs = new FunctionDefiner( true );
-            INamedScope p = parent;
+            INamedScope? p = parent;
             for(; ; )
             {
                 if( p is ITypeScope t )
@@ -41,7 +41,7 @@ namespace CK.CodeGen
 
         public bool IsConstructor => _mDef?.ReturnType == null;
 
-        public string ReturnType => _mDef?.ReturnType?.ToString();
+        public string? ReturnType => _mDef?.ReturnType?.ToString();
 
         public IFunctionName FunctionName => _name;
 
@@ -91,6 +91,7 @@ namespace CK.CodeGen
             {
                 throw new InvalidOperationException( $"Error: {m.ErrorMessage} Unable to parse function or constructor declaration {_declaration}" );
             }
+            Debug.Assert( _mDef != null );
             if( hasCodeOpener )
             {
                 m.MatchWhiteSpaces( 0 );
@@ -144,7 +145,7 @@ namespace CK.CodeGen
 
             public bool IsConstructor => PartOwner.IsConstructor;
 
-            public string ReturnType => PartOwner.ReturnType;
+            public string? ReturnType => PartOwner.ReturnType;
 
             public IFunctionScope CreateFunction( Action<IFunctionScope> header ) => PartOwner.CreateFunction( header );
 

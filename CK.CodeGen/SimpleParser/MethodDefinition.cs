@@ -20,11 +20,11 @@ namespace CK.CodeGen
         public class Parameter
         {
             public Parameter(
-                IReadOnlyList<AttributeDefinition> attributes,
+                IReadOnlyList<AttributeDefinition>? attributes,
                 ParameterModifier modifiers,
                 TypeName type,
                 string name,
-                string defaultValue
+                string? defaultValue
                 )
             {
                 Attributes = attributes ?? Array.Empty<AttributeDefinition>();
@@ -42,17 +42,17 @@ namespace CK.CodeGen
 
             public string Name { get; }
 
-            public string DefaultValue { get; }
+            public string? DefaultValue { get; }
         }
 
         public MethodDefinition(
-            IReadOnlyList<AttributeDefinition> attributes,
+            IReadOnlyList<AttributeDefinition>? attributes,
             Modifiers modifiers,
-            TypeName returnType,
+            TypeName? returnType,
             TypeName methodName,
             bool isIndexer,
-            IReadOnlyList<Parameter> parameters,
-            IReadOnlyList<TypeParameterConstraint> constraints
+            IReadOnlyList<Parameter>? parameters,
+            IReadOnlyList<TypeParameterConstraint>? constraints
             )
         {
             Attributes = attributes ?? Array.Empty<AttributeDefinition>();
@@ -67,7 +67,7 @@ namespace CK.CodeGen
 
         public Modifiers Modifiers { get; }
 
-        public TypeName ReturnType { get; }
+        public TypeName? ReturnType { get; }
 
         public TypeName MethodName { get; }
 
@@ -89,7 +89,7 @@ namespace CK.CodeGen
                     case ParameterModifier.In: b.Append( "in " ); break;
                 }
                 p.Type.Write( b ).Append( ' ' ).Append( p.Name );
-                if( withDefaultValues && p.DefaultValue.Length > 0 )
+                if( withDefaultValues && !String.IsNullOrEmpty( p.DefaultValue ) )
                 {
                     b.Append( " = " ).Append( p.DefaultValue );
                 }
