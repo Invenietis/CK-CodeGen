@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Linq;
 using System.Diagnostics.CodeAnalysis;
+using CK.CodeGen.Abstractions;
+using CK.CodeGen.SimpleParser;
 
 namespace CK.CodeGen
 {
@@ -132,50 +134,48 @@ namespace CK.CodeGen
             return false;
         }
 
-        internal static bool MatchPotentialAttributes( this StringMatcher @this, out List<AttributeDefinition>? attributes )
+        internal static bool MatchPotentialAttributes( this StringMatcher @this, out AttributeCollection? attributes )
         {
             attributes = null;
             while( @this.TryMatchAttribute( out var a ) )
             {
-                if( attributes == null ) attributes = new List<AttributeDefinition>();
-                int existTargetIdx = attributes.FindIndex( x => x.Target == a.Target );
-                if( existTargetIdx >= 0 ) attributes[existTargetIdx] = attributes[existTargetIdx].Merge( a );
-                else attributes.Add( a );
+                if( attributes == null ) attributes = new AttributeCollection();
+                attributes.Ensure( a );
                 @this.SkipWhiteSpacesAndJSComments();
             }
             return !@this.IsError;
         }
 
-        static string? MapAttributeTarget( string s )
+        static CodeAttributeTarget MapAttributeTarget( string s )
         {
-            switch( s )
+            return s switch
             {
-                case "assembly": return "assembly";
-                case "module": return "module";
-                case "field": return "field";
-                case "event": return "event";
-                case "method": return "method";
-                case "param": return "param";
-                case "property": return "property";
-                case "return": return "return";
-                case "type": return "type";
-                default: return null;
-            }
+                "assembly" => CodeAttributeTarget.Assembly,
+                "module" => CodeAttributeTarget.Module,
+                "field" => CodeAttributeTarget.Field,
+                "event" => CodeAttributeTarget.Event,
+                "method" => CodeAttributeTarget.Method,
+                "param" => CodeAttributeTarget.Param,
+                "property" => CodeAttributeTarget.Property,
+                "return" => CodeAttributeTarget.Return,
+                "type" => CodeAttributeTarget.Type,
+                _ => CodeAttributeTarget.None,
+            };
         }
 
-        internal static bool TryMatchAttribute( this StringMatcher @this, [NotNullWhen( true )]out AttributeDefinition? attr )
+        internal static bool TryMatchAttribute( this StringMatcher @this, [NotNullWhen( true )]out AttributeSetDefinition? attr )
         {
             attr = null;
             if( !@this.TryMatchChar( '[' ) ) return false;
             @this.SkipWhiteSpacesAndJSComments();
             if( !@this.TryMatchCSharpIdentifier( out string? targetOrName ) ) return @this.AddError( "Attribute definition expected." );
             var target = MapAttributeTarget( targetOrName );
-            if( target != null )
+            if( target != CodeAttributeTarget.None )
             {
                 if( !@this.MatchChar( ':' ) ) return false;
                 targetOrName = null;
             }
-            List<AttributeDefinition.OneAttribute> attributes = new List<AttributeDefinition.OneAttribute>();
+            List<AttributeDefinition> attributes = new List<AttributeDefinition>();
             do
             {
                 @this.SkipWhiteSpacesAndJSComments();
@@ -183,7 +183,7 @@ namespace CK.CodeGen
                 targetOrName = null;
                 if( name.Name.EndsWith( "Attribute", StringComparison.Ordinal ) )
                 {
-                    name = new TypeName( name.Name.Remove( name.Name.Length - 9 ), name.GenArgs, name.ArrayDims );
+                    name = new TypeName( name.Name.Remove( name.Name.Length - 9 ), name.GenericParameters, name.ArrayDimensions );
                 }
                 List<string> values = new List<string>();
                 @this.SkipWhiteSpacesAndJSComments();
@@ -198,14 +198,13 @@ namespace CK.CodeGen
                         if( @this.TryMatchChar( ',' ) ) @this.SkipWhiteSpacesAndJSComments();
                     }
                 }
-                attributes.Add( new AttributeDefinition.OneAttribute( name, values ) );
+                attributes.Add( new AttributeDefinition( name, values ) );
                 @this.SkipWhiteSpacesAndJSComments();
             }
             while ( @this.TryMatchChar( ',' ) );
             @this.SkipWhiteSpacesAndJSComments();
             if( !@this.MatchChar( ']' ) ) return false;
-            attributes.Sort();
-            attr = new AttributeDefinition( target, attributes );
+            attr = new AttributeSetDefinition( target, attributes );
             return true;
         }
 
@@ -220,14 +219,15 @@ namespace CK.CodeGen
             modifiers = modifiers.NormalizeMemberProtection();
 
             @this.SkipWhiteSpacesAndJSComments();
-            if( !@this.MatchTypeName( out var returnType, startName ) ) return false;
+            if( !@this.MatchExtendedTypeName( out var returnType, startName ) ) return false;
 
             @this.SkipWhiteSpacesAndJSComments();
             bool isIndexer = false;
             TypeName? methodName;
             if( @this.TryMatchChar( '(' ) )
             {
-                methodName = returnType;
+                if( returnType.IsTuple ) return @this.SetError( $"Invalid syntax: unexpected tuple {returnType}." );
+                methodName = returnType.TypeName;
                 returnType = null;
             }
             else
@@ -307,7 +307,7 @@ namespace CK.CodeGen
             modifiers = Modifiers.None;
             string? id;
             while( @this.TryMatchCSharpIdentifier( out id )
-                   && ModifiersExtension.Combine( ref modifiers, id ) )
+                   && ModifiersExtension.ParseAndCombine( ref modifiers, id ) )
             {
                 @this.SkipWhiteSpacesAndJSComments();
             }
@@ -325,7 +325,7 @@ namespace CK.CodeGen
             }
             @this.SkipWhiteSpacesAndJSComments();
             if( !@this.MatchTypeName( out var name, head ) ) return false;
-            key = name.TypeKey;
+            key = name.TypeDefinitionKey;
             return true;
         }
 
@@ -351,7 +351,7 @@ namespace CK.CodeGen
 
             @this.SkipWhiteSpacesAndJSComments();
             if( !@this.MatchTypeName( out var name ) ) return false;
-            List<TypeName>? baseTypes = null;
+            List<ExtendedTypeName>? baseTypes = null;
             @this.SkipWhiteSpacesAndJSComments();
             if( @this.TryMatchChar( ':' ) )
             {
@@ -376,7 +376,6 @@ namespace CK.CodeGen
                 wheres.Add( c );
                 @this.SkipWhiteSpacesAndJSComments();
             }
-            if( wheres != null ) wheres.Sort();
             return true;
         }
 
@@ -384,7 +383,7 @@ namespace CK.CodeGen
         /// BaseTypeOrConstraint => TypeName | new()
         /// The "new()" is becomes the <see cref="TypeName.Name"/> of a pseudo type name.
         /// </summary>
-        static bool MatchBaseTypeOrConstraint( this StringMatcher @this, [NotNullWhen( true )]out TypeName? t )
+        static bool MatchBaseTypeOrConstraint( this StringMatcher @this, [NotNullWhen( true )]out ExtendedTypeName? t )
         {
             t = null;
             if( !@this.TryMatchCSharpIdentifier( out var baseName ) ) return @this.SetError( "Expected identifier." );
@@ -396,24 +395,22 @@ namespace CK.CodeGen
                     @this.SkipWhiteSpacesAndJSComments();
                     if( @this.TryMatchChar( ')' ) )
                     {
-                        t = new TypeName( "new()", null, null );
+                        t = new ExtendedTypeName( new TypeName( "new()", null, null ) );
                         return true;
                     }
                 }
                 return @this.SetError( "Invalid new() constraint." );
             }
             @this.SkipWhiteSpacesAndJSComments();
-            return @this.MatchTypeName( out t, baseName );
+            return @this.MatchExtendedTypeName( out t, baseName );
         }
 
         /// <summary>
-        /// BaseTypesOrConstraints => comma separated MatchBaseTypeOrConstraint that we sort except
-        /// the first one that is the base class (this applies to where constraints as well as base types
-        /// list per se). Note that the "new()" pseudo base type is sorted after any other type names.
+        /// BaseTypesOrConstraints => comma separated MatchBaseTypeOrConstraint.
         /// </summary>
-        static bool MatchBaseTypesOrConstraints( this StringMatcher @this, out List<TypeName> types )
+        static bool MatchBaseTypesOrConstraints( this StringMatcher @this, out List<ExtendedTypeName> types )
         {
-            types = new List<TypeName>();
+            types = new List<ExtendedTypeName>();
             do
             {
                 @this.SkipWhiteSpacesAndJSComments();
@@ -422,7 +419,6 @@ namespace CK.CodeGen
                 @this.SkipWhiteSpacesAndJSComments();
             }
             while( @this.TryMatchChar( ',' ) );
-            types.Sort( 1, types.Count - 1, Comparer<TypeName>.Default );
             return true;
         }
 
@@ -446,6 +442,49 @@ namespace CK.CodeGen
         #endregion
 
         #region TypeName
+
+        /// <summary>
+        /// Relaxed syntax here: we allow empty or single-field tuples (this is not valid)
+        /// and an ending comma in the list.
+        /// </summary>
+        /// <param name="this">This matcher.</param>
+        /// <param name="type">The tuple type name on success.</param>
+        /// <returns>True on success, false on error.</returns>
+        internal static bool TryMatchTupleTypeName( this StringMatcher @this, [NotNullWhen( true )] out TupleTypeName? type )
+        {
+            type = null;
+            if( !@this.TryMatchChar( '(' ) ) return false;
+            List<TupleTypeName.Field> fields = new List<TupleTypeName.Field>();
+            while( !@this.TryMatchChar( ')' ) )
+            {
+                ExtendedTypeName? fType = null;
+                string? fName = null;
+                if( !@this.MatchExtendedTypeName( out fType ) ) return false;
+                @this.SkipWhiteSpacesAndJSComments();
+                if( @this.TryMatchCSharpIdentifier( out fName ) ) @this.SkipWhiteSpacesAndJSComments();
+                fields.Add( new TupleTypeName.Field( fType, fName ) );
+                if( @this.TryMatchChar( ',' ) ) @this.SkipWhiteSpacesAndJSComments();
+            }
+            type = new TupleTypeName( fields );
+            return true;
+        }
+
+        internal static bool MatchExtendedTypeName( this StringMatcher @this, [NotNullWhen( true )] out ExtendedTypeName? type, string? knownName = null )
+        {
+            if( knownName == null && @this.TryMatchTupleTypeName( out var tuple ) )
+            {
+                type = new ExtendedTypeName( tuple );
+                return true;
+            }
+            if( @this.MatchTypeName( out var regularType, knownName ) )
+            {
+                type = new ExtendedTypeName( regularType );
+                return true;
+            }
+            type = null;
+            return false;
+        }
+
         internal static bool MatchTypeName( this StringMatcher @this, [NotNullWhen( true )]out TypeName? type, string? knownName = null )
         {
             type = null;
@@ -511,27 +550,26 @@ namespace CK.CodeGen
 
         static bool MatchGenParam( StringMatcher @this, [NotNullWhen( true )]out TypeName.GenParam? genArg )
         {
-            genArg = TypeName.GenParam.Empty;
+            genArg = null;
+            var v = TypeName.GenParam.Variance.None;
             if( @this.TryMatchCSharpIdentifier( out string? nameOrVariance ) )
             {
-                TypeName.VariantModifier v = TypeName.VariantModifier.None;
                 if( nameOrVariance == "out" )
                 {
-                    v = TypeName.VariantModifier.Out;
+                    v = TypeName.GenParam.Variance.Out;
                     nameOrVariance = null;
                     @this.SkipWhiteSpacesAndJSComments();
                 }
                 else if( nameOrVariance == "in" )
                 {
-                    v = TypeName.VariantModifier.In;
+                    v = TypeName.GenParam.Variance.In;
                     nameOrVariance = null;
                     @this.SkipWhiteSpacesAndJSComments();
                 }
-                if( !@this.MatchTypeName( out var gT, nameOrVariance ) ) return false;
-                genArg = new TypeName.GenParam( v, gT );
-                return true;
             }
-            return false;
+            if( !@this.MatchExtendedTypeName( out var gT, nameOrVariance ) ) return false;
+            genArg = new TypeName.GenParam( v, gT );
+            return true;
         }
 
         // This is adapted from: https://stackoverflow.com/questions/1829679/how-to-determine-if-a-string-is-a-valid-variable-name

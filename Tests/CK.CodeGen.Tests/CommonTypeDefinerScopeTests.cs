@@ -32,25 +32,26 @@ namespace CK.CodeGen.Tests
             scope.Invoking( sut => sut.CreateType( decl ) ).Should().Throw<ArgumentException>();
         }
 
-        [TestCase( "interface I<T1,out T2> : Z, B, A {", "interface I<T1,out T2> : Z, A, B" )]
-        [TestCase( " private enum   I< T1 ,out T2>:Z,B,A where Z:A where Y:A where X:Z,B,A {", "enum I<T1,out T2> : Z, A, B where X : Z, A, B where Y : A where Z : A" )]
-        [TestCase( " private public struct I:Z,B,A where Z:A,new() where Y:A where X:Z,new(),B,A {", "public struct I : Z, A, B where X : Z, A, B, new() where Y : A where Z : A, new()" )]
-        [TestCase( "[ Att ( 1 , @\" a \"\"str\"\" \" ) ] class A", "[Att(1,@\" a \"\"str\"\" \")]class A" )]
-        [TestCase( "[ Z . K ( ) , Y , XAttribute ( \" a \\\"str\\\" \" ) ] class A", "[X(\" a \\\"str\\\" \"), Y, Z.K]class A" )]
-        [TestCase( "[Z.K(1)][Y()][X(2)] class A", "[X(2), Y, Z.K(1)]class A" )]
-        [TestCase( "[return:Z.K(' ')][Y()][return:X('\\'')] class A", "[return: X('\\''), Z.K(' ')][Y]class A" )]
-        public void created_type_has_normalized_ToString_signature( string decl, string typeHeader )
+        [TestCase( "interface I<T1,out T2> : Z, B, A {", "I`2" )]
+        [TestCase( " private enum   I< T1 ,out T2>:Z,B,A where Z:A where Y:A where X:Z,B,A {", "I`2" )]
+        [TestCase( " private public struct I:Z,B,A where Z:A,new() where Y:A where X:Z,new(),B,A {", "I" )]
+        [TestCase( "[ Att ( 1 , @\" a \"\"str\"\" \" ) ] class A", "A" )]
+        [TestCase( "[ Z . K ( ) , Y , XAttribute ( \" a \\\"str\\\" \" ) ] class A", "A" )]
+        [TestCase( "[Z.K(1)][Y()][X(2)] class A<T>", "A`1" )]
+        [TestCase( "[return:Z.K(' ')][Y()][return:X('\\'')] class A<I<T>,J<T>,K<T1,T2,T3>>", "A`3" )]
+        public void TypeDefinitionKey_is_based_only_on_king_and_naked_type_name( string decl, string typeDefinitionKey )
         {
             ITypeDefinerScope scope = CreateTypeDefinerScope();
             ITypeScope type = scope.CreateType( decl );
 
-            type.TypeHeader.Should().Be( typeHeader );
+            type.TypeDefinition.Name.TypeDefinitionKey.Should().Be( typeDefinitionKey );
         }
 
         [TestCase( "public interface I<in T1, out T2> where T1 : struct { //...", "I<TKey,TValue>" )]
         [TestCase( "public interface I<in T1, out T2> where T1 : struct { //...", "I<,>" )]
         [TestCase( "class C<T<K,V>> where T1 : struct { //...", "C<>" )]
         [TestCase( "[A,B]class C", "[Other(\"str\")]C" )]
+        [TestCase( "interface O : List<(int X, float Y)>", "O" )]
         public void creating_type_and_finding_them_back( string decl, string finder )
         {
             ITypeDefinerScope scope = CreateTypeDefinerScope();

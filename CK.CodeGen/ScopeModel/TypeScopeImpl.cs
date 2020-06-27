@@ -38,15 +38,16 @@ namespace CK.CodeGen
 
         public bool IsNestedType => Parent is ITypeScope;
 
-        internal string TypeKey => _typeDef.Name.TypeKey;
+        internal string TypeKey => _typeDef.Name.TypeDefinitionKey;
 
         internal void MergeWith( TypeScopeImpl other )
         {
             Debug.Assert( other != null );
-            if( !_typeDef.Equals( other._typeDef ) )
+            if( TypeKey != other.TypeKey )
             {
                 throw new InvalidOperationException( $"Unable to merge type '{_typeDef}' with '{other._typeDef}'." );
             }
+            _typeDef.MergeWith( other._typeDef );
             if( other._codeStartIdx > 0 )
             {
                 CodePart.Parts.Add( other._declaration.Substring( _codeStartIdx ) );
@@ -101,7 +102,7 @@ namespace CK.CodeGen
             return _funcs.Create( Workspace, this, header );
         }
 
-        public string TypeHeader => _typeDef.Write( new StringBuilder() ).ToString();
+        public TypeDefinition TypeDefinition => _typeDef;
 
         public ITypeScopePart CreatePart( bool top )
         {
@@ -124,7 +125,7 @@ namespace CK.CodeGen
 
             public bool IsNestedType => PartOwner.IsNestedType;
 
-            public string TypeHeader => PartOwner.TypeHeader;
+            public TypeDefinition TypeDefinition => PartOwner.TypeDefinition;
 
             public IFunctionScope CreateFunction( Action<IFunctionScope> header ) => PartOwner.CreateFunction( header );
 

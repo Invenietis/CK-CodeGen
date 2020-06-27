@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CK.CodeGen
 {
-    struct FunctionDefiner
+    readonly struct FunctionDefiner
     {
         readonly Dictionary<string, FunctionScopeImpl> _funcs;
 

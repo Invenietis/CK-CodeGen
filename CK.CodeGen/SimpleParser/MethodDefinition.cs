@@ -1,3 +1,5 @@
+using CK.CodeGen.Abstractions;
+using CK.CodeGen.SimpleParser;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -20,21 +22,21 @@ namespace CK.CodeGen
         public class Parameter
         {
             public Parameter(
-                IReadOnlyList<AttributeDefinition>? attributes,
+                AttributeCollection? attributes,
                 ParameterModifier modifiers,
                 TypeName type,
                 string name,
                 string? defaultValue
                 )
             {
-                Attributes = attributes ?? Array.Empty<AttributeDefinition>();
+                Attributes = attributes ?? new AttributeCollection();
                 Modifiers = modifiers;
                 Type = type;
                 Name = name;
                 DefaultValue = defaultValue;
             }
 
-            public IReadOnlyList<AttributeDefinition> Attributes { get; }
+            public AttributeCollection Attributes { get; }
 
             public ParameterModifier Modifiers { get; }
 
@@ -46,16 +48,16 @@ namespace CK.CodeGen
         }
 
         public MethodDefinition(
-            IReadOnlyList<AttributeDefinition>? attributes,
+            AttributeCollection? attributes,
             Modifiers modifiers,
-            TypeName? returnType,
+            ExtendedTypeName? returnType,
             TypeName methodName,
             bool isIndexer,
             IReadOnlyList<Parameter>? parameters,
             IReadOnlyList<TypeParameterConstraint>? constraints
             )
         {
-            Attributes = attributes ?? Array.Empty<AttributeDefinition>();
+            Attributes = attributes ?? new AttributeCollection();
             Modifiers = Modifiers;
             ReturnType = returnType;
             MethodName = methodName;
@@ -63,11 +65,11 @@ namespace CK.CodeGen
             Constraints = constraints ?? Array.Empty<TypeParameterConstraint>();
         }
 
-        public IReadOnlyList<AttributeDefinition> Attributes { get; }
+        public AttributeCollection Attributes { get; }
 
         public Modifiers Modifiers { get; }
 
-        public TypeName? ReturnType { get; }
+        public ExtendedTypeName? ReturnType { get; }
 
         public TypeName MethodName { get; }
 
@@ -79,7 +81,7 @@ namespace CK.CodeGen
             {
                 if( already ) b.Append( ", " );
                 else already = true;
-                if( withAttributes ) foreach( var a in p.Attributes ) a.Write( b );
+                if( withAttributes ) p.Attributes.Write( b );
                 switch( p.Modifiers )
                 {
                     case ParameterModifier.Out: b.Append( "out " ); break;

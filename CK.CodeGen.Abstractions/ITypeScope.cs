@@ -12,10 +12,11 @@ namespace CK.CodeGen.Abstractions
         INamespaceScope Namespace { get; }
 
         /// <summary>
-        /// Gets this type header that contains the modifiers, attributes, type name and generic constraints
-        /// if any.
+        /// Gets this type definition.
+        /// Except the <see cref="TypeDefinition.Name"/> that uniquely identifies this type in the <see cref="Namespace"/>,
+        /// this type definition can be mutated.
         /// </summary>
-        string TypeHeader { get; }
+        TypeDefinition TypeDefinition { get; }
 
         /// <summary>
         /// Gets whether this type is defined in another <see cref="ITypeScope"/>

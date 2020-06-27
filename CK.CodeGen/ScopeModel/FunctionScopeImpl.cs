@@ -64,7 +64,7 @@ namespace CK.CodeGen
             {
                 NakedName = m.MethodName.Name;
                 var b = new StringBuilder();
-                GenericPart = m.MethodName.WriteGenArgs( b ).ToString();
+                GenericPart = m.MethodName.WriteGenericParameters( b ).ToString();
                 b.Clear();
                 ParametersPart = m.WriteParameters( b, withAttributes: false, withDefaultValues: false ).ToString();
                 _text = NakedName + GenericPart + ParametersPart;
