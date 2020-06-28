@@ -7,16 +7,27 @@ using System.Text;
 
 namespace CK.CodeGen.SimpleParser
 {
+    /// <summary>
+    /// Handes <see cref="AttributeSetDefinition"/> grouped by their <see cref="AttributeSetDefinition.Target"/>.
+    /// </summary>
     public class AttributeCollection 
     {
         static CodeAttributeTarget[] _targets = (CodeAttributeTarget[])Enum.GetValues(typeof(CodeAttributeTarget));
         readonly AttributeSetDefinition?[] _attrs;
 
+        /// <summary>
+        /// Initializes a new empty <see cref="AttributeCollection"/>.
+        /// </summary>
         public AttributeCollection()
         {
             _attrs = new AttributeSetDefinition[_targets.Length];
         }
 
+        /// <summary>
+        /// Gets the attributes for a <see cref="CodeAttributeTarget"/> or null.
+        /// </summary>
+        /// <param name="key">The target.</param>
+        /// <returns>The attributes or null.</returns>
         public AttributeSetDefinition? this[CodeAttributeTarget key]
         {
             get => _attrs[(int)key];

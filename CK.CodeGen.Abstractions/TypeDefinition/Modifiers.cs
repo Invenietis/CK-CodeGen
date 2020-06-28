@@ -9,6 +9,7 @@ namespace CK.CodeGen
     [Flags]
     public enum Modifiers
     {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         None = 0,
         Readonly = 1,
         Static = 1 << 1,
@@ -28,12 +29,12 @@ namespace CK.CodeGen
         Volatile = 1 << 15,
         Async = 1 << 16,
         Ref = 1 << 17,
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         /// <summary>
         /// Applies only to class to define C# 9 data record.
         /// </summary>
         Data = 1 << 18
     }
-
 
 }

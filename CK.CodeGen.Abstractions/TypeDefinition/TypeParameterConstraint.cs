@@ -21,6 +21,12 @@ namespace CK.CodeGen
         /// </summary>
         public List<ExtendedTypeName> Constraints { get; }
 
+        /// <summary>
+        /// Initializes a new <see cref="TypeParameterConstraint"/> with an optional initial list
+        /// of <see cref="Constraints"/>.
+        /// </summary>
+        /// <param name="name">The <see cref="ParameterName"/>.</param>
+        /// <param name="constraints">Optional list of constraints.</param>
         public TypeParameterConstraint( string name, List<ExtendedTypeName>? constraints = null )
         {
             if( String.IsNullOrWhiteSpace( name ) ) throw new ArgumentOutOfRangeException( nameof( name ) );

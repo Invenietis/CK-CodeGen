@@ -38,7 +38,7 @@ namespace CK.CodeGen.Abstractions
         /// </summary>
         [MemberNotNullWhen(true, nameof( TupleTypeName ) )]
         [MemberNotNullWhen(false, nameof( TypeName ) )]
-        public bool IsTuple => TupleTypeName != null;
+        public bool IsTuple => TypeName! == null;
 
         /// <summary>
         /// Gets the type name or null if this is a <see cref="TupleTypeName"/>.

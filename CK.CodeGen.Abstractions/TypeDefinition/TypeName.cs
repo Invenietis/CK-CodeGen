@@ -7,7 +7,7 @@ namespace CK.CodeGen.Abstractions
 {
     /// <summary>
     /// Immutable type name that can be a single indentifier ("T" or "int"), a generic definition
-    /// or generic type ("C&lt;T&gt;" or S&lt;&lt;string&gt,List&lt;int&gt&gt) with a list of <see cref="GenericParameters"/>
+    /// or generic type ("C&lt;T&gt;" or S&lt;&lt;string&gt;,List&lt;int&gt;&gt;) with a list of <see cref="GenericParameters"/>
     /// and an array definition (jagged, and/or multi-dimensional array) of such types if <see cref="ArrayDimensions"/> is not empty.
     /// </summary>
     public class TypeName
@@ -33,8 +33,19 @@ namespace CK.CodeGen.Abstractions
             /// </summary>
             public enum Variance
             {
+                /// <summary>
+                /// No variance.
+                /// </summary>
                 None,
+
+                /// <summary>
+                /// Indicates contravariance.
+                /// </summary>
                 In,
+
+                /// <summary>
+                /// Indicates convariance.
+                /// </summary>
                 Out
             }
 

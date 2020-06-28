@@ -10,6 +10,7 @@ namespace CK.CodeGen.Abstractions
     /// </summary>
     public enum CodeAttributeTarget
     {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         None,
         Assembly,
         Module,
@@ -20,5 +21,6 @@ namespace CK.CodeGen.Abstractions
         Property,
         Return,
         Type
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }

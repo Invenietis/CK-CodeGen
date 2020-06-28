@@ -7,7 +7,7 @@ using System.Text;
 namespace CK.CodeGen.Abstractions
 {
     /// <summary>
-    /// Attribute definition is a <see cref="CodeGen.TypeName"/> and an optional
+    /// Attribute definition is a <see cref="TypeName"/> and an optional
     /// comma separated list of constructor arguments.
     /// <para>
     /// Currently, this list of arguments also contains property initializations (Property = value).
@@ -30,7 +30,6 @@ namespace CK.CodeGen.Abstractions
         /// <summary>
         /// Gets the type of this attributes.
         /// </summary>
-
         public TypeName TypeName { get; }
 
         /// <summary>

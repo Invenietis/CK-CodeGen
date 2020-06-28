@@ -18,10 +18,29 @@ namespace CK.CodeGen
         /// </summary>
         public enum TypeKind
         {
+            /// <summary>
+            /// Non applicable.
+            /// </summary>
             None,
+
+            /// <summary>
+            /// The type is a class.
+            /// </summary>
             Class,
+
+            /// <summary>
+            /// The type is an interface.
+            /// </summary>
             Interface,
+
+            /// <summary>
+            /// The type is an enum.
+            /// </summary>
             Enum,
+
+            /// <summary>
+            /// The type is a struct.
+            /// </summary>
             Struct
         }
 
@@ -55,6 +74,15 @@ namespace CK.CodeGen
         /// </summary>
         public List<TypeParameterConstraint> Constraints { get; }
 
+        /// <summary>
+        /// Initializes a new <see cref="TypeDefinition"/>.
+        /// </summary>
+        /// <param name="attributes">Optional attribute collection.</param>
+        /// <param name="modifiers">Type modifiers.</param>
+        /// <param name="kind">Type kind.</param>
+        /// <param name="name">Naked type name.</param>
+        /// <param name="bases">Optional list of base types.</param>
+        /// <param name="constraints">Optional list of constraints.</param>
         public TypeDefinition(
             AttributeCollection? attributes,
             Modifiers modifiers,
@@ -142,6 +170,11 @@ namespace CK.CodeGen
             Constraints.AddRange( constraints );
         }
 
+
+        /// <summary>
+        /// Overridden to return the <see cref="Write(StringBuilder)"/> result.
+        /// </summary>
+        /// <returns>The type string.</returns>
         public override string ToString() => Write( new StringBuilder() ).ToString();
 
     }
