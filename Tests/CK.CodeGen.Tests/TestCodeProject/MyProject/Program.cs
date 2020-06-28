@@ -1,7 +1,7 @@
 using System;
-public static class Program
+static public class Program
 {
-public static int Main()
+CK.CodeGen.MethodDefinition
 {
 Console.WriteLine(@"Hop!" );
 return 0;

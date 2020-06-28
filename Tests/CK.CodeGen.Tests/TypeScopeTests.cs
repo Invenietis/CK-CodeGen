@@ -23,13 +23,13 @@ namespace CK.CodeGen.Tests
             f.ReturnType.Should().Be( returnType );
         }
 
-        [TestCase( "void M(int i)", "M(int i)" )]
-        [TestCase( "L < T1, T2 > M < T > ( int i , List < T >a )", "M<T>(int i, List<T> a)" )]
-        [TestCase( "List<T,Dictionary<A,B>> M<L<T>,H<K>>( N < H > i , List<T> a )", "M<L<T>,H<K>>(N<H> i, List<T> a)" )]
-        [TestCase( "ACONSTRuctor( N<H> i, List<T> a )", "ACONSTRuctor(N<H> i, List<T> a)" )]
+        [TestCase( "void M(int i)", "M( int i )" )]
+        [TestCase( "L < T1, T2 > M < T > ( int i , List < T >a )", "M<T>( int i, List<T> a )" )]
+        [TestCase( "List<T,Dictionary<A,B>> M<L<T>,H<K>>( N < H > i , List<T> a )", "M<L<T>,H<K>>( N<H> i, List<T> a )" )]
+        [TestCase( "ACONSTRuctor( N<H> i, List<T> a )", "ACONSTRuctor( N<H> i, List<T> a )" )]
         [TestCase( "System.Int32 MMM()", "MMM()" )]
-        [TestCase( "public override System.Data.SqlClient.SqlCommand Do( ref System.Nullable<int> i )", "Do(ref System.Nullable<int> i)" )]
-        [TestCase( "R M( [ A ( 1 ) ] [ A ] ref System . Nullable < int > i = \"\",params K[,,] p = new(){ nimp, 0x9876UL })", "M(ref System.Nullable<int> i, params K[,,] p)" )]
+        [TestCase( "public override System.Data.SqlClient.SqlCommand Do( ref System.Nullable<int> i )", "Do( ref System.Nullable<int> i )" )]
+        [TestCase( "R M( [ A ( 1 ) ] [ A ] ref System . Nullable < int > i = \"\",params K[,,] p = new(){ nimp, 0x9876UL })", "M( ref System.Nullable<int> i, params K[,,] p )" )]
         public void CreateFunction_normalizes_the_function_name( string header, string name )
         {
             var t = CreateTypeScope();
@@ -52,10 +52,9 @@ namespace CK.CodeGen.Tests
 
         [TestCase( "public C()" )]
         [TestCase( "public C() : base( 3 )" )]
-        [TestCase( "public C(X a) : this( a*a )" )]
+        [TestCase( "public C( X a, Y b ) : this( a*a , typeof(T) )" )]
         [TestCase( "public C() : base( new[]{ new O(), (null) }, Kilo )" )]
-        [TestCase( @"public S1()
-: base( typeof( SFront1 ),
+        [TestCase( @"public S1() : base( typeof( SFront1 ),
 new[]{
 new StObjServiceParameterInfo( typeof(ISBase), 0, @""next"", I0)
 } )" )]

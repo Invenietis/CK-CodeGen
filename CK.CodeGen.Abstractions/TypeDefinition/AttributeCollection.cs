@@ -24,6 +24,11 @@ namespace CK.CodeGen.SimpleParser
         }
 
         /// <summary>
+        /// Gets whether at least one attribute is defined.
+        /// </summary>
+        public bool HasAttributes => _attrs.Any( a => a != null && a.Attributes.Count > 0 ); 
+
+        /// <summary>
         /// Gets the attributes for a <see cref="CodeAttributeTarget"/> or null.
         /// </summary>
         /// <param name="key">The target.</param>

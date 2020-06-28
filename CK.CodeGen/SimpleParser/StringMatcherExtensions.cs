@@ -30,12 +30,12 @@ namespace CK.CodeGen
             return false;
         }
 
-        static bool EatRawCode( this StringMatcher @this, [NotNullWhen( true )]out string? stuff, bool removeWhiteSpaces = true )
+        static bool EatRawCode( this StringMatcher @this, StringBuilder b, bool stopOnComma, bool removeWhiteSpaces = true )
         {
+            int bPos = b.Length;
             int depth = 0;
-            StringBuilder b = new StringBuilder();
             while( !@this.IsEnd
-                    && (depth != 0 || (@this.Head != ')' && @this.Head != ']' && @this.Head != '}' && @this.Head != ',')) )
+                    && (depth != 0 || (@this.Head != ')' && @this.Head != ']' && @this.Head != '}' && (!stopOnComma || @this.Head != ','))) )
             {
                 if( @this.Head == '(' || @this.Head == '[' || @this.Head == '{' )
                 {
@@ -63,13 +63,7 @@ namespace CK.CodeGen
                     @this.UncheckedMove( 1 );
                 }
             }
-            if( b.Length == 0 )
-            {
-                stuff = null;
-                return false;
-            }
-            stuff = b.ToString();
-            return true;
+            return b.Length > bPos;
         }
 
         static bool TryMatchCSharpString( this StringMatcher @this, [NotNullWhen( true )]out string? s )
@@ -185,6 +179,7 @@ namespace CK.CodeGen
                 {
                     name = new TypeName( name.Name.Remove( name.Name.Length - 9 ), name.GenericParameters, name.ArrayDimensions );
                 }
+                var bAttrValue = new StringBuilder();
                 List<string> values = new List<string>();
                 @this.SkipWhiteSpacesAndJSComments();
                 if( @this.TryMatchChar( '(' ) )
@@ -192,8 +187,9 @@ namespace CK.CodeGen
                     @this.SkipWhiteSpacesAndJSComments();
                     while( !@this.TryMatchChar( ')' ) )
                     {
-                        if( !@this.EatRawCode( out string? stuff ) ) return @this.SetError( "Values expected." );
-                        values.Add( stuff );
+                        if( !@this.EatRawCode( bAttrValue, true, true ) ) return @this.SetError( "Values expected." );
+                        values.Add( bAttrValue.ToString() );
+                        bAttrValue.Clear();
                         // Allow training comma. Don't care.
                         if( @this.TryMatchChar( ',' ) ) @this.SkipWhiteSpacesAndJSComments();
                     }
@@ -236,6 +232,7 @@ namespace CK.CodeGen
                 @this.SkipWhiteSpacesAndJSComments();
                 if( !@this.MatchChar( '(' ) && !(isIndexer = @this.TryMatchChar( '[' ) ) ) return false;
             }
+            var buffer = new StringBuilder();
             @this.SkipWhiteSpacesAndJSComments();
             List<MethodDefinition.Parameter> parameters = new List<MethodDefinition.Parameter>();
             while( !@this.TryMatchChar( isIndexer ? ']' : ')' ) )
@@ -262,41 +259,41 @@ namespace CK.CodeGen
                     string? defVal = null;
                     if( @this.TryMatchChar( '=' ) )
                     {
-                        if( !@this.EatRawCode( out defVal ) ) return false;
+                        if( !@this.EatRawCode( buffer, true, true ) ) return @this.SetError( "Unable to read default value." );
+                        defVal = buffer.ToString();
+                        buffer.Clear();
                     }
                     else @this.SkipWhiteSpacesAndJSComments();
                     parameters.Add( new MethodDefinition.Parameter( pAttr, mod, pType, pName, defVal ) );
                 }
                 while( @this.TryMatchChar( ',' ) );
             }
+            var thisOrBaseCall = MethodDefinition.CallConstructor.None;
+            string? thisOrBaseCallParameter = null;
             @this.SkipWhiteSpacesAndJSComments();
             if( returnType == null )
             {
                 if( @this.TryMatchChar( ':' ) )
                 {
                     @this.SkipWhiteSpacesAndJSComments();
-                    bool success = @this.TryMatchText( "this", StringComparison.Ordinal );
-                    if( success || @this.TryMatchText( "base", StringComparison.Ordinal ) )
+                    if( @this.TryMatchText( "this", StringComparison.Ordinal ) ) thisOrBaseCall = MethodDefinition.CallConstructor.This;
+                    else if( @this.TryMatchText( "base", StringComparison.Ordinal ) ) thisOrBaseCall = MethodDefinition.CallConstructor.Base;
+                    if( thisOrBaseCall != MethodDefinition.CallConstructor.None )
                     {
                         @this.SkipWhiteSpacesAndJSComments();
-                        if( success = @this.MatchChar( '(' ) )
-                        {
-                            @this.SkipWhiteSpacesAndJSComments();
-                            while( !@this.TryMatchChar( ')' ) )
-                            {
-                                if( !@this.EatRawCode( out _ ) ) return @this.SetError( "Values expected." );
-                                // Allow training comma. Don't care.
-                                if( @this.TryMatchChar( ',' ) ) @this.SkipWhiteSpacesAndJSComments();
-                            }
-                            @this.SkipWhiteSpacesAndJSComments();
-                        }
+                        if( !@this.MatchChar( '(' ) ) return @this.SetError( "this(...) or base(...) : missing '('." );
+                        @this.EatRawCode( buffer, false, false );
+                        thisOrBaseCallParameter = buffer.ToString();
+                        @this.SkipWhiteSpacesAndJSComments();
+                        if( !@this.TryMatchChar( ')' ) ) return @this.SetError( "this(...) or base(...) : missing ')'." );
+                        @this.SkipWhiteSpacesAndJSComments();
                     }
-                    if( !success ) return @this.SetError( "this(...) or base(...) expected." );
+                    else return @this.SetError( "this(...) or base(...) expected." );
                 }
             }
             List<TypeParameterConstraint>? wheres;
             if( !@this.MatchWhereConstraints( out hasCodeOpener, out wheres ) ) return false;
-            mDef = new MethodDefinition( attributes, modifiers, returnType, methodName, isIndexer, parameters, wheres );
+            mDef = new MethodDefinition( attributes, modifiers, returnType, methodName, thisOrBaseCall, thisOrBaseCallParameter, isIndexer, parameters, wheres );
             return true;
         }
 

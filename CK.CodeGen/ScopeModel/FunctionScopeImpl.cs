@@ -15,8 +15,6 @@ namespace CK.CodeGen
 
         MethodDefinition? _mDef;
         ExposedName _name;
-        string _declaration;
-        int _codeStartIdx;
 
         internal FunctionScopeImpl( CodeWorkspaceImpl ws, INamedScope parent )
             : base( ws, parent )
@@ -48,10 +46,6 @@ namespace CK.CodeGen
         internal void MergeWith( FunctionScopeImpl other )
         {
             Debug.Assert( other != null );
-            if( other._codeStartIdx > 0 )
-            {
-                CodePart.Parts.Add( other._declaration.Substring( _codeStartIdx ) );
-            }
             CodePart.MergeWith( other.CodePart );
             _funcs.MergeWith( Workspace, this, other._funcs );
         }
@@ -83,19 +77,19 @@ namespace CK.CodeGen
         {
             var b = new SmarterStringBuilder( new StringBuilder() );
             // We store the declaration and clears the code buffer.
-            _declaration = CodePart.Build( b ).ToString();
+            var declaration = CodePart.Build( b ).ToString();
             CodePart.Parts.Clear();
-            var m = new StringMatcher( _declaration );
+            var m = new StringMatcher( declaration );
             m.SkipWhiteSpacesAndJSComments();
             if( !m.MatchMethodDefinition( out _mDef, out bool hasCodeOpener ) )
             {
-                throw new InvalidOperationException( $"Error: {m.ErrorMessage} Unable to parse function or constructor declaration {_declaration}" );
+                throw new InvalidOperationException( $"Error: {m.ErrorMessage} Unable to parse function or constructor declaration {declaration}" );
             }
             Debug.Assert( _mDef != null );
             if( hasCodeOpener )
             {
                 m.MatchWhiteSpaces( 0 );
-                _codeStartIdx = m.StartIndex;
+                CodePart.Parts.Add( declaration.Substring( m.StartIndex ) );
             }
             _name = new ExposedName( _mDef );
             SetName( _name.ToString() );
@@ -103,15 +97,16 @@ namespace CK.CodeGen
 
         internal protected override SmarterStringBuilder Build( SmarterStringBuilder b, bool closeScope )
         {
-            if( _declaration == null ) CodePart.Build( b );
-            else
+            if( _mDef != null )
             {
-                b.AppendLine().Append( _declaration );
-                if( _codeStartIdx == 0 ) b.AppendLine().Append( "{" ).AppendLine();
-                CodePart.Build( b );
-                _funcs.Build( b );
-                if( closeScope ) b.AppendLine().Append( "}" );
+                if( b.Builder != null ) _mDef.Write( b.Builder );
+                else b.Append( _mDef.ToString() );
+                b.HasNewLine = false;
             }
+            b.AppendLine().Append( "{" ).AppendLine();
+            CodePart.Build( b );
+            _funcs.Build( b );
+            if( closeScope ) b.AppendLine().Append( "}" );
             return b;
         }
 

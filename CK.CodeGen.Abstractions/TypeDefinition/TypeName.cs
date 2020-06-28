@@ -96,8 +96,9 @@ namespace CK.CodeGen.Abstractions
 
         /// <summary>
         /// Initializes a new <see cref="TypeName"/>.
+        /// When used directly, the <paramref name="name"/> can be a complex one and is not analyzed.
         /// </summary>
-        /// <param name="name">The type name is an identifier.</param>
+        /// <param name="name">The type name is an identifier or a full type name.</param>
         /// <param name="genericParameters">An optional list of <see cref="GenParam"/>.</param>
         /// <param name="arrayDimensions">An optional list of array dimensions. See <see cref="ArrayDimensions"/>.</param>
         public TypeName( string name, IReadOnlyList<GenParam>? genericParameters = null, IReadOnlyList<int>? arrayDimensions = null )

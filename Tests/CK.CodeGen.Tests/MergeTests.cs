@@ -42,7 +42,9 @@ namespace CK.CodeGen.Tests
                 "using B;" + Environment.NewLine +
                 "namespace Sub" + Environment.NewLine +
                 "{" + Environment.NewLine +
-                "class C { //t1-Code" + Environment.NewLine +
+                "class C" + Environment.NewLine +
+                "{" + Environment.NewLine +
+                "//t1-Code" + Environment.NewLine +
                 "//t1-MoreCode" + "//t2-Code" + Environment.NewLine +
                 "//t2-MoreCode" + Environment.NewLine +
                 "}" + Environment.NewLine +

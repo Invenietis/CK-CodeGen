@@ -18,40 +18,40 @@ namespace CK.CodeGen
         /// </summary>
         public readonly StringBuilder? Builder;
 
-        bool _hasNewLine;
+        public bool HasNewLine { get; set; }
 
         public SmarterStringBuilder( StringBuilder b )
         {
             Builder = b;
             _collector = s => b.Append( s );
-            _hasNewLine = true;
+            HasNewLine = true;
         }
 
         public SmarterStringBuilder( Action<string> collector )
         {
             _collector = collector;
-            _hasNewLine = true;
+            HasNewLine = true;
         }
 
         public SmarterStringBuilder Append( string s )
         {
             _collector( s );
-            _hasNewLine = s.EndsWith( Environment.NewLine, StringComparison.Ordinal );
+            HasNewLine = s.EndsWith( Environment.NewLine, StringComparison.Ordinal );
             return this;
         }
 
         public void VoidAppend( string s )
         {
             _collector( s );
-            _hasNewLine = s.EndsWith( Environment.NewLine, StringComparison.Ordinal );
+            HasNewLine = s.EndsWith( Environment.NewLine, StringComparison.Ordinal );
         }
 
         public SmarterStringBuilder AppendLine()
         {
-            if( !_hasNewLine )
+            if( !HasNewLine )
             {
                 _collector( Environment.NewLine );
-                _hasNewLine = true;
+                HasNewLine = true;
             }
             return this;
         }

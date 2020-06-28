@@ -16,6 +16,16 @@ namespace CK.CodeGen.Abstractions
         public static readonly ExtendedTypeName Empty = new ExtendedTypeName( TypeName.Empty );
 
         /// <summary>
+        /// Initializes a new <see cref="ExtendedTypeName"/> for a  <see cref="TypeName"/>
+        /// with a raw, non analyzed, type name.
+        /// </summary>
+        /// <param name="rawTypeName">The future raw <see cref="TypeName.Name"/>.</param>
+        public ExtendedTypeName( string rawTypeName )
+            : this( new TypeName(rawTypeName))
+        {
+        }
+
+        /// <summary>
         /// Initializes a new <see cref="ExtendedTypeName"/> for a  <see cref="TupleTypeName"/>.
         /// </summary>
         /// <param name="tuple">The tuple.</param>

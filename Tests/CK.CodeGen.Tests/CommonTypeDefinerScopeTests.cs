@@ -89,7 +89,7 @@ namespace CK.CodeGen.Tests
             scope.Types.Should().BeEquivalentTo( t1, t2 );
         }
 
-        [TestCase( "public class C", "[A,B]internal class C" )]
+        [TestCase( "public class C", "[A(1,2,P=\"A\"),B]internal class C" )]
         [TestCase( "public class C<T>", "public class C<TKey> : Base.X where TKey : K" )]
         [TestCase( "public class C", "readonly ref struct C" )]
         [TestCase( "public class C", "class C {" )]
