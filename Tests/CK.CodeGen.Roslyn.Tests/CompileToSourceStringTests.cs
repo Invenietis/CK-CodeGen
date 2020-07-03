@@ -7,7 +7,7 @@ using System.Text;
 using FluentAssertions;
 using System.Threading.Tasks;
 using CK.Text;
-using CK.CodeGen.Abstractions;
+using CK.CodeGen;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NUnit.Framework.Internal;
 

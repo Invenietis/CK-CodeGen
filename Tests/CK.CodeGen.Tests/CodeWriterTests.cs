@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CK.CodeGen.Abstractions;
+using CK.CodeGen;
 using FluentAssertions;
 using System.Reflection;
 

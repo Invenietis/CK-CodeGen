@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using System;
 using System.Text;
-using CK.CodeGen.Abstractions;
+using CK.CodeGen;
 using CK.Core;
 
 namespace CK.CodeGen

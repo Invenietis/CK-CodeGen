@@ -1,4 +1,4 @@
-using CK.CodeGen.Abstractions;
+using CK.CodeGen;
 using CK.CodeGen.SimpleParser;
 using System;
 using System.Collections.Generic;

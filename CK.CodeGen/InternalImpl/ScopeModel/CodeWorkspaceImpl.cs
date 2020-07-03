@@ -1,5 +1,5 @@
 using System.Reflection;
-using CK.CodeGen.Abstractions;
+using CK.CodeGen;
 using System.Collections.Generic;
 using System;
 

@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using CK.CodeGen.Abstractions;
+using CK.CodeGen;
 using FluentAssertions;
 
 namespace System

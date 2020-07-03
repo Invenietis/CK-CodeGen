@@ -1,7 +1,7 @@
 using System;
 using FluentAssertions;
 using NUnit.Framework;
-using CK.CodeGen.Abstractions;
+using CK.CodeGen;
 
 namespace CK.CodeGen.Tests
 {

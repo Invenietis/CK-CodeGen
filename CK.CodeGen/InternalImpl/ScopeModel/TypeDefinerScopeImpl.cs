@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using CK.CodeGen.Abstractions;
+using CK.CodeGen;
 using System.Diagnostics;
 using CK.Text;
 

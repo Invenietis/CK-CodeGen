@@ -7,7 +7,7 @@ using System.Text;
 using FluentAssertions;
 using System.Threading.Tasks;
 using CK.Text;
-using CK.CodeGen.Abstractions;
+using CK.CodeGen;
 
 namespace CK.CodeGen.Roslyn.Tests
 {

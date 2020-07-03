@@ -13,6 +13,6 @@
     <PackageReference Include="CK.WeakAssemblyNameResolver" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CK.CodeGen.Abstractions\CK.CodeGen.Abstractions.csproj" />
+    <ProjectReference Include="..\CK.CodeGen\CK.CodeGen.csproj" />
   </ItemGroup>
 </Project>

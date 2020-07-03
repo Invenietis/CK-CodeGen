@@ -6,7 +6,7 @@ using System.Data.SqlClient;
 using System.Reflection;
 using System.Linq;
 using FluentAssertions;
-using CK.CodeGen.Abstractions;
+using CK.CodeGen;
 
 namespace CK.CodeGen.Roslyn.Tests
 {

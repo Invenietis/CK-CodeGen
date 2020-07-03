@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Linq;
 using System.Diagnostics.CodeAnalysis;
-using CK.CodeGen.Abstractions;
+using CK.CodeGen;
 using CK.CodeGen.SimpleParser;
 
 namespace CK.CodeGen

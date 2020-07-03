@@ -1,4 +1,4 @@
-using CK.CodeGen.Abstractions;
+using CK.CodeGen;
 using FluentAssertions;
 using NUnit.Framework;
 using System;
