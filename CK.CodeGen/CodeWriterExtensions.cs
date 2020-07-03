@@ -108,7 +108,7 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T OpenBlock<T>( this T @this ) where T : ICodeWriter => @this.Append( Environment.NewLine ).Append( "}" ).NewLine();
+        static public T OpenBlock<T>( this T @this ) where T : ICodeWriter => @this.Append( Environment.NewLine ).Append( "{" ).NewLine();
 
         /// <summary>
         /// Appends a "}" on a new independent line.
@@ -116,7 +116,7 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T CloseBlock<T>( this T @this ) where T : ICodeWriter => @this.Append( Environment.NewLine ).Append( "{" ).NewLine();
+        static public T CloseBlock<T>( this T @this ) where T : ICodeWriter => @this.Append( Environment.NewLine ).Append( "}" ).NewLine();
 
         /// <summary>
         /// Appends the C# type name. Handles generic definition (either opened or closed).
