@@ -19,6 +19,21 @@ namespace CK.CodeGen
         TypeDefinition TypeDefinition { get; }
 
         /// <summary>
+        /// Gets a unique incremental identifier for this type.
+        /// The first value is 1.
+        /// <para>
+        /// This is useful to generate a unique (typically short) name that
+        /// identifies this type, regardless of its full namespace and name.
+        /// </para>
+        /// <para>
+        /// Caution: This identifier is provided by the <see cref="ICodeWorkspace"/>: when <see cref="ICodeWorkspace.MergeWith(ICodeWorkspace)"/>
+        /// is used and the same type is defined in both of them, the primary workspace (the one that is merged with the other) keeps
+        /// its own unique identifier.
+        /// </para>
+        /// </summary>
+        int UniqueId { get; }
+
+        /// <summary>
         /// Gets whether this type is defined in another <see cref="ITypeScope"/>
         /// (or in a <see cref="INamespaceScope"/>).
         /// </summary>

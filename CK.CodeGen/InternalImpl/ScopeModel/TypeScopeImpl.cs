@@ -18,6 +18,7 @@ namespace CK.CodeGen
         internal TypeScopeImpl( CodeWorkspaceImpl ws, INamedScope parent )
             : base( ws, parent )
         {
+            UniqueId = ws.GetNextTypeScopeIdentifier();
             _funcs = new FunctionDefiner( true );
             INamedScope? p = parent;
             for(; ; )
@@ -33,6 +34,8 @@ namespace CK.CodeGen
         }
 
         public INamespaceScope Namespace { get; }
+
+        public int UniqueId { get; }
 
         public bool IsNestedType => Parent is ITypeScope;
 
@@ -119,6 +122,8 @@ namespace CK.CodeGen
             public INamespaceScope Namespace => PartOwner.Namespace;
 
             public bool IsNestedType => PartOwner.IsNestedType;
+
+            public int UniqueId => PartOwner.UniqueId;
 
             public TypeDefinition TypeDefinition => PartOwner.TypeDefinition;
 

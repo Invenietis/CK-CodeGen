@@ -8,6 +8,7 @@ namespace CK.CodeGen
     class CodeWorkspaceImpl : ICodeWorkspace
     {
         readonly HashSet<Assembly> _assemblies;
+        int _currentTypeScopeId;
 
         public CodeWorkspaceImpl()
         {
@@ -18,6 +19,8 @@ namespace CK.CodeGen
         INamespaceScope ICodeWorkspace.Global => Global;
 
         internal NamespaceScopeImpl Global { get; }
+
+        internal int GetNextTypeScopeIdentifier() => ++_currentTypeScopeId;
 
         public IReadOnlyCollection<Assembly> AssemblyReferences => _assemblies;
 
