@@ -14,6 +14,7 @@ namespace CK.CodeGen
         readonly static Regex _nsName = new Regex( @"^\s*(?<1>\w+)(\s*\.\s*(?<1>\w+))*\s*$", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture );
         readonly Dictionary<string, KeyValuePair<string?, string?>> _usings;
         readonly List<NamespaceScopeImpl> _subNamespaces;
+        readonly CodePartRaw _beforeNamespace;
 
         internal NamespaceScopeImpl( CodeWorkspaceImpl ws, INamespaceScope? parent, string name )
             : base( ws, parent )
@@ -22,12 +23,14 @@ namespace CK.CodeGen
             Debug.Assert( parent == null || parent is NamespaceScopeImpl );
             _usings = new Dictionary<string, KeyValuePair<string?, string?>>();
             _subNamespaces = new List<NamespaceScopeImpl>();
+            _beforeNamespace = new CodePartRaw();
             if( parent != null ) SetName( name );
         }
 
         internal void MergeWith( NamespaceScopeImpl other )
         {
             Debug.Assert( other != null );
+            _beforeNamespace.MergeWith( other._beforeNamespace );
             foreach( var u in other._usings )
             {
                 DoEnsureUsing( u.Key, u.Value.Key, u.Value.Value );
@@ -49,6 +52,8 @@ namespace CK.CodeGen
         INamespaceScope? INamespaceScope.Parent => Parent;
 
         internal new NamespaceScopeImpl? Parent => (NamespaceScopeImpl?)base.Parent;
+
+        public ICodePart BeforeNamespace => _beforeNamespace;
 
         public INamespaceScope EnsureUsing( string ns )
         {
@@ -159,7 +164,7 @@ namespace CK.CodeGen
 
         internal protected override SmarterStringBuilder Build( SmarterStringBuilder b, bool closeScope )
         {
-            b.AppendLine();
+            _beforeNamespace.Build( b );
             if( Workspace.Global != this ) b.Append( "namespace " )
                                             .Append( Name )
                                             .AppendLine()
@@ -202,6 +207,8 @@ namespace CK.CodeGen
             public INamespaceScope? Parent => PartOwner.Parent;
 
             public IReadOnlyCollection<INamespaceScope> Namespaces => PartOwner.Namespaces;
+
+            public ICodePart BeforeNamespace => PartOwner.BeforeNamespace;
 
             public INamespaceScopePart CreatePart( bool top )
             {

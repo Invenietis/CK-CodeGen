@@ -40,12 +40,6 @@ namespace CK.CodeGen
             return this;
         }
 
-        public void VoidAppend( string s )
-        {
-            _collector( s );
-            HasNewLine = s.EndsWith( Environment.NewLine, StringComparison.Ordinal );
-        }
-
         public SmarterStringBuilder AppendLine()
         {
             if( !HasNewLine )

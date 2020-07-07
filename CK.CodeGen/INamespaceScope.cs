@@ -18,10 +18,18 @@ namespace CK.CodeGen
         /// <summary>
         /// Ensures that a using is defined in this type scope or above.
         /// If it is not defined here or above, it is added to this namespace.
+        /// Using statements are written right after the namespace declaration.
         /// </summary>
         /// <param name="ns">The namespace name.</param>
         /// <returns>This namespace to enable fluent syntax.</returns>
         INamespaceScope EnsureUsing( string ns );
+
+        /// <summary>
+        /// Gets a basic part that addresses the space before this namespace.
+        /// It is the top of the whole source when this namespace is the <see cref="ICodeWorkspace.Global"/> one,
+        /// otherwise it is located in the parent namespace.
+        /// </summary>
+        ICodePart BeforeNamespace { get; }
 
         /// <summary>
         /// Ensures that a using alias is defined in this type scope with the given definition.

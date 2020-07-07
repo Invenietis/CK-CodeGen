@@ -125,7 +125,7 @@ namespace CK.CodeGen
                 }
                 if( Success )
                 {
-                    monitor.Info( CompilationSkipped ? "Source code generation succeeded." : "Source code generation and compilation succeeded." );
+                    monitor.Info( CompilationSkipped ? "Source code parsing succeeded." : "Source code compilation succeeded." );
                     DumpSources( monitor, dumpSourceLevel );
                 }
                 else

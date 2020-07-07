@@ -14,6 +14,39 @@ namespace CK.CodeGen.Tests
     public class CodePartTests
     {
         [Test]
+        public void writing_before_the_using_statements()
+        {
+            {
+                var g = CodeWorkspace.Create().Global;
+                g.EnsureUsing( "A.Name.Space" );
+                g.ToString().Should().StartWith( "using", "All the code is INSIDE the namespace and AFTER the usings." );
+            }
+            {
+                var g = CodeWorkspace.Create().Global;
+                g.Append( "AFTER" );
+                g.BeforeNamespace.Append( "BEFORE" );
+                g.EnsureUsing( "A.Name.Space" );
+                g.ToString().Should().StartWith( "BEFORE" );
+            }
+        }
+
+        [Test]
+        public void BeforeNamespace_is_a_Part_that_can_have_Parts()
+        {
+            var g = CodeWorkspace.Create().Global;
+            g.Append( "AFTER" );
+            g.BeforeNamespace.Append( "BEFORE" );
+            g.EnsureUsing( "A.Name.Space" );
+            g.ToString().Should().StartWith( "BEFORE" );
+
+            g.BeforeNamespace.CreatePart().Append( "POST" );
+            g.BeforeNamespace.CreatePart( top: true ).Append( "ANTE" );
+
+            g.ToString().Should().StartWith( "ANTE" + Environment.NewLine + "BEFORE" + Environment.NewLine + "POST" );
+
+        }
+
+        [Test]
         public void playing_with_parts()
         {
             INamespaceScope g = CodeWorkspace.Create().Global;
