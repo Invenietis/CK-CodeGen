@@ -165,17 +165,28 @@ namespace CK.CodeGen
         internal protected override SmarterStringBuilder Build( SmarterStringBuilder b, bool closeScope )
         {
             _beforeNamespace.Build( b );
-            if( Workspace.Global != this ) b.Append( "namespace " )
-                                            .Append( Name )
-                                            .AppendLine()
-                                            .Append( "{" )
-                                            .AppendLine();
-            foreach( var e in _usings )
+            // A global using prevent any attribute definition (and [assembly::...] attributes cannot be defined
+            // in a namespace.
+            // We write the global usings in the TOP namespaces: they are duplicated among the top-level namespaces
+            // but this enables to define attributes at the top of one file.
+            if( Workspace.Global != this )
             {
-                b.AppendLine().Append( "using " ).Append( e.Key );
-                if( e.Value.Value == null ) b.Append( ";" );
-                else b.Append( " = " ).Append( e.Value.Value );
-                b.AppendLine();
+                b.Append( "namespace " )
+                .Append( Name )
+                .AppendLine()
+                .Append( "{" )
+                .AppendLine();
+                if( Parent == Workspace.Global )
+                {
+                    Parent.WriteThisUsings( b );
+                }
+                WriteThisUsings( b );
+            }
+            else if( _subNamespaces.Count == 0 ) 
+            {
+                // However, if there is no namespace defined, the global
+                // usings must be written. We have no choice.
+                WriteThisUsings( b );
             }
             CodePart.Build( b );
             foreach( var ns in _subNamespaces )
@@ -185,6 +196,17 @@ namespace CK.CodeGen
             BuildTypes( b );
             if( Workspace.Global != this && closeScope ) b.AppendLine().Append( "}" );
             return b;
+        }
+
+        private void WriteThisUsings( SmarterStringBuilder b )
+        {
+            foreach( var e in _usings )
+            {
+                b.AppendLine().Append( "using " ).Append( e.Key );
+                if( e.Value.Value == null ) b.Append( ";" );
+                else b.Append( " = " ).Append( e.Value.Value );
+                b.AppendLine();
+            }
         }
 
         public INamespaceScopePart CreatePart( bool top )
