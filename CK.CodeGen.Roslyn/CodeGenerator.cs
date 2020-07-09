@@ -4,10 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Emit;
 using System;
-using System.Text;
-using CK.CodeGen;
 using CK.Core;
 
 namespace CK.CodeGen
@@ -128,17 +125,17 @@ namespace CK.CodeGen
         /// </summary>
         /// <param name="code"></param>
         /// <param name="assemblyPath">The output path or null if only parsing is required.</param>
+        /// <param name="references">Optional list of dependent assemblies. Used only if compilation is required. This list will be transitively closed.</param>
         /// <param name="parseOptions">By default, all default applies, the language version is <see cref="LanguageVersion.Default"/>.</param>
         /// <param name="compileOptions">The compilation options. Used only if compilation is required. Defaults to <see cref="DefaultCompilationOptions"/>.</param>
-        /// <param name="references">Optional list of dependent assemblies. Used only if compilation is required. This list will be transitively closed.</param>
         /// <param name="loader">Optional loader function to load the final emitted assembly. Used only if compilation is required.</param>
         /// <returns>Encapsulation of the result.</returns>
         static public GenerateResult Generate(
             string code,
             string assemblyPath = null,
+            IEnumerable<Assembly>? references = null,
             CSharpParseOptions? parseOptions = null,
             CSharpCompilationOptions? compileOptions = null,
-            IEnumerable<Assembly> references = null,
             Func<string, Assembly> loader = null )
         {
             SyntaxTree[] trees = new[] { SyntaxFactory.ParseSyntaxTree( code, parseOptions ) };
@@ -151,9 +148,12 @@ namespace CK.CodeGen
             {
                 var collector = new HashSet<Assembly>();
                 collector.Add( typeof( object ).Assembly );
-                foreach( var a in references )
+                if( references != null )
                 {
-                    if( collector.Add( a ) ) Discover( a, collector );
+                    foreach( var a in references )
+                    {
+                        if( collector.Add( a ) ) Discover( a, collector );
+                    }
                 }
                 return Generate( compileOptions,
                                  trees,
@@ -162,7 +162,6 @@ namespace CK.CodeGen
                                  loader )
                         .WithLoadFailures( weakLoader.Conflicts );
             }
-
         }
 
         /// <summary>
