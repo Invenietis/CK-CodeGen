@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Emit;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -13,7 +14,7 @@ namespace CK.CodeGen
     /// <summary>
     /// Captures generation result.
     /// </summary>
-    public readonly struct GenerateResult
+    public class GenerateResult
     {
         /// <summary>
         /// Gets whether the actual compilation has been skipped: only the
@@ -57,9 +58,14 @@ namespace CK.CodeGen
         public readonly Exception AssemblyLoadError;
 
         /// <summary>
-        /// Gets whether the generation succeeds.
+        /// Gets whether the parsing or full compilation succeeds.
         /// </summary>
-        public bool Success => CompilationSkipped || (EmitResult?.Success == true && AssemblyLoadError == null);
+        public bool Success { get; }
+
+        /// <summary>
+        /// Gets the parse diagnostics.
+        /// </summary>
+        public IEnumerable<Diagnostic> ParseDiagnostics => Sources.SelectMany( t => t.GetDiagnostics() );
 
         /// <summary>
         /// Initializes a new compilation result (CompilationSkipped is false).
@@ -79,6 +85,7 @@ namespace CK.CodeGen
             Sources = sources;
             AssemblyLoadError = e;
             LoadConflicts = f;
+            Success = r.Success == true && e == null;
         }
 
         /// <summary>
@@ -87,13 +94,14 @@ namespace CK.CodeGen
         /// <param name="sources">Sources.</param>
         internal GenerateResult( IReadOnlyList<SyntaxTree> sources )
         {
-            CompilationSkipped = true;
             EmitError = null;
             Assembly = null;
             EmitResult = null;
-            Sources = sources;
             AssemblyLoadError = null;
             LoadConflicts = null;
+            CompilationSkipped = true;
+            Sources = sources;
+            Success = ParseDiagnostics.All( d => d.Severity != DiagnosticSeverity.Error );
         }
 
         /// <summary>
@@ -101,7 +109,7 @@ namespace CK.CodeGen
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
         /// <param name="dumpSourceLevel">Optionnaly dumps the source as another <see cref="CK.Core.LogLevel"/>.</param>
-        public void LogResult( IActivityMonitor monitor, LogLevel dumpSourceLevel = LogLevel.Debug )
+        public void LogResult( IActivityMonitor monitor, LogLevel? dumpSources = null )
         {
             if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );
             using( monitor.OpenInfo( "Code Generation information." ) )
@@ -126,11 +134,11 @@ namespace CK.CodeGen
                 if( Success )
                 {
                     monitor.Info( CompilationSkipped ? "Source code parsing succeeded." : "Source code compilation succeeded." );
-                    DumpSources( monitor, dumpSourceLevel );
+                    if( dumpSources.HasValue ) DumpSources( monitor, dumpSources.Value );
                 }
                 else
                 {
-                    using( monitor.OpenError( "Compilation failed." ) )
+                    using( monitor.OpenError( CompilationSkipped ? "Parsing failed." : "Compilation failed." ) )
                     {
                         if( EmitError != null )
                         {
@@ -149,7 +157,18 @@ namespace CK.CodeGen
                                 }
                             }
                         }
-                        DumpSources( monitor, dumpSourceLevel );
+                        else
+                        {
+                            Debug.Assert( CompilationSkipped );
+                            using( monitor.OpenInfo( $"{ParseDiagnostics.Count()} Parsing diagnostics." ) )
+                            {
+                                foreach( var diag in ParseDiagnostics )
+                                {
+                                    monitor.Trace( diag.ToString() );
+                                }
+                            }
+                        }
+                        if( dumpSources.HasValue ) DumpSources( monitor, dumpSources.Value );
                     }
                 }
                 if( AssemblyLoadError != null )

@@ -16,9 +16,8 @@ namespace CK.CodeGen.Roslyn.Tests
     [TestFixture]
     public class CompileToSourceStringTests
     {
-
         [Test]
-        public void skipCompilation_tests()
+        public void parsing_only_tests()
         {
             var workspace = CodeWorkspace.Create();
             var global = workspace.Global;
@@ -30,9 +29,26 @@ namespace CK.CodeGen.Roslyn.Tests
             a.Should().NotBeNull();
 
             var g = new CodeGenerator( CodeWorkspace.Factory );
-            var r = g.Generate( workspace, null, true );
+            var r = g.Generate( workspace, null, skipCompilation: true );
             r.Success.Should().BeTrue();
             r.Sources.Should().HaveCount( 1 );
+        }
+
+        [Test]
+        public void simple_generation_or_parsing_code_string()
+        {
+            {
+                var r = CodeGenerator.Generate( "class P {}", null );
+                r.Success.Should().BeTrue();
+                r.Sources.Should().HaveCount( 1 );
+                r.ParseDiagnostics.Should().BeEmpty();
+            }
+            {
+                var r = CodeGenerator.Generate( "class P }", null );
+                r.Success.Should().BeFalse();
+                r.Sources.Should().HaveCount( 1 );
+                r.ParseDiagnostics.Should().NotBeEmpty();
+            }
         }
 
         [Test]
