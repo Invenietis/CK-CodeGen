@@ -1,7 +1,7 @@
 using System;
 static public class Program
 {
-CK.CodeGen.MethodDefinition
+CK.CodeGen.FunctionDefinition
 {
 Console.WriteLine(@"Hop!" );
 return 0;

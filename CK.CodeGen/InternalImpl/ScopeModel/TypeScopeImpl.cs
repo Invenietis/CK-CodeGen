@@ -39,7 +39,7 @@ namespace CK.CodeGen
 
         public bool IsNestedType => Parent is ITypeScope;
 
-        internal string TypeKey => _typeDef.Name.TypeDefinitionKey;
+        internal string TypeKey => _typeDef.Name.Key;
 
         internal void MergeWith( TypeScopeImpl other )
         {
@@ -95,12 +95,13 @@ namespace CK.CodeGen
             return b;
         }
 
-        public IFunctionScope CreateFunction( Action<IFunctionScope> header )
-        {
-            return _funcs.Create( Workspace, this, header );
-        }
+        public IFunctionScope CreateFunction( Action<IFunctionScope> header ) => _funcs.Create( Workspace, this, header );
 
-        public TypeDefinition TypeDefinition => _typeDef;
+        public IFunctionScope CreateFunction( FunctionDefinition def ) => _funcs.Create( Workspace, this, def );
+
+        public TypeDefinition Definition => _typeDef;
+
+        public IReadOnlyCollection<IFunctionScope> Functions => _funcs.Functions;
 
         public ITypeScopePart CreatePart( bool top )
         {
@@ -109,6 +110,8 @@ namespace CK.CodeGen
             else CodePart.Parts.Add( p );
             return p;
         }
+
+        public IFunctionScope? FindFunction( string key, bool analyzeHeader ) => _funcs.FindFunction( key, analyzeHeader );
 
         class Part : TypeDefinerPart, ITypeScopePart
         {
@@ -125,9 +128,13 @@ namespace CK.CodeGen
 
             public int UniqueId => PartOwner.UniqueId;
 
-            public TypeDefinition TypeDefinition => PartOwner.TypeDefinition;
+            public TypeDefinition Definition => PartOwner.Definition;
+
+            public IReadOnlyCollection<IFunctionScope> Functions => PartOwner.Functions;
 
             public IFunctionScope CreateFunction( Action<IFunctionScope> header ) => PartOwner.CreateFunction( header );
+
+            public IFunctionScope CreateFunction( FunctionDefinition def ) => PartOwner.CreateFunction( def );
 
             public ITypeScopePart CreatePart( bool top )
             {
@@ -137,6 +144,7 @@ namespace CK.CodeGen
                 return p;
             }
 
+            public IFunctionScope? FindFunction( string key, bool analyzeHeader ) => PartOwner.FindFunction( key, analyzeHeader );
         }
 
     }

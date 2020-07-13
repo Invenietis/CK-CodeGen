@@ -15,8 +15,8 @@ namespace CK.CodeGen.Tests
         {
             INamespaceScope global = CodeWorkspace.Create().Global;
             var t = global.CreateType( "public class Derived : Base" );
-            t.TypeDefinition.BaseTypes.Should().BeEquivalentTo( new ExtendedTypeName( "Base" ) );
-            t.TypeDefinition.BaseTypes.Add( new ExtendedTypeName( "Name.Space.IOther" ) );
+            t.Definition.BaseTypes.Should().BeEquivalentTo( new ExtendedTypeName( "Base" ) );
+            t.Definition.BaseTypes.Add( new ExtendedTypeName( "Name.Space.IOther" ) );
             global.ToString().Should().Contain( "Name.Space.IOther" );
         }
 
@@ -26,7 +26,7 @@ namespace CK.CodeGen.Tests
         {
             INamespaceScope global = CodeWorkspace.Create().Global;
             var t = global.CreateType( "public class Derived : Base { truc" );
-            t.TypeDefinition.BaseTypes.Add( new ExtendedTypeName( "Name.Space.IOther" ) );
+            t.Definition.BaseTypes.Add( new ExtendedTypeName( "Name.Space.IOther" ) );
             var s = global.ToString();
             s = s.Replace( Environment.NewLine, "" ).Replace( " ", "" );
             s.Should().EndWith( "Name.Space.IOther{truc}" );

@@ -13,7 +13,7 @@ namespace CK.CodeGen
         /// <summary>
         /// Gets the function name description.
         /// </summary>
-        IFunctionName FunctionName { get; }
+        FunctionDefinition Definition { get; }
 
         /// <summary>
         /// Gets the closest type that contains this function or method.
@@ -29,12 +29,6 @@ namespace CK.CodeGen
         /// Gets whether this function is a constructor (its <see cref="ReturnType"/> is null).
         /// </summary>
         bool IsConstructor { get; }
-
-        /// <summary>
-        /// Gets the return type of the function.
-        /// Null when <see cref="IsConstructor"/> is true.
-        /// </summary>
-        string? ReturnType { get; }
 
         /// <summary>
         /// Creates a segment of code inside this function.

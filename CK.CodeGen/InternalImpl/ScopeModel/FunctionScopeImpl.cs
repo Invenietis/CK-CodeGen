@@ -13,8 +13,7 @@ namespace CK.CodeGen
     {
         readonly FunctionDefiner _funcs;
 
-        MethodDefinition? _mDef;
-        ExposedName _name;
+        FunctionDefinition? _fDef;
 
         internal FunctionScopeImpl( CodeWorkspaceImpl ws, INamedScope parent )
             : base( ws, parent )
@@ -33,44 +32,28 @@ namespace CK.CodeGen
             }
         }
 
+        internal FunctionScopeImpl( CodeWorkspaceImpl ws, INamedScope parent, FunctionDefinition def )
+            : this( ws, parent )
+        {
+            _fDef = def;
+            SetName( _fDef.Key );
+        }
+
         public ITypeScope EnclosingType { get; }
 
         public bool IsLocalFunction => Parent is IFunctionScope;
 
-        public bool IsConstructor => _mDef?.ReturnType == null;
+        public bool IsConstructor => _fDef?.ReturnType == null;
 
-        public string? ReturnType => _mDef?.ReturnType?.ToString();
+        public FunctionDefinition Definition => _fDef!;
 
-        public IFunctionName FunctionName => _name;
+        public IReadOnlyCollection<IFunctionScope> Functions => _funcs.Functions;
 
         internal void MergeWith( FunctionScopeImpl other )
         {
             Debug.Assert( other != null );
             CodePart.MergeWith( other.CodePart );
             _funcs.MergeWith( Workspace, this, other._funcs );
-        }
-
-        class ExposedName : IFunctionName
-        {
-            readonly string _text;
-
-            public ExposedName( MethodDefinition m )
-            {
-                NakedName = m.MethodName.Name;
-                var b = new StringBuilder();
-                GenericPart = m.MethodName.WriteGenericParameters( b ).ToString();
-                b.Clear();
-                ParametersPart = m.WriteParameters( b, withAttributes: false, withDefaultValues: false ).ToString();
-                _text = NakedName + GenericPart + ParametersPart;
-            }
-
-            public string NakedName { get; }
-
-            public string GenericPart { get; }
-
-            public string ParametersPart { get; }
-
-            public override string ToString() => _text;
         }
 
         internal void Initialize()
@@ -81,38 +64,42 @@ namespace CK.CodeGen
             CodePart.Parts.Clear();
             var m = new StringMatcher( declaration );
             m.SkipWhiteSpacesAndJSComments();
-            if( !m.MatchMethodDefinition( out _mDef, out bool hasCodeOpener ) )
+            if( !m.MatchMethodDefinition( out _fDef, out bool hasCodeOpener ) )
             {
                 throw new InvalidOperationException( $"Error: {m.ErrorMessage} Unable to parse function or constructor declaration {declaration}" );
             }
-            Debug.Assert( _mDef != null );
+            Debug.Assert( _fDef != null );
             if( hasCodeOpener )
             {
                 m.MatchWhiteSpaces( 0 );
                 CodePart.Parts.Add( declaration.Substring( m.StartIndex ) );
             }
-            _name = new ExposedName( _mDef );
-            SetName( _name.ToString() );
+            SetName( _fDef.Key );
         }
 
         internal protected override SmarterStringBuilder Build( SmarterStringBuilder b, bool closeScope )
         {
-            if( _mDef != null )
+            if( _fDef != null )
             {
-                if( b.Builder != null ) _mDef.Write( b.Builder );
-                else b.Append( _mDef.ToString() );
+                if( b.Builder != null ) _fDef.Write( b.Builder );
+                else b.Append( _fDef.ToString() );
                 b.HasNewLine = false;
             }
-            b.AppendLine().Append( "{" ).AppendLine();
+            bool lambda = CodePart.StartsWith( "=>" ) == true;
+            if( !lambda ) b.AppendLine().Append( "{" ).AppendLine();
             CodePart.Build( b );
             _funcs.Build( b );
-            if( closeScope ) b.AppendLine().Append( "}" );
+            if( closeScope && !lambda ) b.AppendLine().Append( "}" );
             return b;
         }
 
         public IFunctionScope CreateFunction( Action<IFunctionScope> header )
         {
             return _funcs.Create( Workspace, this, header );
+        }
+        public IFunctionScope CreateFunction( FunctionDefinition def )
+        {
+            return _funcs.Create( Workspace, this, def );
         }
 
         public IFunctionScopePart CreatePart( bool top )
@@ -123,6 +110,8 @@ namespace CK.CodeGen
             return p;
         }
 
+        public IFunctionScope? FindFunction( string key, bool analyzeHeader ) => _funcs.FindFunction( key, analyzeHeader );
+
         class Part : CodePart, IFunctionScopePart
         {
             public Part( IFunctionScope owner )
@@ -132,7 +121,7 @@ namespace CK.CodeGen
 
             public new IFunctionScope PartOwner => (IFunctionScope)base.PartOwner;
 
-            public IFunctionName FunctionName => PartOwner.FunctionName;
+            public FunctionDefinition Definition => PartOwner.Definition;
 
             public ITypeScope EnclosingType => PartOwner.EnclosingType;
 
@@ -140,9 +129,11 @@ namespace CK.CodeGen
 
             public bool IsConstructor => PartOwner.IsConstructor;
 
-            public string? ReturnType => PartOwner.ReturnType;
+            public IReadOnlyCollection<IFunctionScope> Functions => PartOwner.Functions;
 
             public IFunctionScope CreateFunction( Action<IFunctionScope> header ) => PartOwner.CreateFunction( header );
+
+            public IFunctionScope CreateFunction( FunctionDefinition def ) => PartOwner.CreateFunction( def );
 
             public IFunctionScopePart CreatePart( bool top ) 
             {
@@ -152,6 +143,7 @@ namespace CK.CodeGen
                 return p;
             }
 
+            public IFunctionScope? FindFunction( string key, bool analyzeHeader ) => PartOwner.FindFunction( key, analyzeHeader );
         }
 
     }

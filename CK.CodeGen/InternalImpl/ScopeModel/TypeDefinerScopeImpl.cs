@@ -81,7 +81,7 @@ namespace CK.CodeGen
 
             public ITypeScope CreateType( Action<ITypeScope> header ) => O.CreateType( header );
 
-            public ITypeScope FindType( string name ) => O.FindType( name );
+            public ITypeScope? FindType( string name ) => O.FindType( name );
         }
     }
 }

@@ -84,14 +84,12 @@ namespace CK.CodeGen
 
         readonly string _name;
         readonly IReadOnlyList<GenParam> _genArgs;
-        readonly IReadOnlyList<int> _arrayDims;
 
         TypeName()
         {
             _name = String.Empty;
             _genArgs = Array.Empty<GenParam>();
-            _arrayDims = Array.Empty<int>();
-            TypeDefinitionKey = String.Empty;
+            Key = String.Empty;
         }
 
         /// <summary>
@@ -100,15 +98,13 @@ namespace CK.CodeGen
         /// </summary>
         /// <param name="name">The type name is an identifier or a full type name.</param>
         /// <param name="genericParameters">An optional list of <see cref="GenParam"/>.</param>
-        /// <param name="arrayDimensions">An optional list of array dimensions. See <see cref="ArrayDimensions"/>.</param>
-        public TypeName( string name, IReadOnlyList<GenParam>? genericParameters = null, IReadOnlyList<int>? arrayDimensions = null )
+        public TypeName( string name, IReadOnlyList<GenParam>? genericParameters = null )
         {
             if( String.IsNullOrWhiteSpace( name ) ) throw new ArgumentOutOfRangeException( nameof( name ) );
             _name = name;
             _genArgs = genericParameters ?? Array.Empty<GenParam>();
-            _arrayDims = arrayDimensions ?? Array.Empty<int>();
-            TypeDefinitionKey = _name;
-            if( _genArgs.Count > 0 ) TypeDefinitionKey += "`" + _genArgs.Count;
+            Key = _name;
+            if( _genArgs.Count > 0 ) Key += "`" + _genArgs.Count;
         }
 
         /// <summary>
@@ -126,28 +122,18 @@ namespace CK.CodeGen
         /// a namespace: it is "<see cref="Name"/>" alone for non generic types and
         /// "<see cref="Name"/>`<see cref="GenericParameters"/>.Count" for generic ones.
         /// </summary>
-        public string TypeDefinitionKey { get; }
-
-        /// <summary>
-        /// Gets the number of arrays (this defines a jagged array when there is two or more
-        /// numbers in this list) and for each of them, its "dimension" (the number of ',' commas
-        /// inside): 0 for a standard one-dimensional array, 1 for a two-dimensional one, etc.
-        /// </summary>
-        public IReadOnlyList<int> ArrayDimensions => _arrayDims;
+        public string Key { get; }
 
         /// <summary>
         /// Writes this TypeName into the provided StringBuilder.
         /// </summary>
         /// <param name="b">The target.</param>
+        /// <param name="typeNameReplacer">Optional name replacer function.</param>
         /// <returns>The StringBuilder to enable fluent syntax.</returns>
-        public StringBuilder Write( StringBuilder b )
+        public StringBuilder Write( StringBuilder b, Func<string,string>? typeNameReplacer = null )
         {
-            b.Append( _name );
-            WriteGenericParameters( b );
-            foreach( int d in _arrayDims )
-            {
-                b.Append( '[' ).Append( ',', d ).Append( ']' );
-            }
+            b.Append( typeNameReplacer != null ? typeNameReplacer( _name ) : _name );
+            WriteGenericParameters( b, typeNameReplacer );
             return b;
         }
 
@@ -155,8 +141,9 @@ namespace CK.CodeGen
         /// Writes the <see cref="GenericParameters"/> into the provided StringBuilder.
         /// </summary>
         /// <param name="b">The target.</param>
+        /// <param name="typeNameReplacer">Optional naked type name replacer function.</param>
         /// <returns>The StringBuilder to enable fluent syntax.</returns>
-        public StringBuilder WriteGenericParameters( StringBuilder b )
+        public StringBuilder WriteGenericParameters( StringBuilder b, Func<string, string>? typeNameReplacer = null )
         {
             if( _genArgs.Count > 0 )
             {
@@ -168,7 +155,7 @@ namespace CK.CodeGen
                     else already = true;
                     if( g.TypeVariance == GenParam.Variance.In ) b.Append( "in " );
                     else if( g.TypeVariance == GenParam.Variance.Out ) b.Append( "out " );
-                    g.Type.Write( b );
+                    g.Type.Write( b, typeNameReplacer );
                 }
                 b.Append( '>' );
             }

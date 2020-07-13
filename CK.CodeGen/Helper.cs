@@ -84,7 +84,8 @@ namespace CK.CodeGen
 
         internal static ICodeWriter AddParameter( this ICodeWriter @this, ParameterInfo p )
         {
-            if( p.IsOut ) @this.Append( "out " );
+            if( p.IsIn ) @this.Append( "in " );
+            else if( p.IsOut ) @this.Append( "out " );
             else if( p.ParameterType.IsByRef ) @this.Append( "ref " );
             Type parameterType = p.ParameterType.IsByRef ? p.ParameterType.GetElementType() : p.ParameterType;
             return @this.AppendCSharpName( parameterType, true )

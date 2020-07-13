@@ -20,6 +20,21 @@ namespace CK.CodeGen
             if( !String.IsNullOrEmpty( code ) ) Parts.Add( code );
         }
 
+        internal bool? StartsWith( string prefix )
+        {
+            foreach( var o in Parts )
+            {
+                if( o is string s )
+                {
+                    s = s.TrimStart();
+                    if( s.Length > 0 ) return s.StartsWith( prefix );
+                }
+                bool? r = ((BaseCodePart)o).StartsWith( prefix );
+                if( r.HasValue ) return r;
+            }
+            return null;
+        }
+
         internal SmarterStringBuilder Build( SmarterStringBuilder b )
         {
             b.AppendLine();

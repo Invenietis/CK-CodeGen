@@ -44,7 +44,7 @@ namespace CK.CodeGen.Tests
             ITypeDefinerScope scope = CreateTypeDefinerScope();
             ITypeScope type = scope.CreateType( decl );
 
-            type.TypeDefinition.Name.TypeDefinitionKey.Should().Be( typeDefinitionKey );
+            type.Definition.Name.Key.Should().Be( typeDefinitionKey );
         }
 
         [TestCase( "public interface I<in T1, out T2> where T1 : struct { //...", "I<TKey,TValue>" )]

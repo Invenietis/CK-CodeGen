@@ -8,6 +8,7 @@ using System.Linq;
 using System.Diagnostics.CodeAnalysis;
 using CK.CodeGen;
 using CK.CodeGen.SimpleParser;
+using System.Diagnostics;
 
 namespace CK.CodeGen
 {
@@ -177,7 +178,7 @@ namespace CK.CodeGen
                 targetOrName = null;
                 if( name.Name.EndsWith( "Attribute", StringComparison.Ordinal ) )
                 {
-                    name = new TypeName( name.Name.Remove( name.Name.Length - 9 ), name.GenericParameters, name.ArrayDimensions );
+                    name = new TypeName( name.Name.Remove( name.Name.Length - 9 ), name.GenericParameters );
                 }
                 var bAttrValue = new StringBuilder();
                 List<string> values = new List<string>();
@@ -204,7 +205,7 @@ namespace CK.CodeGen
             return true;
         }
 
-        internal static bool MatchMethodDefinition( this StringMatcher @this, out MethodDefinition? mDef, out bool hasCodeOpener )
+        internal static bool MatchMethodDefinition( this StringMatcher @this, [NotNullWhen( true )] out FunctionDefinition? mDef, out bool hasCodeOpener )
         {
             mDef = null;
             hasCodeOpener = false;
@@ -230,11 +231,12 @@ namespace CK.CodeGen
             {
                 if( !@this.MatchTypeName( out methodName ) ) return false;
                 @this.SkipWhiteSpacesAndJSComments();
-                if( !@this.MatchChar( '(' ) && !(isIndexer = @this.TryMatchChar( '[' ) ) ) return false;
+                if( !@this.MatchChar( '(' ) && !(isIndexer = @this.TryMatchChar( '[' ) ) ) return @this.SetError( "Expected '[' or '('." ); ;
             }
+            Debug.Assert( methodName != null );
             var buffer = new StringBuilder();
             @this.SkipWhiteSpacesAndJSComments();
-            List<MethodDefinition.Parameter> parameters = new List<MethodDefinition.Parameter>();
+            List<FunctionDefinition.Parameter> parameters = new List<FunctionDefinition.Parameter>();
             while( !@this.TryMatchChar( isIndexer ? ']' : ')' ) )
             {
                 do
@@ -242,17 +244,17 @@ namespace CK.CodeGen
                     @this.SkipWhiteSpacesAndJSComments();
                     if( !@this.MatchPotentialAttributes( out var pAttr ) ) return false;
                     if( !@this.TryMatchCSharpIdentifier( out var pTypeStart ) ) return @this.SetError( "Expected identifier." );
-                    MethodDefinition.ParameterModifier mod = MethodDefinition.ParameterModifier.None;
+                    FunctionDefinition.ParameterModifier mod = FunctionDefinition.ParameterModifier.None;
                     switch( pTypeStart )
                     {
-                        case "this": mod = MethodDefinition.ParameterModifier.This; pTypeStart = null; break;
-                        case "params": mod = MethodDefinition.ParameterModifier.Params; pTypeStart = null; break;
-                        case "out": mod = MethodDefinition.ParameterModifier.Out; pTypeStart = null; break;
-                        case "ref": mod = MethodDefinition.ParameterModifier.Ref; pTypeStart = null; break;
-                        case "in": mod = MethodDefinition.ParameterModifier.In; pTypeStart = null; break;
+                        case "this": mod = FunctionDefinition.ParameterModifier.This; pTypeStart = null; break;
+                        case "params": mod = FunctionDefinition.ParameterModifier.Params; pTypeStart = null; break;
+                        case "out": mod = FunctionDefinition.ParameterModifier.Out; pTypeStart = null; break;
+                        case "ref": mod = FunctionDefinition.ParameterModifier.Ref; pTypeStart = null; break;
+                        case "in": mod = FunctionDefinition.ParameterModifier.In; pTypeStart = null; break;
                     }
                     @this.SkipWhiteSpacesAndJSComments();
-                    if( !@this.MatchTypeName( out var pType, pTypeStart ) ) return false;
+                    if( !@this.MatchExtendedTypeName( out var pType, pTypeStart ) ) return false;
                     @this.SkipWhiteSpacesAndJSComments();
                     if( !@this.TryMatchCSharpIdentifier( out var pName ) ) return false;
                     @this.SkipWhiteSpacesAndJSComments();
@@ -264,11 +266,11 @@ namespace CK.CodeGen
                         buffer.Clear();
                     }
                     else @this.SkipWhiteSpacesAndJSComments();
-                    parameters.Add( new MethodDefinition.Parameter( pAttr, mod, pType, pName, defVal ) );
+                    parameters.Add( new FunctionDefinition.Parameter( pAttr, mod, pType, pName, defVal ) );
                 }
                 while( @this.TryMatchChar( ',' ) );
             }
-            var thisOrBaseCall = MethodDefinition.CallConstructor.None;
+            var thisOrBaseCall = FunctionDefinition.CallConstructor.None;
             string? thisOrBaseCallParameter = null;
             @this.SkipWhiteSpacesAndJSComments();
             if( returnType == null )
@@ -276,9 +278,9 @@ namespace CK.CodeGen
                 if( @this.TryMatchChar( ':' ) )
                 {
                     @this.SkipWhiteSpacesAndJSComments();
-                    if( @this.TryMatchText( "this", StringComparison.Ordinal ) ) thisOrBaseCall = MethodDefinition.CallConstructor.This;
-                    else if( @this.TryMatchText( "base", StringComparison.Ordinal ) ) thisOrBaseCall = MethodDefinition.CallConstructor.Base;
-                    if( thisOrBaseCall != MethodDefinition.CallConstructor.None )
+                    if( @this.TryMatchText( "this", StringComparison.Ordinal ) ) thisOrBaseCall = FunctionDefinition.CallConstructor.This;
+                    else if( @this.TryMatchText( "base", StringComparison.Ordinal ) ) thisOrBaseCall = FunctionDefinition.CallConstructor.Base;
+                    if( thisOrBaseCall != FunctionDefinition.CallConstructor.None )
                     {
                         @this.SkipWhiteSpacesAndJSComments();
                         if( !@this.MatchChar( '(' ) ) return @this.SetError( "this(...) or base(...) : missing '('." );
@@ -291,9 +293,10 @@ namespace CK.CodeGen
                     else return @this.SetError( "this(...) or base(...) expected." );
                 }
             }
+            buffer.Clear();
             List<TypeParameterConstraint>? wheres;
             if( !@this.MatchWhereConstraints( out hasCodeOpener, out wheres ) ) return false;
-            mDef = new MethodDefinition( attributes, modifiers, returnType, methodName, thisOrBaseCall, thisOrBaseCallParameter, isIndexer, parameters, wheres );
+            mDef = new FunctionDefinition( attributes, modifiers, returnType, methodName, thisOrBaseCall, thisOrBaseCallParameter, isIndexer, parameters, wheres, buffer );
             return true;
         }
 
@@ -322,7 +325,7 @@ namespace CK.CodeGen
             }
             @this.SkipWhiteSpacesAndJSComments();
             if( !@this.MatchTypeName( out var name, head ) ) return false;
-            key = name.TypeDefinitionKey;
+            key = name.Key;
             return true;
         }
 
@@ -392,7 +395,7 @@ namespace CK.CodeGen
                     @this.SkipWhiteSpacesAndJSComments();
                     if( @this.TryMatchChar( ')' ) )
                     {
-                        t = new ExtendedTypeName( new TypeName( "new()", null, null ) );
+                        t = new ExtendedTypeName( new TypeName( "new()", null ) );
                         return true;
                     }
                 }
@@ -462,24 +465,60 @@ namespace CK.CodeGen
                 fields.Add( new TupleTypeName.Field( fType, fName ) );
                 if( @this.TryMatchChar( ',' ) ) @this.SkipWhiteSpacesAndJSComments();
             }
+            bool isNullable = @this.TryMatchChar( '?' );
+            if( isNullable )
+            {
+                @this.SkipWhiteSpacesAndJSComments();
+            }
             type = new TupleTypeName( fields );
             return true;
         }
 
         internal static bool MatchExtendedTypeName( this StringMatcher @this, [NotNullWhen( true )] out ExtendedTypeName? type, string? knownName = null )
         {
-            if( knownName == null && @this.TryMatchTupleTypeName( out var tuple ) )
-            {
-                type = new ExtendedTypeName( tuple );
-                return true;
-            }
-            if( @this.MatchTypeName( out var regularType, knownName ) )
-            {
-                type = new ExtendedTypeName( regularType );
-                return true;
-            }
             type = null;
-            return false;
+            TupleTypeName? tuple = null;
+            TypeName? regularType = null;
+            if( knownName != null || !@this.TryMatchTupleTypeName( out tuple ) )
+            {
+                if( @this.MatchTypeName( out regularType, knownName ) )
+                {
+                    if( regularType.GenericParameters.Count == 1 && (regularType.Name == "Nullable" || regularType.Name == "System.Nullable") )
+                    {
+                        type = regularType.GenericParameters[0].Type.WithNullable( true );
+                    }
+                }
+            }
+            if( type == null )
+            {
+                // Nullable<Nullable<...>> cannot exist.
+                bool isNullable = @this.TryMatchChar( '?' );
+                if( isNullable ) @this.SkipWhiteSpacesAndJSComments();
+                if( tuple != null ) type = new ExtendedTypeName( tuple, isNullable );
+                else if( regularType != null ) type = new ExtendedTypeName( regularType, isNullable );
+                else return false;
+            }
+            List<int>? arrayDim = null;
+            while( @this.TryMatchChar( '[' ) )
+            {
+                if( arrayDim == null ) arrayDim = new List<int>();
+                int dim = 0;
+                while( @this.TryMatchChar( ',' ) )
+                {
+                    ++dim;
+                    @this.SkipWhiteSpacesAndJSComments();
+                }
+                if( !@this.TryMatchChar( ']' ) ) return @this.SetError( "Closing ']' array." );
+                arrayDim.Add( dim );
+                @this.SkipWhiteSpacesAndJSComments();
+            }
+            if( arrayDim != null )
+            {
+                bool isNullable = @this.TryMatchChar( '?' );
+                if( isNullable ) @this.SkipWhiteSpacesAndJSComments();
+                type = new ExtendedTypeName( type, arrayDim, isNullable ); 
+            }
+            return true;
         }
 
         internal static bool MatchTypeName( this StringMatcher @this, [NotNullWhen( true )]out TypeName? type, string? knownName = null )
@@ -489,7 +528,6 @@ namespace CK.CodeGen
                 || @this.TryMatchCSharpIdentifier( out knownName ) )
             {
                 List<TypeName.GenParam>? genArgs = null;
-                List<int>? arrayDim = null;
                 @this.SkipWhiteSpacesAndJSComments();
                 while( @this.TryMatchChar('.') )
                 {
@@ -511,7 +549,8 @@ namespace CK.CodeGen
                         }
                         if( @this.TryMatchChar( '>' ) )
                         {
-                            genArgs.Add( TypeName.GenParam.Empty );
+                            // Handles open generic definition like "G<>" or "G<,>".
+                            genArgs.Add(TypeName.GenParam.Empty);
                             @this.SkipWhiteSpacesAndJSComments();
                             break;
                         }
@@ -526,20 +565,7 @@ namespace CK.CodeGen
                         if( @this.TryMatchChar( ',' ) ) continue;
                     }
                 }
-                while( @this.TryMatchChar( '[' ) )
-                {
-                    if( arrayDim == null ) arrayDim = new List<int>();
-                    int dim = 0;
-                    while( @this.TryMatchChar( ',' ) )
-                    {
-                        ++dim;
-                        @this.SkipWhiteSpacesAndJSComments();
-                    }
-                    if( !@this.TryMatchChar( ']' ) ) return @this.SetError( "Expected closing ']' array." );
-                    arrayDim.Add( dim );
-                    @this.SkipWhiteSpacesAndJSComments();
-                }
-                type = new TypeName( knownName, genArgs, arrayDim );
+                type = new TypeName( knownName, genArgs );
                 return true;
             }
             return @this.SetError( "Type name." );

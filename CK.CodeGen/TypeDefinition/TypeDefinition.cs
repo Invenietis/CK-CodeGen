@@ -142,7 +142,7 @@ namespace CK.CodeGen
         }
 
         /// <summary>
-        /// To be merged with another type definition, <see cref="Kind"/> and <see cref="TypeName.TypeDefinitionKey"/> must be the same
+        /// To be merged with another type definition, <see cref="Kind"/> and <see cref="TypeName.Key"/> must be the same
         /// otherwise an <see cref="InvalidOperationException"/> is thrown.
         /// </summary>
         /// <param name="other">The other type definition.</param>
@@ -153,9 +153,9 @@ namespace CK.CodeGen
             {
                 throw new InvalidOperationException( $"Unable to merge type '{ToString()}' with '{other}': Kind differ {Kind} vs. {other.Kind}." );
             }
-            if( Name.TypeDefinitionKey != other.Name.TypeDefinitionKey )
+            if( Name.Key != other.Name.Key )
             {
-                throw new InvalidOperationException( $"Unable to merge type '{ToString()}' with '{other}': TypeDefinitionKey differ {Name.TypeDefinitionKey} vs. {other.Name.TypeDefinitionKey}." );
+                throw new InvalidOperationException( $"Unable to merge type '{ToString()}' with '{other}': TypeDefinitionKey differ {Name.Key} vs. {other.Name.Key}." );
             }
 
             Attributes.MergeWith( other.Attributes );

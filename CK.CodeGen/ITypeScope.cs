@@ -16,7 +16,7 @@ namespace CK.CodeGen
         /// Except the <see cref="TypeDefinition.Name"/> that uniquely identifies this type in the <see cref="Namespace"/>,
         /// this type definition can be mutated.
         /// </summary>
-        TypeDefinition TypeDefinition { get; }
+        TypeDefinition Definition { get; }
 
         /// <summary>
         /// Gets a unique incremental identifier for this type.

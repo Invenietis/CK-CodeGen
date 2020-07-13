@@ -12,9 +12,8 @@ namespace CK.CodeGen
     /// </summary>
     public static class TypeScopeExtensions
     {
-
         /// <summary>
-        /// Appends all (or filtered set) constructors from a type (that should be the base type)
+        /// Creates all (or filtered set) constructors from a type (that should be the base type)
         /// to this type wich simply relay the call to the base class.
         /// </summary>
         /// <param name="this">This type scope.</param>
@@ -23,84 +22,43 @@ namespace CK.CodeGen
         /// Optional filter (returning null skips the constructor) and
         /// access protection builder. The default acces protection is "public ".
         /// </param>
-        /// <returns>This type scope to enable fluent syntax.</returns>
-        public static ITypeScope AppendPassThroughConstructors( this ITypeScope @this, Type baseType, Func<ConstructorInfo, string?>? accessBuilder = null )
+        /// <returns>This function scopes created.</returns>
+        public static List<IFunctionScope> CreatePassThroughConstructors( this ITypeScope @this, Type baseType, Func<ConstructorInfo, string?>? accessBuilder = null )
         {
+            List<IFunctionScope> result = new List<IFunctionScope>();
             foreach( var c in baseType.GetConstructors( BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic )
                                       .Where( c => c.IsPublic || c.IsFamily || c.IsFamilyOrAssembly ) )
             {
                 string? access = "public ";
                 if( accessBuilder != null && (access = accessBuilder( c )) == null ) continue;
-                if( access.Length > 0 )
-                {
-                    @this.Append( access );
-                    if( !Char.IsWhiteSpace( access, access.Length - 1 ) ) @this.Space();
-                }
-                var parameters = c.GetParameters();
-                @this.Append( Helper.RemoveGenericParameters( @this.Name ) )
-                     .AppendParameters( parameters );
 
-                if( parameters.Length > 0 )
+                IFunctionScope built = @this.CreateFunction( scope =>
                 {
-                    @this.Append( " : base( " );
-                    bool isFirst = true;
-                    foreach( var p in parameters )
+                    if( access.Length > 0 )
                     {
-                        @this.Append( p.Name );
-                        if( isFirst ) isFirst = false;
-                        else @this.Append( ", " );
+                        scope.Append( access );
+                        if( !Char.IsWhiteSpace( access, access.Length - 1 ) ) scope.Space();
                     }
-                    @this.Append( " )" );
-                }
-                @this.Append( "{}" ).NewLine();
+                    var parameters = c.GetParameters();
+                    scope.Append( Helper.RemoveGenericParameters( @this.Name ) )
+                         .AppendParameters( parameters );
+
+                    if( parameters.Length > 0 )
+                    {
+                        scope.Append( " : base( " );
+                        bool isFirst = true;
+                        foreach( var p in parameters )
+                        {
+                            scope.Append( p.Name );
+                            if( isFirst ) isFirst = false;
+                            else scope.Append( ", " );
+                        }
+                        scope.Append( " )" );
+                    }
+                } );
+                result.Add( built );
             }
-            return @this;
-        }
-
-        /// <summary>
-        /// Appends the method signature with an "override " modifier, adapting the
-        /// original <paramref name="method"/> access protection.
-        /// The method must be virtual (not static nor sealed) and not purely internal.
-        /// This does not open any body for the method nor adds a ; terminator.
-        /// </summary>
-        /// <param name="this">This type scope.</param>
-        /// <param name="method">The method description (from the base class).</param>
-        /// <returns>This type scope to enable fluent syntax.</returns>
-        public static ITypeScope AppendOverrideSignature( this ITypeScope @this, MethodInfo method )
-        {
-            Helper.CheckIsOverridable( method );
-            Helper.DoAppendSignature( @this, AccessProtectionOption.ThrowOnPureInternal, "override ", method );
-            return @this;
-        }
-
-        /// <summary>
-        /// Appends the method signature with an "override sealed " modifier, adapting the
-        /// original <paramref name="method"/> access protection.
-        /// The method must be virtual (not static nor sealed) and not purely internal.
-        /// This does not open any body for the method nor adds a ; terminator.
-        /// </summary>
-        /// <param name="this">This type scope.</param>
-        /// <param name="method">The method description (from the base class).</param>
-        /// <returns>This type scope to enable fluent syntax.</returns>
-        public static ITypeScope AppendSealedOverrideSignature( this ITypeScope @this, MethodInfo method )
-        {
-            Helper.CheckIsOverridable( method );
-            Helper.DoAppendSignature( @this, AccessProtectionOption.ThrowOnPureInternal, "override sealed ", method );
-            return @this;
-        }
-
-        /// <summary>
-        /// Appends the method signature.
-        /// This does not open any body for the method nor adds a ; terminator.
-        /// </summary>
-        /// <param name="this">This type scope.</param>
-        /// <param name="method">The method description.</param>
-        /// <param name="access">Access protection option.</param>
-        /// <returns>This type scope to enable fluent syntax.</returns>
-        public static ITypeScope AppendSignature( this ITypeScope @this, MethodInfo method, AccessProtectionOption access = AccessProtectionOption.All )
-        {
-            Helper.DoAppendSignature( @this, access, String.Empty, method );
-            return @this;
+            return result;
         }
 
         /// <summary>

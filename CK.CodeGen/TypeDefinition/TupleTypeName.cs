@@ -40,10 +40,11 @@ namespace CK.CodeGen
             /// Writes this Field into the provided StringBuilder.
             /// </summary>
             /// <param name="b">The target.</param>
+            /// <param name="typeNameReplacer">Optional naked type name replacer function.</param>
             /// <returns>The StringBuilder to enable fluent syntax.</returns>
-            public StringBuilder Write( StringBuilder b )
+            public StringBuilder Write( StringBuilder b, Func<string, string>? typeNameReplacer = null )
             {
-                FieldType.Write( b );
+                FieldType.Write( b, typeNameReplacer );
                 if( !String.IsNullOrEmpty( FieldName ) )
                 {
                     b.Append( ' ' );
@@ -72,11 +73,12 @@ namespace CK.CodeGen
         /// Writes this ExtendedTypeName into the provided StringBuilder.
         /// </summary>
         /// <param name="b">The target.</param>
+        /// <param name="typeNameReplacer">Optional naked type name replacer function.</param>
         /// <returns>The StringBuilder to enable fluent syntax.</returns>
-        public StringBuilder Write( StringBuilder b )
+        public StringBuilder Write( StringBuilder b, Func<string, string>? typeNameReplacer = null )
         {
             b.Append( '(' );
-            foreach( var f in Fields ) f.Write( b );
+            foreach( var f in Fields ) f.Write( b, typeNameReplacer );
             return b.Append( ')' );
         }
 

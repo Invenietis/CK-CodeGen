@@ -30,7 +30,7 @@ namespace CK.CodeGen
         /// </summary>
         /// <param name="name">The name of the type to find.</param>
         /// <returns>The type or null if not found.</returns>
-        ITypeScope FindType( string name );
+        ITypeScope? FindType( string name );
 
         /// <summary>
         /// Gets the types that this scope contains.
