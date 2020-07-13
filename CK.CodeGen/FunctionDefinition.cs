@@ -292,14 +292,61 @@ namespace CK.CodeGen
         /// <summary>
         /// Tries to parse a method definition.
         /// </summary>
-        /// <param name="s">The string to parse.</param>
+        /// <param name="declaration">The string to parse.</param>
         /// <param name="m">The non null method definition on success.</param>
         /// <returns>True on success, false if this cannt be parsed.</returns>
-        public static bool TryParse( string s, [NotNullWhen(true)]out FunctionDefinition? m )
+        public static bool TryParse( string declaration, [NotNullWhen(true)]out FunctionDefinition? m )
         {
-            if( s == null ) throw new ArgumentNullException( nameof( s ) );
-            var h = new StringMatcher( s );
-            return h.MatchMethodDefinition( out m, out bool _ );
+            if( declaration == null ) throw new ArgumentNullException( nameof( declaration ) );
+            return new StringMatcher( declaration ).MatchMethodDefinition( out m, out bool _ );
+        }
+
+        /// <summary>
+        /// Tries to parse a method definition.
+        /// </summary>
+        /// <param name="declaration">The string to parse.</param>
+        /// <param name="fDef">The non null method definition on success.</param>
+        /// <param name="bodyStart">
+        /// On output, contains the start of the function
+        /// body (without opening '{' or with a "=>" lambda token).
+        /// </param>
+        /// <returns>True on success, false if this cannt be parsed.</returns>
+        public static bool TryParse( string declaration, [NotNullWhen(true)]out FunctionDefinition? fDef, out string? bodyStart )
+        {
+            return DoParse( declaration, out fDef, out bodyStart, false );
+        }
+
+        /// <summary>
+        /// Parses a method definition or throws if unable to parse.
+        /// </summary>
+        /// <param name="declaration">The string to parse.</param>
+        /// <param name="fDef">The non null method definition on success.</param>
+        /// <param name="bodyStart">
+        /// On output, contains the start of the function
+        /// body (without opening '{' or with a "=>" lambda token).
+        /// </param>
+        public static void Parse( string declaration, out FunctionDefinition fDef, out string? bodyStart )
+        {
+            DoParse( declaration, out fDef!, out bodyStart, true );
+        }
+
+        static bool DoParse( string declaration, [NotNullWhen(true)]out FunctionDefinition? fDef, out string? bodyStart, bool throwOnError )
+        {
+            if( declaration == null ) throw new ArgumentNullException( nameof( declaration ) );
+            bodyStart = null;
+            var m = new StringMatcher( declaration );
+            m.SkipWhiteSpacesAndJSComments();
+            if( !m.MatchMethodDefinition( out fDef, out bool hasCodeOpener ) )
+            {
+                if( throwOnError ) throw new InvalidOperationException( $"Error: {m.ErrorMessage} Unable to parse function or constructor declaration {declaration}" );
+                return false;
+            }
+            Debug.Assert( fDef != null );
+            if( hasCodeOpener )
+            {
+                bodyStart = declaration.Substring( m.StartIndex ).TrimEnd();
+            }
+            return true;
         }
     }
 }

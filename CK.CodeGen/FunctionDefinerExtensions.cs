@@ -26,5 +26,27 @@ namespace CK.CodeGen
             return @this.CreateFunction( t => t.Append( header ) );
         }
 
+        /// <summary>
+        /// Finds or creates a function or a constructor inside this scope.
+        /// There must not be any ': this( ... )' or ': base( ... )' clause or any start
+        /// of the function body otherwise an <see cref="ArgumentException"/> is thrown.
+        /// </summary>
+        /// <param name="this">This scope.</param>
+        /// <param name="declaration">The header of the function.</param>
+        /// <returns>The new or existing function scope.</returns>
+        public static IFunctionScope FindOrCreateFunction( this IFunctionDefinerScope @this, string declaration )
+        {
+            FunctionDefinition.Parse( declaration, out var fDef, out string? bodyStart );
+            if( fDef.ReturnType == null && fDef.ThisOrBaseConstructorCall != FunctionDefinition.CallConstructor.None )
+            {
+                throw new ArgumentException( $"Constructor must not specify a ': this( ... )' or ': base( ... )' clause when using FindOrCreateFunction: {declaration}", nameof( declaration ) );
+            }
+            if( bodyStart != null )
+            {
+                throw new ArgumentException( $"Function must not specify the start of its body when using FindOrCreateFunction: {declaration}", nameof( declaration ) );
+            }
+            return @this.FindFunction( fDef.Key, false ) ?? @this.CreateFunction( fDef );
+        }
+
     }
 }

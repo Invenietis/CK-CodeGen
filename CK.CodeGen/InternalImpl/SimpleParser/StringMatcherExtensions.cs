@@ -231,7 +231,7 @@ namespace CK.CodeGen
             {
                 if( !@this.MatchTypeName( out methodName ) ) return false;
                 @this.SkipWhiteSpacesAndJSComments();
-                if( !@this.MatchChar( '(' ) && !(isIndexer = @this.TryMatchChar( '[' ) ) ) return @this.SetError( "Expected '[' or '('." ); ;
+                if( !@this.MatchChar( '(' ) && !(isIndexer = @this.TryMatchChar( '[' ) ) ) return @this.SetError( "Expected '[' or '('." ); 
             }
             Debug.Assert( methodName != null );
             var buffer = new StringBuilder();
@@ -367,14 +367,22 @@ namespace CK.CodeGen
 
         static bool MatchWhereConstraints( this StringMatcher @this, out bool hasCodeOpener, out List<TypeParameterConstraint>? wheres )
         {
+            hasCodeOpener = false;
             wheres = null;
-            while( !(hasCodeOpener = @this.TryMatchChar( '{' )) && !@this.IsEnd )
+            while( !@this.IsEnd && !(hasCodeOpener = (@this.Head == '{' || @this.Head == '=')) )
             {
+                @this.SkipWhiteSpacesAndJSComments();
                 if( !@this.MatchTypeParameterConstraint( out var c ) ) return false;
                 if( wheres == null ) wheres = new List<TypeParameterConstraint>();
                 else if( wheres.Any( x => x.ParameterName == c.ParameterName ) ) return @this.SetError( $"Duplicate where constraint: where {c.ParameterName}." );
                 wheres.Add( c );
                 @this.SkipWhiteSpacesAndJSComments();
+            }
+            if( hasCodeOpener )
+            {
+                // If we stopped on '{', forwards the head.
+                @this.TryMatchChar( '{' );
+                hasCodeOpener = !@this.IsEnd;
             }
             return true;
         }

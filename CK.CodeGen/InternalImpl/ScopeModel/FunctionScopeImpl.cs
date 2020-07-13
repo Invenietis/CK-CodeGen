@@ -62,17 +62,10 @@ namespace CK.CodeGen
             // We store the declaration and clears the code buffer.
             var declaration = CodePart.Build( b ).ToString();
             CodePart.Parts.Clear();
-            var m = new StringMatcher( declaration );
-            m.SkipWhiteSpacesAndJSComments();
-            if( !m.MatchMethodDefinition( out _fDef, out bool hasCodeOpener ) )
+            FunctionDefinition.Parse( declaration, out _fDef, out string? bodyStart );
+            if( bodyStart != null )
             {
-                throw new InvalidOperationException( $"Error: {m.ErrorMessage} Unable to parse function or constructor declaration {declaration}" );
-            }
-            Debug.Assert( _fDef != null );
-            if( hasCodeOpener )
-            {
-                m.MatchWhiteSpaces( 0 );
-                CodePart.Parts.Add( declaration.Substring( m.StartIndex ) );
+                CodePart.Parts.Add( bodyStart );
             }
             SetName( _fDef.Key );
         }

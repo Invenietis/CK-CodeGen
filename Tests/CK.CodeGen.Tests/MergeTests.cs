@@ -25,12 +25,12 @@ namespace CK.CodeGen.Tests
             c1.Global.EnsureUsing( "A" );
 
             var ns1 = c1.Global.FindOrCreateNamespace( "Sub" );
-            var t1 = ns1.CreateType( h => h.Append( "class C { //t1-Code" ).NewLine() );
+            var t1 = ns1.CreateType( h => h.Append( "class C {//t1-Code" ).NewLine() );
             t1.Append( "//t1-MoreCode" );
 
             c2.Global.EnsureUsing( "B" );
             var ns2 = c2.Global.FindOrCreateNamespace( "Sub" );
-            var t2 = ns2.CreateType( "class C { //t2-Code" + Environment.NewLine );
+            var t2 = ns2.CreateType( "class C {//t2-Code" + Environment.NewLine );
             t2.Append( "//t2-MoreCode" );
 
             c1.MergeWith( c2 );

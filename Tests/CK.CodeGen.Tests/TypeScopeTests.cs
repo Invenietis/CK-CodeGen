@@ -47,6 +47,34 @@ namespace CK.CodeGen.Tests
             t.Invoking( x => x.CreateFunction( def ) ).Should().Throw<ArgumentException>();
         }
 
+        [Test]
+        public void using_FindOrCreateFunction_on_ctor_forbids_this_or_base_clause()
+        {
+            var t = CreateTypeScope();
+            t.Invoking( x => x.FindOrCreateFunction( "C() : this()" ) ).Should().Throw<ArgumentException>();
+            t.Invoking( x => x.FindOrCreateFunction( "C( int a ) : base( a )" ) ).Should().Throw<ArgumentException>();
+        }
+
+        [Test]
+        public void using_FindOrCreateFunction_on_functions_forbids_any_body_start()
+        {
+            var t = CreateTypeScope();
+            t.Invoking( x => x.FindOrCreateFunction( "int M() => 3;" ) ).Should().Throw<ArgumentException>();
+            t.Invoking( x => x.FindOrCreateFunction( "int M( int a ) { // some code" ) ).Should().Throw<ArgumentException>();
+        }
+
+        [Test]
+        public void using_CreateFunction_on_functions_handles_body_start()
+        {
+            var t = CreateTypeScope();
+            var f1 = t.CreateFunction( "int M() => 3;" );
+            f1.ToString().Should().Contain( "=> 3;" );
+
+            var f2 = t.CreateFunction( "int M( int a ) { int a; (on a new line)." );
+            f2.ToString().Should().Contain( "int a;" );
+        }
+
+
         [TestCase( "public C()" )]
         [TestCase( "public C() : base( 3 )" )]
         [TestCase( "public C( X a, Y b ) : this( a*a , typeof(T) )" )]

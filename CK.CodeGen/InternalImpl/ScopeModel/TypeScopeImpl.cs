@@ -73,7 +73,6 @@ namespace CK.CodeGen
             _typeDef = typeDef;
             if( hasCodeOpener )
             {
-                m.MatchWhiteSpaces( 0 );
                 CodePart.Parts.Add( declaration.Substring( m.StartIndex ) );
             }
             SetName( _typeDef.Name.ToString() );
