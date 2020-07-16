@@ -291,6 +291,7 @@ namespace CK.CodeGen
 
         /// <summary>
         /// Tries to parse a method definition.
+        /// Note that there must be no start of the function body in the declaration since it is skipped by this overload.
         /// </summary>
         /// <param name="declaration">The string to parse.</param>
         /// <param name="m">The non null method definition on success.</param>
@@ -302,7 +303,7 @@ namespace CK.CodeGen
         }
 
         /// <summary>
-        /// Tries to parse a method definition.
+        /// Tries to parse a method definition, returning the remaining potential start of the body if any.
         /// </summary>
         /// <param name="declaration">The string to parse.</param>
         /// <param name="fDef">The non null method definition on success.</param>
@@ -318,16 +319,33 @@ namespace CK.CodeGen
 
         /// <summary>
         /// Parses a method definition or throws if unable to parse.
+        /// Note that there must be no start of the function body in the declaration since it is skipped by this overload.
         /// </summary>
         /// <param name="declaration">The string to parse.</param>
-        /// <param name="fDef">The non null method definition on success.</param>
         /// <param name="bodyStart">
         /// On output, contains the start of the function
         /// body (without opening '{' or with a "=>" lambda token).
         /// </param>
-        public static void Parse( string declaration, out FunctionDefinition fDef, out string? bodyStart )
+        /// <returns>The method definition.</returns>
+        public static FunctionDefinition Parse( string declaration )
         {
-            DoParse( declaration, out fDef!, out bodyStart, true );
+            DoParse( declaration, out var fDef, out _, true );
+            return fDef!;
+        }
+
+        /// <summary>
+        /// Parses a method definition, returning the remaining potential start of the body if any, or throws if unable to parse.
+        /// </summary>
+        /// <param name="declaration">The string to parse.</param>
+        /// <param name="bodyStart">
+        /// On output, contains the start of the function
+        /// body (without opening '{' or with a "=>" lambda token).
+        /// </param>
+        /// <returns>The method definition.</returns>
+        public static FunctionDefinition Parse( string declaration, out string? bodyStart )
+        {
+            DoParse( declaration, out var fDef, out bodyStart, true );
+            return fDef!;
         }
 
         static bool DoParse( string declaration, [NotNullWhen(true)]out FunctionDefinition? fDef, out string? bodyStart, bool throwOnError )

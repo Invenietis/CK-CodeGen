@@ -36,7 +36,7 @@ namespace CK.CodeGen
         /// <returns>The new or existing function scope.</returns>
         public static IFunctionScope FindOrCreateFunction( this IFunctionDefinerScope @this, string declaration )
         {
-            FunctionDefinition.Parse( declaration, out var fDef, out string? bodyStart );
+            var fDef = FunctionDefinition.Parse( declaration, out string? bodyStart );
             if( fDef.ReturnType == null && fDef.ThisOrBaseConstructorCall != FunctionDefinition.CallConstructor.None )
             {
                 throw new ArgumentException( $"Constructor must not specify a ': this( ... )' or ': base( ... )' clause when using FindOrCreateFunction: {declaration}", nameof( declaration ) );

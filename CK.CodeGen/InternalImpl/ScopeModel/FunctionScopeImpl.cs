@@ -62,7 +62,7 @@ namespace CK.CodeGen
             // We store the declaration and clears the code buffer.
             var declaration = CodePart.Build( b ).ToString();
             CodePart.Parts.Clear();
-            FunctionDefinition.Parse( declaration, out _fDef, out string? bodyStart );
+            _fDef = FunctionDefinition.Parse( declaration, out string? bodyStart );
             if( bodyStart != null )
             {
                 CodePart.Parts.Add( bodyStart );
