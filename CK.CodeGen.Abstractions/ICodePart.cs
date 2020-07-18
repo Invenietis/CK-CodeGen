@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 
 namespace CK.CodeGen.Abstractions
@@ -14,10 +15,9 @@ namespace CK.CodeGen.Abstractions
         T PartOwner { get; }
 
         /// <summary>
-        /// Collects the whole code of this part into a <see cref="StringBuilder"/>.
+        /// Collects the whole code of this part into a string collector.
         /// </summary>
-        /// <param name="b">The string builder to write to.</param>
-        /// <returns>The string builder.</returns>
-        StringBuilder BuildPart( StringBuilder b );
+        /// <param name="collector">The string collector where strings will be sent.</param>
+        void BuildPart( Action<string> collector );
     }
 }

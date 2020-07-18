@@ -6,7 +6,7 @@ using System.Data.SqlClient;
 using System.Reflection;
 using System.Linq;
 using FluentAssertions;
-using CK.CodeGen.Abstractions;
+using CK.CodeGen;
 
 namespace CK.CodeGen.Roslyn.Tests
 {
@@ -58,15 +58,20 @@ namespace CK.CodeGen.Roslyn.Tests
              .EnsureUsing( t.Namespace );
 
             var c = b.CreateType( h => h.Append( "class Specialized : " ).AppendCSharpName( t ) );
-            c.AppendPassThroughConstructors( t )
-             .AppendOverrideSignature( t.GetMethod( "Simple1" ) ).Append( "=> 3712;" ).NewLine()
-             .AppendOverrideSignature( t.GetMethod( "VoidMethod" ) ).Append( "{}" ).NewLine()
-             .AppendOverrideSignature( t.GetMethod( "Simple2", BindingFlags.Instance | BindingFlags.NonPublic ) )
-                .Append( "=> x + '-' + g.ToString();" ).NewLine()
-             .AppendOverrideSignature( t.GetMethod( "Simple3", BindingFlags.Instance | BindingFlags.NonPublic ) )
-                .Append( "{ g = Guid.NewGuid();" ).NewLine()
+            c.CreatePassThroughConstructors( t );
+
+            c.CreateOverride( t.GetMethod( "Simple1" ) )
+             .Append( "=> 3712;" );
+
+            c.CreateOverride( t.GetMethod( "VoidMethod" ) );
+
+            c.CreateOverride( t.GetMethod( "Simple2", BindingFlags.Instance | BindingFlags.NonPublic ) )
+                .Append( "=> x + '-' + g.ToString();" );
+
+            c.CreateOverride( t.GetMethod( "Simple3", BindingFlags.Instance | BindingFlags.NonPublic ) )
+                .Append( "g = Guid.NewGuid();" ).NewLine()
                 .Append( @"x = ""Hello World!"" + Simple2( ""YES"", g );" ).NewLine()
-                .Append( "return this; }" ).NewLine();
+                .Append( "return this;" );
 
             Assembly a = TestHelper.CreateAssembly( workspace.GetGlobalSource(), workspace.AssemblyReferences );
 
@@ -94,10 +99,11 @@ namespace CK.CodeGen.Roslyn.Tests
 
             b.EnsureUsing( t.Namespace );
             var c = b.CreateType( header => header.Append( "class Specialized<T> : " ).AppendCSharpName( t ).NewLine() );
-            c.AppendOverrideSignature( t.GetMethod( "Simple1" ) )
-                .Append( "{ if (arg.Equals(default(T))) throw new System.ArgumentException();" ).NewLine()
-                .Append( "return default(TResult); }" )
-              .AppendOverrideSignature( t.GetMethod( "Simple2" ) )
+            c.CreateOverride( t.GetMethod( "Simple1" ) )
+                .Append( "if (arg.Equals(default(T))) throw new System.ArgumentException();" ).NewLine()
+                .Append( "return default(TResult);" );
+
+            c.CreateOverride( t.GetMethod( "Simple2" ) )
                 .Append( "=> arg2 is T1;" );
 
             Assembly a = TestHelper.CreateAssembly( workspace.GetGlobalSource(), workspace.AssemblyReferences );

@@ -1,15 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
+  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.52" />
+  <Import Project="..\Common\Shared.props" />
+
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1</TargetFrameworks>
     <Description></Description>
   </PropertyGroup>
-  <Import Project="..\Common\Shared.props" />
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.3.0" />
-    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="0.0.0--02fzo4z-local+v11.1.2" />
-    <PackageReference Include="CK.WeakAssemblyNameResolver" Version="0.0.0--02fykbu-local+v0.5.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="CK.ActivityMonitor.SimpleSender" />
+    <PackageReference Include="CK.WeakAssemblyNameResolver" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CK.CodeGen.Abstractions\CK.CodeGen.Abstractions.csproj" />
+    <ProjectReference Include="..\CK.CodeGen\CK.CodeGen.csproj" />
   </ItemGroup>
 </Project>

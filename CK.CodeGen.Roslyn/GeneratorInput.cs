@@ -1,4 +1,4 @@
-using CK.CodeGen.Abstractions;
+using CK.CodeGen;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System;

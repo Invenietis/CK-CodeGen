@@ -7,16 +7,17 @@ using System.Text;
 using FluentAssertions;
 using System.Threading.Tasks;
 using CK.Text;
-using CK.CodeGen.Abstractions;
+using CK.CodeGen;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using NUnit.Framework.Internal;
 
 namespace CK.CodeGen.Roslyn.Tests
 {
     [TestFixture]
     public class CompileToSourceStringTests
     {
-
         [Test]
-        public void skipCompilation_tests()
+        public void parsing_only_tests()
         {
             var workspace = CodeWorkspace.Create();
             var global = workspace.Global;
@@ -28,9 +29,26 @@ namespace CK.CodeGen.Roslyn.Tests
             a.Should().NotBeNull();
 
             var g = new CodeGenerator( CodeWorkspace.Factory );
-            var r = g.Generate( workspace, null, true );
+            var r = g.Generate( workspace, null, skipCompilation: true );
             r.Success.Should().BeTrue();
             r.Sources.Should().HaveCount( 1 );
+        }
+
+        [Test]
+        public void simple_generation_or_parsing_code_string()
+        {
+            {
+                var r = CodeGenerator.Generate( "class P {}", null );
+                r.Success.Should().BeTrue();
+                r.Sources.Should().HaveCount( 1 );
+                r.ParseDiagnostics.Should().BeEmpty();
+            }
+            {
+                var r = CodeGenerator.Generate( "class P }", null );
+                r.Success.Should().BeFalse();
+                r.Sources.Should().HaveCount( 1 );
+                r.ParseDiagnostics.Should().NotBeEmpty();
+            }
         }
 
         [Test]
@@ -122,7 +140,7 @@ namespace CK.CodeGen.Roslyn.Tests
                 typeof(Dictionary<string,int>),
             }; " )
                 .NewLine()
-                .Append( "var rewrite = " ).AppendCollection( array ).Append( ";" ).NewLine()
+                .Append( "var rewrite = " ).AppendArray( array ).Append( ";" ).NewLine()
                 .Append( @"
                    var diff = array
                                .Select( ( o, idx ) => new { O = o, T = rewrite[idx], I = idx } )
@@ -149,5 +167,90 @@ namespace CK.CodeGen.Roslyn.Tests
             diff.Should().BeEmpty();
         }
 
+        public class Nested<T>
+        {
+            public Nested() { }
+
+            int PrivateVal( int i ) => i * i;
+
+            int PrivateVal( string s ) => s.Length;
+
+            int PrivateProp => 37132;
+
+            public event EventHandler<int> Event;
+        }
+
+        [Test]
+        public void writing_any_MemberInfo_uses_the_Module()
+        {
+            var workspace = CodeWorkspace.Create();
+            workspace.EnsureAssemblyReference( typeof( CompileToSourceStringTests ), typeof(MethodInfo) );
+
+            var t = workspace.Global.CreateType( "public class MemberFinder" );
+            t.Namespace.EnsureUsing( "System.Reflection" );
+
+            var thisTestMethod = typeof( CompileToSourceStringTests ).GetMethod( "writing_any_MemberInfo_uses_the_Module" );
+            var ValIGen = typeof( Nested<> ).GetMethod( "Val", new[] { typeof( int ) } );
+            var ValSGen = typeof( Nested<> ).GetMethod( "Val", new[] { typeof( string ) } );
+            var PropGen = typeof( Nested<> ).GetProperty( "Prop" );
+            var EventGen = typeof( Nested<> ).GetEvent( "Event" );
+            var CtorGen = typeof( Nested<> ).GetConstructor( Type.EmptyTypes );
+
+            var ValI = typeof( Nested<TestAttribute> ).GetMethod( "Val", new[] { typeof( int ) } );
+            var ValS = typeof( Nested<Comparer<List<KeyValuePair<int, byte>>>> ).GetMethod( "Val", new[] { typeof( string ) } );
+            var Prop = typeof( Nested<Test> ).GetProperty( "Prop" );
+            var Event = typeof( Nested<string> ).GetEvent( nameof(Nested<string>.Event) );
+            var Ctor = typeof( Nested<List> ).GetConstructor( Type.EmptyTypes );
+
+            t.Append( "public readonly static MethodInfo ThisTestMethod = " ).Append( thisTestMethod ).Append( ";" );
+
+            t.Append( "public readonly static MethodInfo ValIGen = " ).Append( ValIGen ).Append( ";" );
+            t.Append( "public readonly static MethodInfo ValSGen = " ).Append( ValSGen ).Append( ";" );
+            t.Append( "public readonly static PropertyInfo PropGen = " ).Append( PropGen ).Append( ";" );
+            t.Append( "public readonly static EventInfo EventGen = " ).Append( EventGen ).Append( ";" );
+            t.Append( "public readonly static ConstructorInfo CtorGen = " ).Append( CtorGen ).Append( ";" );
+
+            t.Append( "public readonly static MethodInfo ValI = " ).Append( ValI ).Append( ";" );
+            t.Append( "public readonly static MethodInfo ValS = " ).Append( ValS ).Append( ";" );
+            t.Append( "public readonly static PropertyInfo Prop = " ).Append( Prop ).Append( ";" );
+            t.Append( "public readonly static EventInfo Event = " ).Append( Event ).Append( ";" );
+            t.Append( "public readonly static ConstructorInfo Ctor = " ).Append( Ctor ).Append( ";" );
+
+            Assembly a = TestHelper.CreateAssembly( workspace.GetGlobalSource(), workspace.AssemblyReferences );
+            Type memberFinder = a.ExportedTypes.Single( t => t.Name == "MemberFinder" );
+
+            var eThisTestMethod = (MethodInfo)memberFinder.GetField( "ThisTestMethod" ).GetValue( null );
+            eThisTestMethod.Should().BeSameAs( thisTestMethod );
+
+            var eValIGen = (MethodInfo)memberFinder.GetField( "ValIGen" ).GetValue( null );
+            eValIGen.Should().BeSameAs( ValIGen );
+
+            var eValSGen = (MethodInfo)memberFinder.GetField( "ValSGen" ).GetValue( null );
+            eValSGen.Should().BeSameAs( ValSGen );
+
+            var ePropGen = (PropertyInfo)memberFinder.GetField( "PropGen" ).GetValue( null );
+            ePropGen.Should().BeSameAs( PropGen );
+
+            var eEventGen = (EventInfo)memberFinder.GetField( "EventGen" ).GetValue( null );
+            eEventGen.Should().BeSameAs( EventGen );
+
+            var eCtorGen = (ConstructorInfo)memberFinder.GetField( "CtorGen" ).GetValue( null );
+            eCtorGen.Should().BeSameAs( CtorGen );
+
+            var eValI = (MethodInfo)memberFinder.GetField( "ValI" ).GetValue( null );
+            eValI.Should().BeSameAs( ValI );
+
+            var eValS = (MethodInfo)memberFinder.GetField( "ValS" ).GetValue( null );
+            eValS.Should().BeSameAs( ValS );
+
+            var eProp = (PropertyInfo)memberFinder.GetField( "Prop" ).GetValue( null );
+            eProp.Should().BeSameAs( Prop );
+
+            var eEvent = (EventInfo)memberFinder.GetField( "Event" ).GetValue( null );
+            eEvent.Should().BeSameAs( Event );
+
+            var eCtor = (ConstructorInfo)memberFinder.GetField( "Ctor" ).GetValue( null );
+            eCtor.Should().BeSameAs( Ctor );
+        }
     }
 }

@@ -1,5 +1,5 @@
 using System;
-using CK.CodeGen.Abstractions;
+using CK.CodeGen;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Reflection;
@@ -129,10 +129,10 @@ namespace CK.CodeGen.Tests
 
             var source = workspace.GetGlobalSource();
             Normalize( source ).Should().Be( Normalize(
-                @"using INT = System.UInt8;
-namespace A
+                @"namespace A
 {
-    namespace X
+using INT = System.UInt8;
+namespace X
     {
         namespace a { }
         namespace b { }
@@ -147,11 +147,12 @@ namespace A
             ExtractNamespaces( global ).Should().HaveCount(2).And.OnlyContain( x => x == "INT" || x == "CNode" );
             ExtractNamespaces( nAXa ).Should().OnlyContain( x => x == "CNode" );
 
+            global.FindOrCreateNamespace( "ToShowTheTopLevelUsingsCopy" );
             source = workspace.GetGlobalSource();
             Normalize( source ).Should().Be( Normalize(
-                @"using INT = System.UInt8;
-                  using CNode = SNode<string,bool>;
-                  namespace A {
+                @"namespace A {
+                    using INT = System.UInt8;
+                    using CNode = SNode<string,bool>;
                     namespace X {
                       namespace a {
                         using CNode = SNode<STRING, BOOL>;
@@ -160,7 +161,12 @@ namespace A
                       namespace b {
                       }
                     }
-                  }"
+                  }
+namespace ToShowTheTopLevelUsingsCopy
+{
+                    using INT = System.UInt8;
+                    using CNode = SNode<string,bool>;
+}"
                 ) );
         }
 

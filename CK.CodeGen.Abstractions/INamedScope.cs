@@ -23,7 +23,7 @@ namespace CK.CodeGen.Abstractions
         /// The parent code scope.
         /// This is null for a root <see cref="INamespaceScope"/>.
         /// </summary>
-        INamedScope Parent { get; }
+        INamedScope? Parent { get; }
 
         /// <summary>
         /// The name of this scope: it is the leaf of the <see cref="FullName"/>.
@@ -38,6 +38,14 @@ namespace CK.CodeGen.Abstractions
         string FullName { get; }
 
         /// <summary>
+        /// Collects the whole code into a string collector, optionnaly closing the
+        /// scope with a trailing '}' or leaving it opened.
+        /// </summary>
+        /// <param name="collector">The string collector to write to.</param>
+        /// <param name="closeScope">True to close the scope.</param>
+        void Build( Action<string> collector, bool closeScope );
+
+        /// <summary>
         /// Collects the whole code into a <see cref="StringBuilder"/>, optionnaly closing the
         /// scope with a trailing '}' or leaving it opened.
         /// </summary>
@@ -46,12 +54,11 @@ namespace CK.CodeGen.Abstractions
         /// <returns>The string builder.</returns>
         StringBuilder Build( StringBuilder b, bool closeScope );
 
-
         /// <summary>
         /// Gets a memory associated to this scope.
         /// It can contain any data that need to be associated to this scope.
         /// </summary>
-        IDictionary<object, object> Memory { get; }
+        IDictionary<object, object?> Memory { get; }
 
     }
 }

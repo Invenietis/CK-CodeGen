@@ -13,7 +13,7 @@ namespace CK.CodeGen.Abstractions
         /// Initializes a new <see cref="StringCodeWriter"/>.
         /// </summary>
         /// <param name="b">Optional existing StringBuilder. A new one is created by default.</param>
-        public StringCodeWriter( StringBuilder b = null )
+        public StringCodeWriter( StringBuilder? b = null )
         {
             StringBuilder = b ?? new StringBuilder();
         }
