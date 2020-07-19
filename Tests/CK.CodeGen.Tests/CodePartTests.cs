@@ -47,6 +47,19 @@ namespace CK.CodeGen.Tests
         }
 
         [Test]
+        public void Function_can_use_lambda_definition()
+        {
+            var t = CodeWorkspace.Create().Global.CreateType( "class C" );
+            var block = t.CreateFunction( "int B()" );
+            block.Append( " " ).Append( " return 3;" );
+            block.ToString().Replace( "\r", "" ).Replace( "\n", "" ).Should().Be( "int B(){  return 3;}" );
+
+            var lambda = t.CreateFunction( "int L()" );
+            lambda.Append( " " ).Append( " => 3;" );
+            lambda.ToString().Replace( "\r", "" ).Replace( "\n", "" ).Should().Be( "int L()  => 3;" );
+        }
+
+        [Test]
         public void playing_with_parts()
         {
             INamespaceScope g = CodeWorkspace.Create().Global;

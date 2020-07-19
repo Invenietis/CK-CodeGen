@@ -35,7 +35,7 @@
 
   <!--<StandardProperties>-->
   <PropertyGroup>
-    <RepositoryUrl>https://github.com/Invenietis/CK-CodeGen.git</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Invenietis/CK-CodeGen</RepositoryUrl>
     <ProductName>CK</ProductName>
     <Company>Signature Code</Company>
     <Authors>Signature Code</Authors>
