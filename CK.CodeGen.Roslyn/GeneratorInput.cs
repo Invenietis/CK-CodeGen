@@ -42,7 +42,7 @@ namespace CK.CodeGen
             ICodeWorkspace code,
             IEnumerable<ICodeGeneratorModule> modules,
             bool addRuntimeAssembly,
-            CSharpParseOptions options )
+            CSharpParseOptions? options )
         {
             Debug.Assert( workspaceFactory != null );
             var assemblies = new HashSet<Assembly>();
@@ -67,7 +67,7 @@ namespace CK.CodeGen
             return new GeneratorInput( assemblies, trees );
         }
 
-        static void CombineWorkspace( HashSet<Assembly> assemblies, List<SyntaxTree> trees, ICodeWorkspace c, CSharpParseOptions options )
+        static void CombineWorkspace( HashSet<Assembly> assemblies, List<SyntaxTree> trees, ICodeWorkspace c, CSharpParseOptions? options )
         {
             foreach( var a in c.AssemblyReferences ) assemblies.Add( a );
             var s = c.GetGlobalSource();

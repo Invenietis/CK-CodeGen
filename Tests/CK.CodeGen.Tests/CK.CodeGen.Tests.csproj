@@ -6,6 +6,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>False</IsPackable>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   
   <ItemGroup>

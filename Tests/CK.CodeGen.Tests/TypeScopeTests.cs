@@ -20,7 +20,7 @@ namespace CK.CodeGen.Tests
             var f = t.CreateFunction( header );
             f.Should().NotBeNull();
             f.IsConstructor.Should().Be( returnType == null );
-            if( !f.IsConstructor ) f.Definition.ReturnType.ToString().Should().Be( returnType );
+            if( !f.IsConstructor ) f.Definition.ReturnType!.ToString().Should().Be( returnType );
         }
 
 

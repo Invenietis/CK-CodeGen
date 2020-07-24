@@ -28,7 +28,7 @@ namespace CK.CodeGen.Tests
             var t = global.CreateType( "public class Derived : Base { truc" );
             t.Definition.BaseTypes.Add( new ExtendedTypeName( "Name.Space.IOther" ) );
             var s = global.ToString();
-            s = s.Replace( Environment.NewLine, "" ).Replace( " ", "" );
+            s = s!.Replace( Environment.NewLine, "" ).Replace( " ", "" );
             s.Should().EndWith( "Name.Space.IOther{truc}" );
         }
     }

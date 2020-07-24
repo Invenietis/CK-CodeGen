@@ -66,6 +66,9 @@ namespace CK.CodeGen.Tests
         [TestCase( typeof( Another.I<> ), "CK.CodeGen.Tests.CodeWriterTests.Another.I<T3>" )]
         [TestCase( typeof( G<>.Nested ), "CK.CodeGen.Tests.CodeWriterTests.G<T>.Nested" )]
         [TestCase( typeof( A<>.C<> ), "CK.CodeGen.Tests.CodeWriterTests.A<TB>.C<TD>" )]
+        [TestCase( typeof( int[] ), "int[]" )]
+        [TestCase( typeof( Byte[,,,] ), "byte[,,,]" )]
+        [TestCase( typeof( ValueTuple<int,string> ), "(int,string)" )]
         public void ToCSharpName_tests( Type type, string expected )
         {
             var writer = new StringCodeWriter( new StringBuilder() );
@@ -73,9 +76,22 @@ namespace CK.CodeGen.Tests
             Assert.AreEqual( expected, writer.ToString() );
         }
 
+        [Test]
+        public void ToCSharpName_NullableTypeTree_tests()
+        {
+            //var writer = new StringCodeWriter( new StringBuilder() );
+            //var info = typeof( G<Action>.Nested ).GetProperty( "Prop" )!.GetNullableTypeInfo();
+
+            //writer.AppendCSharpName( info );
+            //writer.ToString().Should().Be( "CK.CodeGen.Tests.CodeWriterTests.A<int?>.C<string>?" );
+        }
+
         public class G<T>
         {
-            public class Nested { }
+            public class Nested
+            {
+                public A<int?>.C<string>? Prop { get; set; }
+            }
         }
 
         public class A<TB>

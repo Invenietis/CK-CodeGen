@@ -26,14 +26,14 @@ namespace CK.CodeGen
         /// <summary>
         /// The loaded assembly (optional).
         /// </summary>
-        public readonly Assembly Assembly;
+        public readonly Assembly? Assembly;
 
         /// <summary>
         /// List of <see cref="AssemblyLoadConflict"/> that occured while
         /// resolving assembly dependencies.
         /// Defaults to null.
         /// </summary>
-        public readonly IReadOnlyCollection<AssemblyLoadConflict> LoadConflicts;
+        public readonly IReadOnlyCollection<AssemblyLoadConflict>? LoadConflicts;
 
         /// <summary>
         /// List of final Syntax trees that have been generated, parsed (and compiled
@@ -45,17 +45,17 @@ namespace CK.CodeGen
         /// The Roselyn result.
         /// Null if <see cref="CompilationSkipped"/> is true.
         /// </summary>
-        public readonly EmitResult EmitResult;
+        public readonly EmitResult? EmitResult;
 
         /// <summary>
         /// Error raised by the emit processus itself.
         /// </summary>
-        public readonly Exception EmitError;
+        public readonly Exception? EmitError;
 
         /// <summary>
         /// Error resulting from the attempt to load the generated <see cref="Assembly"/> if any.
         /// </summary>
-        public readonly Exception AssemblyLoadError;
+        public readonly Exception? AssemblyLoadError;
 
         /// <summary>
         /// Gets whether the parsing or full compilation succeeds.
@@ -76,7 +76,7 @@ namespace CK.CodeGen
         /// <param name="a">Loaded assembly if any.</param>
         /// <param name="e">Load error if any.</param>
         /// <param name="f">Load failures.</param>
-        internal GenerateResult( Exception eE, IReadOnlyList<SyntaxTree> sources, EmitResult r, Assembly a, Exception e, IReadOnlyList<AssemblyLoadConflict> f )
+        internal GenerateResult( Exception? eE, IReadOnlyList<SyntaxTree> sources, EmitResult? r, Assembly? a, Exception? e, IReadOnlyList<AssemblyLoadConflict>? f )
         {
             CompilationSkipped = false;
             EmitError = eE;
@@ -85,7 +85,7 @@ namespace CK.CodeGen
             Sources = sources;
             AssemblyLoadError = e;
             LoadConflicts = f;
-            Success = r.Success == true && e == null;
+            Success = r?.Success == true && e == null;
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace CK.CodeGen
         /// Dumps the result of the compilation into a monitor.
         /// </summary>
         /// <param name="monitor">The monitor to use.</param>
-        /// <param name="dumpSourceLevel">Optionnaly dumps the source as another <see cref="CK.Core.LogLevel"/>.</param>
+        /// <param name="dumpSources">Optionnaly dumps the source as another <see cref="CK.Core.LogLevel"/>.</param>
         public void LogResult( IActivityMonitor monitor, LogLevel? dumpSources = null )
         {
             if( monitor == null ) throw new ArgumentNullException( nameof( monitor ) );

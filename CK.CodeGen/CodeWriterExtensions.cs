@@ -37,6 +37,18 @@ namespace CK.CodeGen
             _typeAliases.Add( typeof( object ), "object" );
         }
 
+        static internal bool AppendTypeAlias( ICodeWriter w, Type t )
+        {
+            if( _typeAliases.TryGetValue( t, out var alias ) )
+            {
+                w.Append( alias );
+                return true;
+            }
+            return false;
+        }
+
+        static public string? GetTypeAlias( Type t ) => _typeAliases.GetValueOrDefault( t );
+
         /// <summary>
         /// Appends raw C# code only once: the code itself is used as a key in <see cref="INamedScope.Memory"/> to
         /// avoid adding it twice.
@@ -130,19 +142,22 @@ namespace CK.CodeGen
         /// <param name="t">The type to append.</param>
         /// <param name="typeDeclaration">True to include generic parameter names in the output.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        public static T AppendCSharpName<T>( this T @this, Type t, bool typeDeclaration = true ) where T : ICodeWriter
+        public static T AppendCSharpName<T>( this T @this, Type? t, bool typeDeclaration = true ) where T : ICodeWriter
         {
             if( t == null ) return @this.Append( "null" );
             if( t.IsGenericParameter ) return typeDeclaration ? @this.Append( t.Name ) : @this;
-            string alias;
-            if( _typeAliases.TryGetValue( t, out alias ) )
+            if( AppendTypeAlias( @this, t ) )
             {
-                return @this.Append( alias );
+                return @this;
             }
-            if( t == typeof( void ) ) return @this.Append( "void" );
+            if( t.IsArray )
+            {
+                AppendCSharpName( @this, t.GetElementType()!, typeDeclaration );
+                return @this.Append( "[" ).Append( new string( ',', t.GetArrayRank() - 1 ) ).Append( "]" );
+            }
             var pathTypes = new Stack<Type>();
             pathTypes.Push( t );
-            Type decl = t.DeclaringType;
+            Type? decl = t.DeclaringType;
             while( decl != null )
             {
                 pathTypes.Push( decl );
@@ -166,20 +181,96 @@ namespace CK.CodeGen
                     while( endNbParam < n.Length && Char.IsDigit( n, endNbParam ) ) endNbParam++;
                     int nbParams = int.Parse( n.Substring( idxTick, endNbParam - idxTick ), NumberStyles.Integer );
                     Debug.Assert( nbParams > 0 );
-                    @this.Append( n.Substring( 0, idxTick - 1 ) );
-                    @this.Append( "<" );
+                    var tName = n.Substring( 0, idxTick - 1 );
+                    bool isValueTuple = tName == "System.ValueTuple";
+                    if( isValueTuple )
+                    {
+                        @this.Append( "(" );
+                    }
+                    else
+                    {
+                        @this.Append( tName );
+                        @this.Append( "<" );
+                    }
                     for( int iGen = 0; iGen < nbParams; ++iGen )
                     {
                         if( iGen > 0 ) @this.Append( "," );
                         AppendCSharpName( @this, allGenArgs.Dequeue(), typeDeclaration );
                     }
-                    @this.Append( ">" );
+                    @this.Append( isValueTuple ? ")" : ">" );
                 }
                 else @this.Append( n );
             }
             return @this;
         }
 
+
+        /// <summary>
+        /// Appends the C# type name with its nullability information.
+        /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
+        /// <param name="this">This code writer.</param>
+        /// <param name="t">The <see cref="NullableTypeTree"/> to append.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
+        public static T AppendCSharpName<T>( this T @this, in NullableTypeTree tree ) where T : ICodeWriter
+        {
+            if( AppendTypeAlias( @this, tree.Type ) )
+            {
+                return @this;
+            }
+            if( tree.Type.IsArray )
+            {
+                AppendCSharpName( @this, tree.SubTypes[0] );
+                return @this.Append( "[" ).Append( new string( ',', tree.Type.GetArrayRank() - 1 ) ).Append( "]" );
+            }
+            var pathTypes = new Stack<Type>();
+            pathTypes.Push( tree.Type );
+            Type? decl = tree.Type.DeclaringType;
+            while( decl != null )
+            {
+                pathTypes.Push( decl );
+                decl = decl.DeclaringType;
+            }
+            var allGenArgs = new Queue<NullableTypeTree>( tree.SubTypes );
+            for( int iType = 0; pathTypes.Count > 0; iType++ )
+            {
+                Type theT = pathTypes.Pop();
+                string n;
+                if( iType == 0 ) n = theT.FullName;
+                else
+                {
+                    n = theT.Name;
+                    @this.Append( "." );
+                }
+                int idxTick = n.IndexOf( '`' ) + 1;
+                if( idxTick > 0 )
+                {
+                    int endNbParam = idxTick;
+                    while( endNbParam < n.Length && Char.IsDigit( n, endNbParam ) ) endNbParam++;
+                    int nbParams = int.Parse( n.Substring( idxTick, endNbParam - idxTick ), NumberStyles.Integer );
+                    Debug.Assert( nbParams > 0 );
+                    var tName = n.Substring( 0, idxTick - 1 );
+                    bool isValueTuple = tName == "System.ValueTuple";
+                    if( isValueTuple )
+                    {
+                        @this.Append( "(" );
+                    }
+                    else
+                    {
+                        @this.Append( tName );
+                        @this.Append( "<" );
+                    }
+                    for( int iGen = 0; iGen < nbParams; ++iGen )
+                    {
+                        if( iGen > 0 ) @this.Append( "," );
+                        AppendCSharpName( @this, allGenArgs.Dequeue() );
+                    }
+                    @this.Append( isValueTuple ? ")" : ">" );
+                }
+                else @this.Append( n );
+            }
+            return @this;
+        }
 
         /// <summary>
         /// Appends "typeof(<see cref="AppendCSharpName"/>)" with the type name in is non declaration form:

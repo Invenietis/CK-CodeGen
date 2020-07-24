@@ -5,6 +5,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1</TargetFrameworks>
+    <nullable>enable</nullable>
     <Description></Description>
   </PropertyGroup>
   <ItemGroup>
