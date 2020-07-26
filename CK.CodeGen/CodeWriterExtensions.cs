@@ -47,6 +47,11 @@ namespace CK.CodeGen
             return false;
         }
 
+        /// <summary>
+        /// Gets a type alias for basic types or null if no alias exists.
+        /// </summary>
+        /// <param name="t">The type.</param>
+        /// <returns>The alias or null.</returns>
         static public string? GetTypeAlias( Type t ) => _typeAliases.GetValueOrDefault( t );
 
         /// <summary>
@@ -183,89 +188,27 @@ namespace CK.CodeGen
                     Debug.Assert( nbParams > 0 );
                     var tName = n.Substring( 0, idxTick - 1 );
                     bool isValueTuple = tName == "System.ValueTuple";
+                    Type subType = allGenArgs.Dequeue();
+                    bool isNullableValue = !isValueTuple && tName == "System.Nullable" && !subType.IsGenericTypeParameter;
                     if( isValueTuple )
                     {
                         @this.Append( "(" );
                     }
-                    else
+                    else if( !isNullableValue )
                     {
                         @this.Append( tName );
                         @this.Append( "<" );
                     }
-                    for( int iGen = 0; iGen < nbParams; ++iGen )
+                    --nbParams;
+                    int iGen = 0;
+                    for(; ; )
                     {
                         if( iGen > 0 ) @this.Append( "," );
-                        AppendCSharpName( @this, allGenArgs.Dequeue(), typeDeclaration );
+                        AppendCSharpName( @this, subType, typeDeclaration );
+                        if( iGen++ == nbParams ) break;
+                        subType = allGenArgs.Dequeue();
                     }
-                    @this.Append( isValueTuple ? ")" : ">" );
-                }
-                else @this.Append( n );
-            }
-            return @this;
-        }
-
-
-        /// <summary>
-        /// Appends the C# type name with its nullability information.
-        /// </summary>
-        /// <typeparam name="T">Actual type of the code writer.</typeparam>
-        /// <param name="this">This code writer.</param>
-        /// <param name="t">The <see cref="NullableTypeTree"/> to append.</param>
-        /// <returns>This code writer to enable fluent syntax.</returns>
-        public static T AppendCSharpName<T>( this T @this, in NullableTypeTree tree ) where T : ICodeWriter
-        {
-            if( AppendTypeAlias( @this, tree.Type ) )
-            {
-                return @this;
-            }
-            if( tree.Type.IsArray )
-            {
-                AppendCSharpName( @this, tree.SubTypes[0] );
-                return @this.Append( "[" ).Append( new string( ',', tree.Type.GetArrayRank() - 1 ) ).Append( "]" );
-            }
-            var pathTypes = new Stack<Type>();
-            pathTypes.Push( tree.Type );
-            Type? decl = tree.Type.DeclaringType;
-            while( decl != null )
-            {
-                pathTypes.Push( decl );
-                decl = decl.DeclaringType;
-            }
-            var allGenArgs = new Queue<NullableTypeTree>( tree.SubTypes );
-            for( int iType = 0; pathTypes.Count > 0; iType++ )
-            {
-                Type theT = pathTypes.Pop();
-                string n;
-                if( iType == 0 ) n = theT.FullName;
-                else
-                {
-                    n = theT.Name;
-                    @this.Append( "." );
-                }
-                int idxTick = n.IndexOf( '`' ) + 1;
-                if( idxTick > 0 )
-                {
-                    int endNbParam = idxTick;
-                    while( endNbParam < n.Length && Char.IsDigit( n, endNbParam ) ) endNbParam++;
-                    int nbParams = int.Parse( n.Substring( idxTick, endNbParam - idxTick ), NumberStyles.Integer );
-                    Debug.Assert( nbParams > 0 );
-                    var tName = n.Substring( 0, idxTick - 1 );
-                    bool isValueTuple = tName == "System.ValueTuple";
-                    if( isValueTuple )
-                    {
-                        @this.Append( "(" );
-                    }
-                    else
-                    {
-                        @this.Append( tName );
-                        @this.Append( "<" );
-                    }
-                    for( int iGen = 0; iGen < nbParams; ++iGen )
-                    {
-                        if( iGen > 0 ) @this.Append( "," );
-                        AppendCSharpName( @this, allGenArgs.Dequeue() );
-                    }
-                    @this.Append( isValueTuple ? ")" : ">" );
+                    @this.Append( isNullableValue ? "?" : (isValueTuple ? ")" : ">") );
                 }
                 else @this.Append( n );
             }

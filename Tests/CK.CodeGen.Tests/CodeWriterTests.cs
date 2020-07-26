@@ -38,8 +38,8 @@ namespace CK.CodeGen.Tests
         [TestCase( typeof( CodeWriterTests ), "CK.CodeGen.Tests.CodeWriterTests" )]
         [TestCase( typeof( List<string> ), "System.Collections.Generic.List<string>" )]
         [TestCase( typeof( List<Dictionary<int, string>> ), "System.Collections.Generic.List<System.Collections.Generic.Dictionary<int,string>>" )]
-        [TestCase( typeof( Nullable<Guid> ), "System.Nullable<System.Guid>" )]
-        [TestCase( typeof( Guid? ), "System.Nullable<System.Guid>" )]
+        [TestCase( typeof( Nullable<Guid> ), "System.Guid?" )]
+        [TestCase( typeof( Guid? ), "System.Guid?" )]
         [TestCase( typeof( Another ), "CK.CodeGen.Tests.CodeWriterTests.Another" )]
         [TestCase( typeof( G<> ), "CK.CodeGen.Tests.CodeWriterTests.G<>" )]
         [TestCase( typeof( G<string> ), "CK.CodeGen.Tests.CodeWriterTests.G<string>" )]
@@ -68,7 +68,8 @@ namespace CK.CodeGen.Tests
         [TestCase( typeof( A<>.C<> ), "CK.CodeGen.Tests.CodeWriterTests.A<TB>.C<TD>" )]
         [TestCase( typeof( int[] ), "int[]" )]
         [TestCase( typeof( Byte[,,,] ), "byte[,,,]" )]
-        [TestCase( typeof( ValueTuple<int,string> ), "(int,string)" )]
+        [TestCase( typeof( int? ), "int?" )]
+        [TestCase( typeof( int?[] ), "int?[]" )]
         public void ToCSharpName_tests( Type type, string expected )
         {
             var writer = new StringCodeWriter( new StringBuilder() );
@@ -76,14 +77,24 @@ namespace CK.CodeGen.Tests
             Assert.AreEqual( expected, writer.ToString() );
         }
 
+        // Cannot use TestCase parameters: parentheses trigger an error that prevents the test to run.
+        //
+        // An exception occurred while invoking executor 'executor://nunit3testexecutor/': Incorrect format for TestCaseFilter Error:
+        // Missing '('. Specify the correct format and try again. Note that the incorrect format can lead to no test getting executed.
+        //
         [Test]
-        public void ToCSharpName_NullableTypeTree_tests()
+        public void ToCSharpName_tests_value_types()
         {
-            //var writer = new StringCodeWriter( new StringBuilder() );
-            //var info = typeof( G<Action>.Nested ).GetProperty( "Prop" )!.GetNullableTypeInfo();
-
-            //writer.AppendCSharpName( info );
-            //writer.ToString().Should().Be( "CK.CodeGen.Tests.CodeWriterTests.A<int?>.C<string>?" );
+            {
+                var writer = new StringCodeWriter( new StringBuilder() );
+                writer.AppendCSharpName( typeof( (int, string) ) );
+                writer.ToString().Should().Be( "(int,string)" );
+            }
+            {
+                var writer = new StringCodeWriter( new StringBuilder() );
+                writer.AppendCSharpName( typeof( (int, (string,float)) ) );
+                writer.ToString().Should().Be( "(int,(string,float))" );
+            }
         }
 
         public class G<T>

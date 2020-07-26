@@ -112,7 +112,7 @@ namespace CK.CodeGen.Tests
             var n = GetTypeAndNullability( member );
             n.Nullability.ToString().Should().Be( info );
 
-            var t = n.Type.GetNullableTypeInfo( n.Nullability );
+            var t = n.Type.GetNullableTypeTree( n.Nullability );
             t.ToString().Should().Be( result );
         }
 

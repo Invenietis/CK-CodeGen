@@ -8,11 +8,14 @@ namespace CK.CodeGen
 {
     /// <summary>
     /// Full immutable representation of a Nullable Type with its <see cref="SubTypes"/>.
+    /// This does not capture nesting/enclosing types: this can be computed only for to level types.
     /// </summary>
     public readonly struct NullableTypeTree
     {
         /// <summary>
         /// The type.
+        /// When Type is a <see cref="NullablityTypeKindExtension.IsNullableValueType(NullabilityTypeKind)"/> (a <see cref="Nullable{T}"/>),
+        /// then this type is the inner type, not the Nullable generic type.
         /// </summary>
         public readonly Type Type;
 
@@ -34,22 +37,23 @@ namespace CK.CodeGen
         /// <param name="s">The sub types (generic parameters or array element).</param>
         public NullableTypeTree( Type t, NullabilityTypeKind k, IReadOnlyList<NullableTypeTree> s )
         {
+            if( t.IsGenericType && t.GetGenericTypeDefinition() == typeof( Nullable<> ) ) throw new ArgumentException();
             Type = t;
             Kind = k;
             SubTypes = s;
         }
 
         /// <summary>
-        /// Produces a quick string description of this <see cref="NullabilityTypeKind"/>
-        /// with simple type names (no name space nor enclosing types).
+        /// Produces a string description of this <see cref="NullableTypeTree"/>.
         /// </summary>
         /// <param name="b">The string builder to use.</param>
+        /// <param name="withNamespace">True to include the types' namespace.</param>
         /// <returns>The string builder.</returns>
-        public StringBuilder ToString( StringBuilder b )
+        public StringBuilder ToString( StringBuilder b, bool withNamespace = false )
         {
             if( Type.IsArray )
             {
-                SubTypes[0].ToString( b );
+                SubTypes[0].ToString( b, withNamespace );
                 b.Append( '[' ).Append( ',', Type.GetArrayRank() - 1 ).Append( ']' );
             }
             else
@@ -69,6 +73,7 @@ namespace CK.CodeGen
                             n = Type.Name;
                             int idx = n.IndexOf( '`' );
                             if( idx > 0 ) n = n.Substring( 0, idx );
+                            if( withNamespace ) b.Append( Type.Namespace ).Append( '.' );
                         }
                         b.Append( n ).Append( '<' );
                     }
@@ -77,13 +82,13 @@ namespace CK.CodeGen
                     {
                         if( atLeastOne ) b.Append( ',' );
                         else atLeastOne = true;
-                        t.ToString( b );
+                        t.ToString( b, withNamespace );
                     }
                     b.Append( isTuple ? ')' : '>' );
                 }
                 else
                 {
-                    b.Append( CodeWriterExtensions.GetTypeAlias( Type ) ?? Type.Name );
+                    b.Append( CodeWriterExtensions.GetTypeAlias( Type ) ?? (withNamespace ? Type.FullName : Type.Name) );
                 }
             }
             if( Kind.IsNullable() ) b.Append( '?' );
@@ -91,7 +96,7 @@ namespace CK.CodeGen
         }
 
         /// <summary>
-        /// Calls <see cref="ToString(StringBuilder)"/> and returns the result.
+        /// Calls <see cref="ToString(StringBuilder,bool)"/> (without namespaces) and returns the result.
         /// </summary>
         /// <returns>A readable string.</returns>
         public override string ToString() => ToString( new StringBuilder() ).ToString();

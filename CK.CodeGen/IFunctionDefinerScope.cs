@@ -31,7 +31,7 @@ namespace CK.CodeGen
         IFunctionScope CreateFunction( FunctionDefinition f );
 
         /// <summary>
-        /// Finds an existing <see cref="IFunctionScope"/> previously created with <see cref="CreateFunction"/>
+        /// Finds an existing <see cref="IFunctionScope"/> previously created with <see cref="CreateFunction(FunctionDefinition)"/>
         /// from its <see cref="FunctionDefinition.Key"/> and if not found, optionally 
         /// </summary>
         /// <param name="key">The key of the function to find. See <see cref="FunctionDefinition.Key"/>.</param>

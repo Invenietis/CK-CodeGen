@@ -7,8 +7,8 @@ namespace CK.CodeGen
 {
     /// <summary>
     /// Immutable type name that can be a single indentifier ("T" or "int"), a generic definition
-    /// or generic type ("C&lt;T&gt;" or S&lt;&lt;string&gt;,List&lt;int&gt;&gt;) with a list of <see cref="GenericParameters"/>
-    /// and an array definition (jagged, and/or multi-dimensional array) of such types if <see cref="ArrayDimensions"/> is not empty.
+    /// or generic type ("C&lt;T&gt;" or S&lt;&lt;string&gt;,List&lt;int&gt;&gt;) with a list of <see cref="GenericParameters"/>.
+    /// Arrays and tuples are handled at the <see cref="ExtendedTypeName"/> level.
     /// </summary>
     public class TypeName
     {
@@ -163,7 +163,7 @@ namespace CK.CodeGen
         }
 
         /// <summary>
-        /// Overridden to return the <see cref="Write(StringBuilder)"/> result.
+        /// Overridden to return the <see cref="Write"/> result.
         /// </summary>
         /// <returns>The type string.</returns>
         public override string ToString() => Write( new StringBuilder() ).ToString();

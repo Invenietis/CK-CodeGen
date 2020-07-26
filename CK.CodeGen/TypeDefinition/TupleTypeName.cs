@@ -83,7 +83,7 @@ namespace CK.CodeGen
         }
 
         /// <summary>
-        /// Overridden to return the <see cref="Write(StringBuilder)"/> result.
+        /// Overridden to return the <see cref="Write"/> result.
         /// </summary>
         /// <returns>The type string.</returns>
         public override string ToString() => Write( new StringBuilder() ).ToString();
