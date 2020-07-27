@@ -107,6 +107,17 @@ namespace CK.CodeGen.Tests
             CheckAll( member, result, info );
         }
 
+        int VT;
+
+        int? NVT;
+
+        [TestCase( "VT", "int", "NonNullableValueType" )]
+        [TestCase( "NVT", "int?", "NullableValueType" )]
+        public void NonNullable_at_all_types( string member, string result, string info )
+        {
+            CheckAll( member, result, info );
+        }
+
         void CheckAll( string member, string result, string info )
         {
             var n = GetTypeAndNullability( member );

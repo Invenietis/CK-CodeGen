@@ -198,54 +198,57 @@ namespace CK.CodeGen
         {
             byte[]? profile = null;
             var n = GetNullabilityKind( t );
-            var a = attributes.FirstOrDefault( a => a.AttributeType.Name == "NullableAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
-            if( a == null )
+            if( !n.IsNonGenericValueType() )
             {
-                while( parent != null )
+                var a = attributes.FirstOrDefault( a => a.AttributeType.Name == "NullableAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
+                if( a == null )
                 {
-                    a = parent.GetCustomAttributesData().FirstOrDefault( a => a.AttributeType.Name == "NullableContextAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
-                    if( a != null )
+                    while( parent != null )
                     {
-                        n = HandleByte( locationForError, n, (byte)a.ConstructorArguments[0].Value! );
-                        break;
-                    }
-                    parent = parent.DeclaringType;
-                }
-            }
-            else
-            {
-                object? data = a.ConstructorArguments[0].Value;
-                // A single value means "apply to everything in the type", e.g. 1 for Dictionary<string, string>, 2 for Dictionary<string?, string?>?
-                if( data is byte b )
-                {
-                    n = HandleByte( locationForError, n, b );
-                }
-                else if( data is System.Collections.ObjectModel.ReadOnlyCollection<CustomAttributeTypedArgument> arguments )
-                {
-                    var firstByte = (byte)arguments[0].Value;
-                    // Complex nullability marker.
-                    n |= NullabilityTypeKind.NRTFullNullable | NullabilityTypeKind.NRTFullNonNullable;
-                    // Quick check.
-                    if( firstByte != 0 && (n & NullabilityTypeKind.IsValueType) != 0 )
-                    {
-                        throw new Exception( $"First byte annotation is {firstByte} but the type is a ValueType." );
-                    }
-                    // Apply the first byte for this information.
-                    if( firstByte == 1 ) n &= ~NullabilityTypeKind.IsNullable;
-
-                    profile = new byte[arguments.Count - 1];
-                    for( int i = 0; i < profile.Length; ++i )
-                    {
-                        profile[i] = (byte)arguments[i + 1].Value;
-                    }
-                    if( profile.Length == 0 )
-                    {
-                        throw new Exception( $"Mono byte annotation array found." );
+                        a = parent.GetCustomAttributesData().FirstOrDefault( a => a.AttributeType.Name == "NullableContextAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
+                        if( a != null )
+                        {
+                            n = HandleByte( locationForError, n, (byte)a.ConstructorArguments[0].Value! );
+                            break;
+                        }
+                        parent = parent.DeclaringType;
                     }
                 }
                 else
                 {
-                    throw new Exception( $"Invalid data type '{data?.GetType()}' in NullableAttribute for {locationForError()}." );
+                    object? data = a.ConstructorArguments[0].Value;
+                    // A single value means "apply to everything in the type", e.g. 1 for Dictionary<string, string>, 2 for Dictionary<string?, string?>?
+                    if( data is byte b )
+                    {
+                        n = HandleByte( locationForError, n, b );
+                    }
+                    else if( data is System.Collections.ObjectModel.ReadOnlyCollection<CustomAttributeTypedArgument> arguments )
+                    {
+                        var firstByte = (byte)arguments[0].Value;
+                        // Complex nullability marker.
+                        n |= NullabilityTypeKind.NRTFullNullable | NullabilityTypeKind.NRTFullNonNullable;
+                        // Quick check.
+                        if( firstByte != 0 && (n & NullabilityTypeKind.IsValueType) != 0 )
+                        {
+                            throw new Exception( $"First byte annotation is {firstByte} but the type is a ValueType." );
+                        }
+                        // Apply the first byte for this information.
+                        if( firstByte == 1 ) n &= ~NullabilityTypeKind.IsNullable;
+
+                        profile = new byte[arguments.Count - 1];
+                        for( int i = 0; i < profile.Length; ++i )
+                        {
+                            profile[i] = (byte)arguments[i + 1].Value;
+                        }
+                        if( profile.Length == 0 )
+                        {
+                            throw new Exception( $"Mono byte annotation array found." );
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception( $"Invalid data type '{data?.GetType()}' in NullableAttribute for {locationForError()}." );
+                    }
                 }
             }
             return new NullabilityTypeInfo( n, profile );
