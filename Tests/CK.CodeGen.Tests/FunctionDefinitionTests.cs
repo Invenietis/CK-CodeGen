@@ -36,6 +36,7 @@ namespace CK.CodeGen.Tests
         [TestCase( "System.Int32 MMM()", "MMM()" )]
         [TestCase( "public override System.Data.SqlClient.SqlCommand Do( out System.Nullable<int> i )", "Do(&int?)" )]
         [TestCase( "R M < X , K > ( [ A ( 1 ) ] [ A ] ref System . Nullable < K > i = \"\",params K[,,] p = new(){ nimp, 0x9876UL })", "M`2(&§1?,§1[,,])" )]
+        [TestCase( "void Write( ref Reader r, ref (int, string) v )", "Write(&Reader,&(int,string))" )]
         public void CreateFunction_normalizes_its_key( string header, string key )
         {
             FunctionDefinition.TryParse( header, out var f );
