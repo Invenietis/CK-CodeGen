@@ -3,12 +3,12 @@
     <PackageReference Update="CK.Text" Version="0.0.0--02w93qz-local+v9.0.0" />
     <PackageReference Update="CSemVer" Version="8.0.1" />
     <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="3.5.0" />
-    <PackageReference Update="CK.ActivityMonitor.SimpleSender" Version="0.0.0--02w93qz-local+v13.3.0" />
+    <PackageReference Update="CK.ActivityMonitor.SimpleSender" Version="0.0.0--02wnj6e-local+v13.3.0" />
     <PackageReference Update="CK.WeakAssemblyNameResolver" Version="0.0.0--02w93qn-local+v0.5.1" />
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Update="CK.Testing.Monitoring" Version="0.0.0--02w93r1-local+v0.18.0" />
+    <PackageReference Update="CK.Testing.Monitoring" Version="0.0.0--02wnn07-local+v0.18.0" />
     <PackageReference Update="FluentAssertions" Version="5.10.3" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.6.1" />
     <PackageReference Update="NUnit" Version="3.12.0" />

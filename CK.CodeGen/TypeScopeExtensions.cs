@@ -46,12 +46,12 @@ namespace CK.CodeGen
                     if( parameters.Length > 0 )
                     {
                         scope.Append( " : base( " );
-                        bool isFirst = true;
+                        bool atLeastOne = false;
                         foreach( var p in parameters )
                         {
+                            if( atLeastOne ) scope.Append( ", " ); 
+                            else atLeastOne = true;
                             scope.Append( p.Name );
-                            if( isFirst ) isFirst = false;
-                            else scope.Append( ", " );
                         }
                         scope.Append( " )" );
                     }
