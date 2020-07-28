@@ -118,6 +118,93 @@ namespace CK.CodeGen.Tests
             CheckAll( member, result, info );
         }
 
+        class GenParent<T>
+        {
+            public class NestedNotSupported
+            {
+            }
+
+            public class LevelDoesNotMatter
+            {
+                public class NestedNotSupported
+                {
+                }
+            }
+        }
+
+        class NotGeneric : GenParent<int>
+        {
+            public class NestedSupported
+            {
+            }
+
+            public class LevelDoesNotMatter2
+            {
+                public class NestedSupported
+                {
+                }
+            }
+        }
+
+        GenParent<int>.NestedNotSupported NotSupported;
+
+        NotGeneric.NestedNotSupported AlsoNotSupported;
+
+        NotGeneric.NestedSupported Supported;
+
+        ISet<NotGeneric.NestedSupported?> SupportedInside;
+
+        GenParent<int>.LevelDoesNotMatter.NestedNotSupported NotSupportedInner;
+
+        NotGeneric.LevelDoesNotMatter2.NestedSupported SupportedInner;
+
+        Dictionary<NotGeneric.LevelDoesNotMatter2.NestedSupported, NotGeneric.NestedSupported?> SupportedInnerInside;
+
+        [Test]
+        public void NullableTypeTree_throws_on_generic_nesting_type()
+        {
+            var ns = GetTypeAndNullability( nameof( NotSupported ) );
+            ns.Invoking( sut => sut.Type.GetNullableTypeTree( ns.Nullability ) ).Should().Throw<ArgumentException>().WithMessage( "*Only nested types in non generic types are supported.*" );
+
+            var nsA = GetTypeAndNullability( nameof( AlsoNotSupported ) );
+            nsA.Invoking( sut => sut.Type.GetNullableTypeTree( nsA.Nullability ) ).Should().Throw<ArgumentException>().WithMessage( "*Only nested types in non generic types are supported.*" );
+
+            var nsi = GetTypeAndNullability( nameof( NotSupportedInner ) );
+            nsi.Invoking( sut => sut.Type.GetNullableTypeTree( nsi.Nullability ) ).Should().Throw<ArgumentException>().WithMessage( "*Only nested types in non generic types are supported.*" );
+
+            var s = GetTypeAndNullability( nameof( Supported ) );
+            s.Invoking( sut => sut.Type.GetNullableTypeTree( s.Nullability ) ).Should().NotThrow();
+
+            var si = GetTypeAndNullability( nameof( SupportedInner ) );
+            si.Invoking( sut => sut.Type.GetNullableTypeTree( si.Nullability ) ).Should().NotThrow();
+        }
+
+        [Test]
+        public void NullableTypeTree_ToString_can_include_namespaces_and_non_generic_nesting_type_names()
+        {
+            {
+                var s = GetTypeAndNullability( nameof( Supported ) );
+                var t = s.Type.GetNullableTypeTree( s.Nullability );
+                t.ToString( true ).Should().Be( "CK.CodeGen.Tests.NullableTypeTests.NotGeneric.NestedSupported" );
+            }
+            {
+                var s = GetTypeAndNullability( nameof( SupportedInner ) );
+                var t = s.Type.GetNullableTypeTree( s.Nullability );
+                t.ToString( true ).Should().Be( "CK.CodeGen.Tests.NullableTypeTests.NotGeneric.LevelDoesNotMatter2.NestedSupported" );
+            }
+            {
+                var s = GetTypeAndNullability( nameof( SupportedInside ) );
+                var t = s.Type.GetNullableTypeTree( s.Nullability );
+                t.ToString( true ).Should().Be( "System.Collections.Generic.ISet<CK.CodeGen.Tests.NullableTypeTests.NotGeneric.NestedSupported?>" );
+            }
+            {
+                var s = GetTypeAndNullability( nameof( SupportedInnerInside ) );
+                var t = s.Type.GetNullableTypeTree( s.Nullability );
+                t.ToString( true ).Should().Be( "System.Collections.Generic.Dictionary<CK.CodeGen.Tests.NullableTypeTests.NotGeneric.LevelDoesNotMatter2.NestedSupported,CK.CodeGen.Tests.NullableTypeTests.NotGeneric.NestedSupported?>" );
+            }
+        }
+
+
         void CheckAll( string member, string result, string info )
         {
             var n = GetTypeAndNullability( member );

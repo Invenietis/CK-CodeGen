@@ -147,7 +147,7 @@ namespace CK.CodeGen
 
         static NullableTypeTree GetNullableTypeTree( Type t, IEnumerator<byte> annotations, NullabilityTypeKind known )
         {
-            if( t.DeclaringType != null ) throw new ArgumentException( $"Type '{t}' is nested. Only non nested types are supported.", nameof( t ) );
+            if( t.DeclaringType != null && t.DeclaringType.IsGenericType ) throw new ArgumentException( $"Type '{t.Name}' is nested in a generic type ({t.DeclaringType.ToCSharpName()}). Only nested types in non generic types are supported.", nameof( t ) );
             NullableTypeTree[] sub = Array.Empty<NullableTypeTree>();
             bool isInside;
             if( isInside = (known == NullabilityTypeKind.Unknown) )
