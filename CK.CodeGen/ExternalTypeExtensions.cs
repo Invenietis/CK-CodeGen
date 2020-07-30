@@ -16,6 +16,16 @@ namespace CK.CodeGen
     public static class ExternalTypeExtensions
     {
         /// <summary>
+        /// Gets whether this type is a <see cref="ValueTuple"/>.
+        /// </summary>
+        /// <param name="this"></param>
+        /// <returns>True if this is a value tuple. False otherwise.</returns>
+        public static bool IsValueTuple( this Type @this )
+        {
+            return @this.Namespace == "System" && @this.Name.StartsWith( "ValueTuple`" );
+        }
+
+        /// <summary>
         /// Gets the code required to dynamically obtain the type. It is either "null", "typeof(void)"
         /// or the call to "Type.GetType(...)" with the assembly qualified name of this type.
         /// </summary>

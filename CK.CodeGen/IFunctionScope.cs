@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace CK.CodeGen
@@ -26,7 +27,7 @@ namespace CK.CodeGen
         bool IsLocalFunction { get; }
 
         /// <summary>
-        /// Gets whether this function is a constructor (its <see cref="ReturnType"/> is null).
+        /// Gets whether this function is a constructor (its <see cref="FunctionDefinition.ReturnType"/> is null).
         /// </summary>
         bool IsConstructor { get; }
 

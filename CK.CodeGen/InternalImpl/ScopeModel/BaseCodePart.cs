@@ -29,8 +29,11 @@ namespace CK.CodeGen
                     s = s.TrimStart();
                     if( s.Length > 0 ) return s.StartsWith( prefix );
                 }
-                bool? r = ((BaseCodePart)o).StartsWith( prefix );
-                if( r.HasValue ) return r;
+                else
+                {
+                    bool? r = ((BaseCodePart)o).StartsWith( prefix );
+                    if( r.HasValue ) return r;
+                }
             }
             return null;
         }

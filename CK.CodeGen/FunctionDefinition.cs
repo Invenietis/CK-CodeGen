@@ -60,6 +60,14 @@ namespace CK.CodeGen
         /// </summary>
         public class Parameter
         {
+            /// <summary>
+            /// Initializes a new <see cref="Parameter"/>.
+            /// </summary>
+            /// <param name="attributes">The <see cref="Attributes"/>.</param>
+            /// <param name="modifiers">The <see cref="Modifiers"/>.</param>
+            /// <param name="type">The parameter's type.</param>
+            /// <param name="name">The parameter's name.</param>
+            /// <param name="defaultValue">The <see cref="DefaultValue"/>.</param>
             public Parameter(
                 AttributeCollection? attributes,
                 ParameterModifier modifiers,
@@ -183,8 +191,19 @@ namespace CK.CodeGen
         /// </summary>
         public enum CallConstructor
         {
+            /// <summary>
+            /// The method is not a constructor or a constructor that doesn't call another one or its base.
+            /// </summary>
             None,
+
+            /// <summary>
+            /// The method is a constructor that calls another one.
+            /// </summary>
             This,
+
+            /// <summary>
+            /// The method is a constructor that calls a base constructor.
+            /// </summary>
             Base
         }
 
@@ -322,10 +341,6 @@ namespace CK.CodeGen
         /// Note that there must be no start of the function body in the declaration since it is skipped by this overload.
         /// </summary>
         /// <param name="declaration">The string to parse.</param>
-        /// <param name="bodyStart">
-        /// On output, contains the start of the function
-        /// body (without opening '{' or with a "=>" lambda token).
-        /// </param>
         /// <returns>The method definition.</returns>
         public static FunctionDefinition Parse( string declaration )
         {

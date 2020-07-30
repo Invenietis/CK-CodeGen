@@ -39,13 +39,13 @@ namespace CK.CodeGen
         /// Gets or sets the parse options to use.
         /// Default to null: all default applies, the language version is <see cref="LanguageVersion.Default"/>.
         /// </summary>
-        public CSharpParseOptions ParseOptions { get; set; }
+        public CSharpParseOptions? ParseOptions { get; set; }
 
         /// <summary>
         /// Gets or sets a <see cref="CSharpCompilationOptions"/>.
         /// When let to null, defaults to the <see cref="DefaultCompilationOptions"/>.
         /// </summary>
-        public CSharpCompilationOptions CompilationOptions { get; set; }
+        public CSharpCompilationOptions? CompilationOptions { get; set; }
 
         /// <summary>
         /// Gets or sets whether the assembly that defines the object type is
@@ -71,7 +71,7 @@ namespace CK.CodeGen
         /// <param name="skipCompilation">True to skip the compilation. Only the parsing and the source generation is done.</param>
         /// <param name="loader">Optional loader function to load the final emitted assembly.</param>
         /// <returns>Encapsulation of the result.</returns>
-        public GenerateResult Generate( string sourceCode, string assemblyPath, IEnumerable<Assembly> someReferences, bool skipCompilation, Func<string, Assembly> loader = null )
+        public GenerateResult Generate( string sourceCode, string assemblyPath, IEnumerable<Assembly> someReferences, bool skipCompilation, Func<string, Assembly>? loader = null )
         {
             var w = _workspaceFactory();
             if( !String.IsNullOrWhiteSpace( sourceCode ) ) w.Global.Append( sourceCode );
@@ -87,7 +87,7 @@ namespace CK.CodeGen
         /// <param name="skipCompilation">True to skip the compilation. Only the parsing and the source generation is done.</param>
         /// <param name="loader">Optional loader function to load the final emitted assembly.</param>
         /// <returns>Encapsulation of the result.</returns>
-        public GenerateResult Generate( ICodeWorkspace code, string assemblyPath, bool skipCompilation, Func<string, Assembly> loader = null )
+        public GenerateResult Generate( ICodeWorkspace code, string assemblyPath, bool skipCompilation, Func<string, Assembly>? loader = null )
         {
             if( code == null ) throw new ArgumentNullException( nameof( code ) );
             using( var weakLoader = WeakAssemblyNameResolver.TemporaryInstall() )
@@ -132,11 +132,11 @@ namespace CK.CodeGen
         /// <returns>Encapsulation of the result.</returns>
         static public GenerateResult Generate(
             string code,
-            string assemblyPath = null,
+            string? assemblyPath = null,
             IEnumerable<Assembly>? references = null,
             CSharpParseOptions? parseOptions = null,
             CSharpCompilationOptions? compileOptions = null,
-            Func<string, Assembly> loader = null )
+            Func<string, Assembly>? loader = null )
         {
             SyntaxTree[] trees = new[] { SyntaxFactory.ParseSyntaxTree( code, parseOptions ) };
             if( String.IsNullOrEmpty( assemblyPath ) )
@@ -179,11 +179,11 @@ namespace CK.CodeGen
         /// <param name="loader">Optional loader function to load the final emitted assembly.</param>
         /// <returns>Encapsulation of the result.</returns>
         static public GenerateResult Generate(
-            CSharpCompilationOptions compileOptions,
+            CSharpCompilationOptions? compileOptions,
             IReadOnlyList<SyntaxTree> trees,
             string assemblyPath,
-            IEnumerable<MetadataReference> allReferences = null,
-            Func<string, Assembly> loader = null )
+            IEnumerable<MetadataReference>? allReferences = null,
+            Func<string, Assembly>? loader = null )
         {
             if( assemblyPath == null ) throw new ArgumentNullException( nameof( assemblyPath ) );
             try
@@ -211,7 +211,7 @@ namespace CK.CodeGen
             }
             catch( Exception ex )
             {
-                return new GenerateResult( ex, null, null, null, null, null );
+                return new GenerateResult( ex, Array.Empty<SyntaxTree>(), null, null, null, null );
             }
         }
     }

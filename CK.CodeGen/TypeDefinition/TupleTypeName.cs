@@ -78,12 +78,18 @@ namespace CK.CodeGen
         public StringBuilder Write( StringBuilder b, Func<string, string>? typeNameReplacer = null )
         {
             b.Append( '(' );
-            foreach( var f in Fields ) f.Write( b, typeNameReplacer );
+            bool atLeastOne = false;
+            foreach( var f in Fields )
+            {
+                if( atLeastOne ) b.Append( ',' );
+                else atLeastOne = true;
+                f.Write( b, typeNameReplacer );
+            }
             return b.Append( ')' );
         }
 
         /// <summary>
-        /// Overridden to return the <see cref="Write(StringBuilder)"/> result.
+        /// Overridden to return the <see cref="Write"/> result.
         /// </summary>
         /// <returns>The type string.</returns>
         public override string ToString() => Write( new StringBuilder() ).ToString();

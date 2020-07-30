@@ -7,7 +7,8 @@ using System.Text;
 namespace CK.CodeGen
 {
     /// <summary>
-    /// Unifies <see cref="TypeName"/> and <see cref="TupleTypeName"/> (simple algebraic data type).
+    /// Unifies <see cref="TypeName"/> and <see cref="TupleTypeName"/> (simple algebraic data type) and handles
+    /// array definition (jagged, and/or multi-dimensional array) of such types if <see cref="ArrayDimensions"/> is not empty.
     /// </summary>
     public class ExtendedTypeName
     {
@@ -147,7 +148,7 @@ namespace CK.CodeGen
         }
 
         /// <summary>
-        /// Overridden to return the <see cref="Write(StringBuilder)"/> result.
+        /// Overridden to return the <see cref="Write"/> result.
         /// </summary>
         /// <returns>The type string.</returns>
         public override string ToString() => Write( new StringBuilder() ).ToString();
