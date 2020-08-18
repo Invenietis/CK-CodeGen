@@ -51,7 +51,7 @@ namespace CK.CodeGen
         }
 
         
-        public void DoAdd( string code ) => CodePart.DoAdd( code );
+        public void DoAdd( string? code ) => CodePart.DoAdd( code );
 
         public IDictionary<object, object?> Memory => CodePart.Memory;
 

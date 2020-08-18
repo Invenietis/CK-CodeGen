@@ -15,7 +15,7 @@ namespace CK.CodeGen
             Parts = new List<object>();
         }
 
-        public void DoAdd( string code )
+        public void DoAdd( string? code )
         {
             if( !String.IsNullOrEmpty( code ) ) Parts.Add( code );
         }
@@ -49,8 +49,6 @@ namespace CK.CodeGen
             b.AppendLine();
             return b;
         }
-
-        public void BuildPart( Action<string> collector ) => Build( new SmarterStringBuilder( collector ) );
 
         public StringBuilder Build( StringBuilder b, bool closeScope ) => Build( new SmarterStringBuilder( b ) ).Builder!;
 

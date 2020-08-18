@@ -11,7 +11,7 @@ namespace CK.CodeGen
         /// Adds a raw string to this writer.
         /// </summary>
         /// <param name="code">Raw C# code. Can be null or empty.</param>
-        void DoAdd( string code );
+        void DoAdd( string? code );
 
     }
 }

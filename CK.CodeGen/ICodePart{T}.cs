@@ -18,11 +18,5 @@ namespace CK.CodeGen
         /// Gets the owner of this part.
         /// </summary>
         T PartOwner { get; }
-
-        /// <summary>
-        /// Collects the whole code of this part into a string collector.
-        /// </summary>
-        /// <param name="collector">The string collector where strings will be sent.</param>
-        void BuildPart( Action<string> collector );
     }
 }
