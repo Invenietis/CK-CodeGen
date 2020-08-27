@@ -31,7 +31,7 @@ namespace CK.CodeGen
         /// </summary>
         /// <param name="this">This type. Can be null.</param>
         /// <returns>The code to obtain this Type' type.</returns>
-        static public string ToGetTypeSourceString( this Type @this )
+        static public string ToGetTypeSourceString( this Type? @this )
         {
             return @this == null
                     ? "null"
@@ -46,7 +46,7 @@ namespace CK.CodeGen
         /// </summary>
         /// <param name="this">This string. Can be null.</param>
         /// <returns>The code to represent it.</returns>
-        static public string ToSourceString( this string @this )
+        static public string ToSourceString( this string? @this )
         {
             return @this == null
                         ? "null"
@@ -59,7 +59,7 @@ namespace CK.CodeGen
         /// <param name="this">This type.</param>
         /// <param name="typeDeclaration">True to include generic parameter names in the output.</param>
         /// <returns>The C# type name.</returns>
-        public static string ToCSharpName( this Type @this, bool typeDeclaration = true )
+        public static string ToCSharpName( this Type? @this, bool typeDeclaration = true )
         {
             return new StringCodeWriter().AppendCSharpName( @this, typeDeclaration ).ToString();
         }

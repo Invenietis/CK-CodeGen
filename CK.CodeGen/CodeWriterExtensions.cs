@@ -504,7 +504,7 @@ namespace CK.CodeGen
         /// <param name="this">This code writer.</param>
         /// <param name="s">The string. Can be null.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T AppendSourceString<T>( this T @this, string s ) where T : ICodeWriter
+        static public T AppendSourceString<T>( this T @this, string? s ) where T : ICodeWriter
         {
             return @this.Append( s.ToSourceString() );
         }
@@ -738,7 +738,7 @@ namespace CK.CodeGen
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
-        /// <param name="f">Actio to apply to this code writer.</param>
+        /// <param name="f">Action to apply to this code writer.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
         public static T Append<T>( this T @this, Action<T> f ) where T : ICodeWriter
         {
