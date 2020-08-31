@@ -10,6 +10,15 @@ namespace CK.CodeGen
     /// <summary>
     /// Full immutable representation of a Nullable Type with its <see cref="SubTypes"/>.
     /// This does not capture nesting/enclosing generic types: this can be computed only for top level types or types nested in non generic types.
+    /// <para>
+    /// The extension method <see cref="NullabilityTypeExtensions.GetNullableTypeTree(Type, NullabilityTypeInfo)"/> is the factory method to use
+    /// to obtain this detailed information...
+    /// </para>
+    /// <para>
+    /// ...or one of the other extension methods that first obtain the <see cref="NullabilityTypeInfo"/>:
+    /// <see cref="NullabilityTypeExtensions.GetNullableTypeInfo(System.Reflection.PropertyInfo)"/>, <see cref="NullabilityTypeExtensions.GetNullableTypeInfo(System.Reflection.ParameterInfo)"/>
+    /// or <see cref="NullabilityTypeExtensions.GetNullableTypeInfo(System.Reflection.FieldInfo)"/>.
+    /// </para>
     /// </summary>
     public readonly struct NullableTypeTree
     {

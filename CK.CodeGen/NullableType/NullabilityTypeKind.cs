@@ -6,6 +6,7 @@ namespace CK.CodeGen
 {
     /// <summary>
     /// Captures nullability information about a Type.
+    /// See <see cref="NullabilityTypeExtensions.GetNullabilityKind(Type)"/>.
     /// </summary>
     public enum NullabilityTypeKind : byte
     {

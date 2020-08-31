@@ -12,7 +12,6 @@ namespace CK.CodeGen
     /// </summary>
     public static class NullabilityTypeExtensions
     {
-
         /// <summary>
         /// Gets the <see cref="NullabilityTypeKind"/> for a type.
         /// A reference type cannot be, by itself, a <see cref="NullabilityTypeKind.NonNullableReferenceType"/>: this

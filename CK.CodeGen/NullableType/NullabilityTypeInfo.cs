@@ -11,6 +11,10 @@ namespace CK.CodeGen
     /// <summary>
     /// Captures a type nullability information.
     /// See https://github.com/dotnet/roslyn/blob/master/docs/features/nullable-metadata.md
+    /// <para>
+    /// The extension methods <see cref="NullabilityTypeExtensions.GetNullabilityInfo(System.Reflection.ParameterInfo)"/>, <see cref="NullabilityTypeExtensions.GetNullabilityInfo(System.Reflection.ParameterInfo)"/>
+    /// or <see cref="NullabilityTypeExtensions.GetNullabilityInfo(System.Reflection.FieldInfo)"/> retrieve this information.
+    /// </para>
     /// </summary>
     public readonly struct NullabilityTypeInfo : IEquatable<NullabilityTypeInfo>
     {
