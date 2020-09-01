@@ -16,8 +16,12 @@ namespace CK.CodeGen
     /// </para>
     /// <para>
     /// ...or one of the other extension methods that first obtain the <see cref="NullabilityTypeInfo"/>:
-    /// <see cref="NullabilityTypeExtensions.GetNullableTypeInfo(System.Reflection.PropertyInfo)"/>, <see cref="NullabilityTypeExtensions.GetNullableTypeInfo(System.Reflection.ParameterInfo)"/>
-    /// or <see cref="NullabilityTypeExtensions.GetNullableTypeInfo(System.Reflection.FieldInfo)"/>.
+    /// <see cref="NullabilityTypeExtensions.GetNullableTypeTree(System.Reflection.PropertyInfo)"/>, <see cref="NullabilityTypeExtensions.GetNullableTypeTree(System.Reflection.ParameterInfo)"/>
+    /// or <see cref="NullabilityTypeExtensions.GetNullableTypeTree(System.Reflection.FieldInfo)"/>.
+    /// </para>
+    /// <para>
+    /// When no Nullable Reference Type (NRT) context is available (oblivious context), the basic <see cref="NullabilityTypeExtensions.GetNullableTypeTree(Type)"/>
+    /// can be used.
     /// </para>
     /// </summary>
     public readonly struct NullableTypeTree
@@ -130,7 +134,7 @@ namespace CK.CodeGen
         /// <summary>
         /// Calls <see cref="ToString(StringBuilder,bool)"/> (without namespaces) and returns the result.
         /// </summary>
-        /// <returns>The type name whithout namespace not nesting types.</returns>
+        /// <returns>The type name whithout namespace nor nesting types.</returns>
         public override string ToString() => ToString( false );
     }
 }

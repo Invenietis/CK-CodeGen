@@ -3,12 +3,35 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace CK.CodeGen.Tests
 {
     [TestFixture]
     partial class NullableTypeTests
     {
+        [Test]
+        public void Type_from_typeof_is_oblivious_to_nullable()
+        {
+            var t1 = typeof( List<string?> );
+            var t2 = typeof( List<string> );
+
+            t1.Should().BeSameAs( t2 );
+
+            var a = t1.GetCustomAttributesData().Single( a => a.AttributeType.Name == "NullableAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
+            object? data = a.ConstructorArguments[0].Value;
+            // A single value means "apply to everything in the type", e.g. 1 for Dictionary<string, string>, 2 for Dictionary<string?, string?>?
+            // Here, we have a single 0 (oblivious).
+            data.Should().Be( (byte)0 );
+
+            var n2 = t2.GetNullableTypeTree();
+            n2.ToString().Should().Be( "List<string?>?", "The basic extension methods (oblivious context): all reference types are nullable." );
+
+            // This is the same a null NRT profile.
+            var n1 = t1.GetNullableTypeTree( new NullabilityTypeInfo( t1.GetNullabilityKind(), null ) );
+            n1.ToString().Should().Be( "List<string?>?" );
+        }
+
 #pragma warning disable IDE0052 // Remove unread private members
 #pragma warning disable IDE0051 // Remove unused private members
 #pragma warning disable IDE1006 // Naming Styles
@@ -66,6 +89,8 @@ namespace CK.CodeGen.Tests
             CheckAll( member, result, info );
         }
 
+
+#pragma warning disable 169, 414  // The field is never used, The field is assigned but its value is never used
 
         (int, string) VTIntString = (1, "");
 
@@ -146,6 +171,10 @@ namespace CK.CodeGen.Tests
             }
         }
 
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
+#pragma warning disable IDE0044 // Add readonly modifier
+#pragma warning disable 0649 // Field 'is never assigned to, and will always have its default value null
+        
         GenParent<int>.NestedNotSupported NotSupported;
 
         NotGeneric.NestedNotSupported AlsoNotSupported;

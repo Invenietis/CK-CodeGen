@@ -21,7 +21,7 @@ namespace CK.CodeGen
         /// <param name="this">This type.</param>
         /// <remarks>
         /// <para>
-        /// <c>typeof(List&lt;string?&gt;)</c> is valid and type but <c>typeof(List&lt;string?&gt;?)</c>
+        /// <c>typeof(List&lt;string?&gt;)</c> is valid but <c>typeof(List&lt;string?&gt;?)</c>
         /// cannot compile and this makes sense: the "outer", "root" nullability depends on the usage of the type: non nullable reference types can be obtained
         /// via a <see cref="ParameterInfo"/> or a <see cref="PropertyInfo"/> that "references" their type.
         /// <para>
@@ -69,13 +69,13 @@ namespace CK.CodeGen
 
         /// <summary>
         /// Creates a <see cref="NullableTypeTree"/> for a parameter's type.
-        /// The type mus not be a nested type (its <see cref="Type.DeclaringType"/> must be null) otherwise
-        /// an <see cref="ArgumentException"/> is thrown.
+        /// The type must not be a nested type in a generic (its <see cref="Type.DeclaringType"/> must be null or not be a generic type)
+        /// otherwise an <see cref="ArgumentException"/> is thrown.
         /// </summary>
         /// <param name="this">This parameter.</param>
         /// <returns>The nullable tree for the parameter' type.</returns>
         [DebuggerStepThrough]
-        public static NullableTypeTree GetNullableTypeInfo( this ParameterInfo @this )
+        public static NullableTypeTree GetNullableTypeTree( this ParameterInfo @this )
         {
             var info = GetNullabilityInfo( @this );
             return GetNullableTypeTree( @this.ParameterType, info );
@@ -94,13 +94,13 @@ namespace CK.CodeGen
 
         /// <summary>
         /// Creates a <see cref="NullableTypeTree"/> for a property's type.
-        /// The type mus not be a nested type (its <see cref="Type.DeclaringType"/> must be null) otherwise
-        /// an <see cref="ArgumentException"/> is thrown.
+        /// The type must not be a nested type in a generic (its <see cref="Type.DeclaringType"/> must be null or not be a generic type)
+        /// otherwise an <see cref="ArgumentException"/> is thrown.
         /// </summary>
         /// <param name="this">This property.</param>
         /// <returns>The nullable tree for the property's type.</returns>
         [DebuggerStepThrough]
-        public static NullableTypeTree GetNullableTypeInfo( this PropertyInfo @this )
+        public static NullableTypeTree GetNullableTypeTree( this PropertyInfo @this )
         {
             var info = GetNullabilityInfo( @this );
             return GetNullableTypeTree( @this.PropertyType, info );
@@ -119,13 +119,13 @@ namespace CK.CodeGen
 
         /// <summary>
         /// Creates a <see cref="NullableTypeTree"/> for a field's type.
-        /// The type mus not be a nested type (its <see cref="Type.DeclaringType"/> must be null) otherwise
-        /// an <see cref="ArgumentException"/> is thrown.
+        /// The type must not be a nested type in a generic (its <see cref="Type.DeclaringType"/> must be null or not be a generic type)
+        /// otherwise an <see cref="ArgumentException"/> is thrown.
         /// </summary>
         /// <param name="this">This field.</param>
         /// <returns>The nullable tree for the fields's type.</returns>
         [DebuggerStepThrough]
-        public static NullableTypeTree GetNullableTypeInfo( this FieldInfo @this )
+        public static NullableTypeTree GetNullableTypeTree( this FieldInfo @this )
         {
             var info = GetNullabilityInfo( @this );
             return GetNullableTypeTree( @this.FieldType, info );
@@ -142,6 +142,18 @@ namespace CK.CodeGen
         public static NullableTypeTree GetNullableTypeTree( this Type @this, NullabilityTypeInfo info )
         {
             return GetNullableTypeTree( @this, info.GenerateAnnotations().GetEnumerator(), info.Kind );
+        }
+
+        /// <summary>
+        /// Creates a <see cref="NullableTypeTree"/> for this type based on no specific NRT profile (oblivious context):
+        /// all reference types that appear in the tree are de facto nullable. 
+        /// </summary>
+        /// <param name="this">This type.</param>
+        /// <returns>The detailed, recursive, <see cref="NullableTypeTree"/>.</returns>
+        [DebuggerStepThrough]
+        public static NullableTypeTree GetNullableTypeTree( this Type @this )
+        {
+            return GetNullableTypeTree( @this, new NullabilityTypeInfo( GetNullabilityKind( @this ), null ) );
         }
 
         static NullableTypeTree GetNullableTypeTree( Type t, IEnumerator<byte> annotations, NullabilityTypeKind known )
