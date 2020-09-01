@@ -27,9 +27,12 @@ namespace CK.CodeGen.Tests
             var n2 = t2.GetNullableTypeTree();
             n2.ToString().Should().Be( "List<string?>?", "The basic extension methods (oblivious context): all reference types are nullable." );
 
-            // This is the same a null NRT profile.
+            // This is the same as a null NRT profile.
             var n1 = t1.GetNullableTypeTree( new NullabilityTypeInfo( t1.GetNullabilityKind(), null ) );
             n1.ToString().Should().Be( "List<string?>?" );
+
+            n1.Equals( n2 ).Should().BeTrue();
+            n1.GetHashCode().Should().Be( n2.GetHashCode() );
         }
 
 #pragma warning disable IDE0052 // Remove unread private members

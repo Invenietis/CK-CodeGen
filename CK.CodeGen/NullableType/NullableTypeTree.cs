@@ -24,11 +24,11 @@ namespace CK.CodeGen
     /// can be used.
     /// </para>
     /// </summary>
-    public readonly struct NullableTypeTree
+    public readonly struct NullableTypeTree : IEquatable<NullableTypeTree>
     {
         /// <summary>
         /// The type.
-        /// When Type is a <see cref="NullablityTypeKindExtension.IsNullableValueType(NullabilityTypeKind)"/> (a <see cref="Nullable{T}"/>),
+        /// When this <see cref="Kind"/> is a <see cref="NullablityTypeKindExtension.IsNullableValueType(NullabilityTypeKind)"/> (a <see cref="Nullable{T}"/>),
         /// then this type is the inner type, not the Nullable generic type.
         /// </summary>
         public readonly Type Type;
@@ -44,7 +44,7 @@ namespace CK.CodeGen
         public readonly IReadOnlyList<NullableTypeTree> SubTypes;
 
         /// <summary>
-        /// Initalizes a new <see cref="NullableTypeTree"/>.
+        /// Initializes a new <see cref="NullableTypeTree"/>.
         /// </summary>
         /// <param name="t">The Type.</param>
         /// <param name="k">The <see cref="NullabilityTypeKind"/>.</param>
@@ -55,6 +55,39 @@ namespace CK.CodeGen
             Type = t;
             Kind = k;
             SubTypes = s;
+        }
+
+        /// <summary>
+        /// See <see cref="Equals(NullableTypeTree)"/>.
+        /// </summary>
+        /// <param name="obj">The other object.</param>
+        /// <returns>True if they are the same, false otherwise.</returns>
+        public override bool Equals( object? obj ) => obj is NullableTypeTree tree && Equals( tree );
+
+        /// <summary>
+        /// Implements a strict equality except that <see cref="NullabilityTypeKind.NRTFullNullable"/> and <see cref="NullabilityTypeKind.NRTFullNonNullable"/> bits
+        /// are ignored.
+        /// </summary>
+        /// <param name="other">The other nullable type tree.</param>
+        /// <returns>True if they are the same, false otherwise.</returns>
+        public bool Equals( NullableTypeTree other )
+        {
+            return (Kind & ~(NullabilityTypeKind.NRTFullNonNullable | NullabilityTypeKind.NRTFullNullable)) == (other.Kind & ~(NullabilityTypeKind.NRTFullNonNullable | NullabilityTypeKind.NRTFullNullable))
+                    && EqualityComparer<Type>.Default.Equals( Type, other.Type )
+                    && SubTypes.SequenceEqual( other.SubTypes );
+        }
+
+        /// <summary>
+        /// See <see cref="Equals(NullableTypeTree)"/>.
+        /// </summary>
+        /// <returns>The hash code.</returns>
+        public override int GetHashCode()
+        {
+            HashCode c = new HashCode();
+            c.Add( Type );
+            c.Add( (byte)(Kind & ~(NullabilityTypeKind.NRTFullNonNullable | NullabilityTypeKind.NRTFullNullable)) );
+            foreach( var t in SubTypes ) c.Add( t.GetHashCode() );
+            return c.ToHashCode();
         }
 
         /// <summary>
@@ -122,7 +155,6 @@ namespace CK.CodeGen
             }
 
         }
-
 
         /// <summary>
         /// Produces a string description of this <see cref="NullableTypeTree"/>.
