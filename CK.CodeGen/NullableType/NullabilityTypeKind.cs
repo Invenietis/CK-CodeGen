@@ -46,7 +46,7 @@ namespace CK.CodeGen
         IsTupleType = 32,
 
         /// <summary>
-        /// Optional flag thar describes a Nullable Reference Type marked with NullableAttribute(2): the type
+        /// Optional flag that describes a Nullable Reference Type marked with NullableAttribute(2): the type
         /// is necessarily <see cref="IsReferenceType"/> and <see cref="IsNullable"/> and if the type has generic arguments, then
         /// all its subordinated types that are reference types are also nullables.
         /// <para>

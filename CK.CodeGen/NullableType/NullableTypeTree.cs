@@ -44,6 +44,37 @@ namespace CK.CodeGen
         public readonly IReadOnlyList<NullableTypeTree> SubTypes;
 
         /// <summary>
+        /// Gets whether this top <see cref="Type"/> is a "normal null".
+        /// We consider "Null Normality" as simply being <c>Kind.IsReferenceType() == Kind.IsNullable()</c>: a reference type
+        /// is "normally nullable" and a value type is "normally not nullable".
+        /// <para>
+        /// This acts as a normalized form that can avoid doubling a cache of <see cref="NullableTypeTree"/> information when
+        /// the cached information is easily computed to the opposite "not normally nullable" form (like adding or removing a '?'
+        /// after a type name).
+        /// </para>
+        /// </summary>
+        public bool IsNormalNull => Kind.IsReferenceType() == Kind.IsNullable();
+
+        /// <summary>
+        /// Returns this full <see cref="NullableTypeTree"/> in its <see cref="IsNormalNull"/> form:
+        /// reference types are <see cref="NullabilityTypeKind.IsNullable|NullabilityTypeKind.IsTechnicallyNullable"/> and
+        /// value types are not.
+        /// </summary>
+        /// <returns>This or a normalized tree.</returns>
+        public NullableTypeTree ToNormalNull()
+        {
+            if( Kind.IsReferenceType() )
+            {
+                return Kind.IsNullable()
+                        ? this
+                        : new NullableTypeTree( Type, Kind | NullabilityTypeKind.IsNullable, SubTypes );
+            }
+            return Kind.IsNullable()
+                    ? new NullableTypeTree( Type, Kind & ~(NullabilityTypeKind.IsNullable|NullabilityTypeKind.IsTechnicallyNullable), SubTypes )
+                    : this;
+        }
+
+        /// <summary>
         /// Initializes a new <see cref="NullableTypeTree"/>.
         /// </summary>
         /// <param name="t">The Type.</param>
