@@ -1,14 +1,14 @@
 <Project>
   <ItemGroup>
-    <PackageReference Update="CK.Text" Version="9.0.1--0022-develop" />
+    <PackageReference Update="CK.Text" Version="9.0.1--0023-develop" />
     <PackageReference Update="CSemVer" Version="9.0.0" />
     <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="3.8.0" />
-    <PackageReference Update="CK.ActivityMonitor.SimpleSender" Version="13.3.1--0013-develop" />
+    <PackageReference Update="CK.ActivityMonitor.SimpleSender" Version="13.3.1--0015-develop" />
     <PackageReference Update="CK.WeakAssemblyNameResolver" Version="0.5.2--0045-develop" />
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Update="CK.Testing.Monitoring" Version="0.18.1--0017-develop" />
+    <PackageReference Update="CK.Testing.Monitoring" Version="0.18.1--0019-develop" />
     <PackageReference Update="FluentAssertions" Version="5.10.3" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.8.3" />
     <PackageReference Update="NUnit" Version="3.12.0" />
