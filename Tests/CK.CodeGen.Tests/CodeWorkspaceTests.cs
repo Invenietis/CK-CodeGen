@@ -59,17 +59,18 @@ namespace CK.CodeGen.Tests
         {
             INamespaceScope g = CodeWorkspace.Create().Global;
             g.Workspace.TypeCreated += Workspace_TypeCreated;
-            var t1 = g.CreateType( "public class C1" );
+            var t1 = g.GeneratedByComment().CreateType( "public class C1" );
             var t2 = g.FindOrCreateNamespace( "Yop.Yup.Yip" ).CreateType( t => t.Append( "private ref readonly struct XRQ { public readonly int X = 3; }" ) );
 
             var text = g.ToString();
-            text.Should().Contain( @"[type: CodeGenerated(Name = @""XRQ"")]readonly ref struct XRQ" );
-            text.Should().Contain( @"[type: CodeGenerated(Name = @""C1"")]public class C1" );
+            // Here we add the a "Name" property (the real StObjGenAttribute has no parameters nor properties).
+            text.Should().Contain( @"[type: StObjGen(Name = @""XRQ"")]readonly ref struct XRQ" );
+            text.Should().Contain( @"[type: StObjGen(Name = @""C1"")]public class C1" );
         }
 
         void Workspace_TypeCreated( ITypeScope t )
         {
-            t.Definition.Attributes.Ensure( CodeAttributeTarget.Type ).Attributes.Add( new AttributeDefinition( "CodeGenerated" , $"Name = {t.Definition.Name.Name.ToSourceString()}" ) );
+            t.Definition.Attributes.Ensure( CodeAttributeTarget.Type ).Attributes.Add( new AttributeDefinition( "StObjGen" , $"Name = {t.Definition.Name.Name.ToSourceString()}" ) );
         }
     }
 }
