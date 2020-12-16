@@ -36,7 +36,7 @@ namespace CK.CodeGen
         public IList<AttributeDefinition> Attributes { get; }
 
         /// <summary>
-        /// Writes this AttributeTargetDefinition into the provided StringBuilder.
+        /// Writes this AttributeSetDefinition into the provided StringBuilder.
         /// </summary>
         /// <param name="b">The target.</param>
         /// <returns>The StringBuilder to enable fluent syntax.</returns>

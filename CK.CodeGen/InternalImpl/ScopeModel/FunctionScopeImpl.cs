@@ -86,14 +86,9 @@ namespace CK.CodeGen
             return b;
         }
 
-        public IFunctionScope CreateFunction( Action<IFunctionScope> header )
-        {
-            return _funcs.Create( Workspace, this, header );
-        }
-        public IFunctionScope CreateFunction( FunctionDefinition def )
-        {
-            return _funcs.Create( Workspace, this, def );
-        }
+        public IFunctionScope CreateFunction( Action<IFunctionScope> header ) => _funcs.Create( Workspace, this, header );
+
+        public IFunctionScope CreateFunction( FunctionDefinition def ) => _funcs.Create( Workspace, this, def );
 
         public IFunctionScopePart CreatePart( bool top )
         {

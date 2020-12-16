@@ -156,6 +156,7 @@ namespace CK.CodeGen
             {
                 exist = new NamespaceScopeImpl( Workspace, this, names[idx] );
                 _subNamespaces.Add( exist );
+                Workspace.OnNamespaceCreated( exist );
             }
             return names.Length == ++idx ? exist : exist.DoFindOrCreateNamespace( names, idx );
         }

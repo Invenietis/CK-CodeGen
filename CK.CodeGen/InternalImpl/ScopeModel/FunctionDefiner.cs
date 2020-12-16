@@ -21,6 +21,7 @@ namespace CK.CodeGen
             header( f );
             f.Initialize();
             _funcs.Add( f.Name, f );
+            ws.OnFunctionCreated( f );
             return f;
         }
 
