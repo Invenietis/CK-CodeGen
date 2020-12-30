@@ -1,5 +1,5 @@
 using System;
-using CK.CodeGen.Abstractions;
+using CK.CodeGen;
 using NUnit.Framework;
 using FluentAssertions;
 
@@ -20,23 +20,9 @@ namespace CK.CodeGen.Tests
             var f = t.CreateFunction( header );
             f.Should().NotBeNull();
             f.IsConstructor.Should().Be( returnType == null );
-            f.ReturnType.Should().Be( returnType );
+            if( !f.IsConstructor ) f.Definition.ReturnType!.ToString().Should().Be( returnType );
         }
 
-        [TestCase( "void M(int i)", "M(int i)" )]
-        [TestCase( "L < T1, T2 > M < T > ( int i , List < T >a )", "M<T>(int i, List<T> a)" )]
-        [TestCase( "List<T,Dictionary<A,B>> M<L<T>,H<K>>( N < H > i , List<T> a )", "M<L<T>,H<K>>(N<H> i, List<T> a)" )]
-        [TestCase( "ACONSTRuctor( N<H> i, List<T> a )", "ACONSTRuctor(N<H> i, List<T> a)" )]
-        [TestCase( "System.Int32 MMM()", "MMM()" )]
-        [TestCase( "public override System.Data.SqlClient.SqlCommand Do( ref System.Nullable<int> i )", "Do(ref System.Nullable<int> i)" )]
-        [TestCase( "R M( [ A ( 1 ) ] [ A ] ref System . Nullable < int > i = \"\",params K[,,] p = new(){ nimp, 0x9876UL })", "M(ref System.Nullable<int> i, params K[,,] p)" )]
-        public void CreateFunction_normalizes_the_function_name( string header, string name )
-        {
-            var t = CreateTypeScope();
-            var f = t.CreateFunction( header );
-            f.Should().NotBeNull();
-            f.Name.Should().Be( name );
-        }
 
         [TestCase( "M(int i)", "M(int i)" )]
         [TestCase( "M(int i)", " M ( int i ) where K : class {" )]
@@ -50,12 +36,50 @@ namespace CK.CodeGen.Tests
             t.Invoking( x => x.CreateFunction( clash ) ).Should().Throw<ArgumentException>();
         }
 
+        [TestCase( "M(int i)" )]
+        [TestCase( "int M<T>(int i = 9, T?[]? p)")]
+        public void CreateFunction_with_FunctionDefinition( string original )
+        {
+            var t = CreateTypeScope();
+            FunctionDefinition.TryParse( original, out var def ).Should().BeTrue();
+            var f = t.CreateFunction( def );
+            f.Should().NotBeNull();
+            t.Invoking( x => x.CreateFunction( def ) ).Should().Throw<ArgumentException>();
+        }
+
+        [Test]
+        public void using_FindOrCreateFunction_on_ctor_forbids_this_or_base_clause()
+        {
+            var t = CreateTypeScope();
+            t.Invoking( x => x.FindOrCreateFunction( "C() : this()" ) ).Should().Throw<ArgumentException>();
+            t.Invoking( x => x.FindOrCreateFunction( "C( int a ) : base( a )" ) ).Should().Throw<ArgumentException>();
+        }
+
+        [Test]
+        public void using_FindOrCreateFunction_on_functions_forbids_any_body_start()
+        {
+            var t = CreateTypeScope();
+            t.Invoking( x => x.FindOrCreateFunction( "int M() => 3;" ) ).Should().Throw<ArgumentException>();
+            t.Invoking( x => x.FindOrCreateFunction( "int M( int a ) { // some code" ) ).Should().Throw<ArgumentException>();
+        }
+
+        [Test]
+        public void using_CreateFunction_on_functions_handles_body_start()
+        {
+            var t = CreateTypeScope();
+            var f1 = t.CreateFunction( "int M() => 3;" );
+            f1.ToString().Should().Contain( "=> 3;" );
+
+            var f2 = t.CreateFunction( "int M( int a ) { int a; (on a new line)." );
+            f2.ToString().Should().Contain( "int a;" );
+        }
+
+
         [TestCase( "public C()" )]
         [TestCase( "public C() : base( 3 )" )]
-        [TestCase( "public C(X a) : this( a*a )" )]
+        [TestCase( "public C( X a, Y b ) : this( a*a , typeof(T) )" )]
         [TestCase( "public C() : base( new[]{ new O(), (null) }, Kilo )" )]
-        [TestCase( @"public S1()
-: base( typeof( SFront1 ),
+        [TestCase( @"public S1() : base( typeof( SFront1 ),
 new[]{
 new StObjServiceParameterInfo( typeof(ISBase), 0, @""next"", I0)
 } )" )]

@@ -22,8 +22,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.CodeGen.Tests", "Tests\C
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeCakeBuilder", "CodeCakeBuilder\CodeCakeBuilder.csproj", "{FD4817B6-3CD7-4E74-AA10-7CA95FDFCF2D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.CodeGen.Abstractions", "CK.CodeGen.Abstractions\CK.CodeGen.Abstractions.csproj", "{5A38CA78-0AF5-4CB2-9C9D-13B556D5C8D2}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.CodeGen.Roslyn", "CK.CodeGen.Roslyn\CK.CodeGen.Roslyn.csproj", "{4CC49F8B-96E4-4F2A-A266-DD8AA89414A3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CK.CodeGen.Roslyn.Tests", "Tests\CK.CodeGen.Roslyn.Tests\CK.CodeGen.Roslyn.Tests.csproj", "{2C4D08C0-7C42-40AF-B181-03F62323F1A4}"
@@ -46,10 +44,6 @@ Global
 		{FD4817B6-3CD7-4E74-AA10-7CA95FDFCF2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD4817B6-3CD7-4E74-AA10-7CA95FDFCF2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD4817B6-3CD7-4E74-AA10-7CA95FDFCF2D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5A38CA78-0AF5-4CB2-9C9D-13B556D5C8D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5A38CA78-0AF5-4CB2-9C9D-13B556D5C8D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5A38CA78-0AF5-4CB2-9C9D-13B556D5C8D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5A38CA78-0AF5-4CB2-9C9D-13B556D5C8D2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4CC49F8B-96E4-4F2A-A266-DD8AA89414A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4CC49F8B-96E4-4F2A-A266-DD8AA89414A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4CC49F8B-96E4-4F2A-A266-DD8AA89414A3}.Release|Any CPU.ActiveCfg = Release|Any CPU

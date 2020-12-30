@@ -9,7 +9,7 @@ using FluentAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using CK.CodeGen.Abstractions;
+using CK.CodeGen;
 
 namespace CK.CodeGen.Roslyn.Tests
 {

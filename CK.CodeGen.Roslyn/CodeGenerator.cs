@@ -4,10 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Emit;
 using System;
-using System.Text;
-using CK.CodeGen.Abstractions;
 using CK.Core;
 
 namespace CK.CodeGen
@@ -18,6 +15,11 @@ namespace CK.CodeGen
     public class CodeGenerator
     {
         readonly Func<ICodeWorkspace> _workspaceFactory;
+
+        /// <summary>
+        /// Gets the default option, initialized to produce <see cref="OutputKind.DynamicallyLinkedLibrary"/> output.
+        /// </summary>
+        public static readonly CSharpCompilationOptions DefaultCompilationOptions = new CSharpCompilationOptions( OutputKind.DynamicallyLinkedLibrary );
 
         /// <summary>
         /// Initializes a new <see cref="CodeGenerator"/> with options.
@@ -37,13 +39,13 @@ namespace CK.CodeGen
         /// Gets or sets the parse options to use.
         /// Default to null: all default applies, the language version is <see cref="LanguageVersion.Default"/>.
         /// </summary>
-        public CSharpParseOptions ParseOptions { get; set; }
+        public CSharpParseOptions? ParseOptions { get; set; }
 
         /// <summary>
         /// Gets or sets a <see cref="CSharpCompilationOptions"/>.
-        /// Defaults to the option default initialized to produce <see cref="OutputKind.DynamicallyLinkedLibrary"/> output.
+        /// When let to null, defaults to the <see cref="DefaultCompilationOptions"/>.
         /// </summary>
-        public CSharpCompilationOptions CompilationOptions { get; set; }
+        public CSharpCompilationOptions? CompilationOptions { get; set; }
 
         /// <summary>
         /// Gets or sets whether the assembly that defines the object type is
@@ -69,7 +71,7 @@ namespace CK.CodeGen
         /// <param name="skipCompilation">True to skip the compilation. Only the parsing and the source generation is done.</param>
         /// <param name="loader">Optional loader function to load the final emitted assembly.</param>
         /// <returns>Encapsulation of the result.</returns>
-        public GenerateResult Generate( string sourceCode, string assemblyPath, IEnumerable<Assembly> someReferences, bool skipCompilation, Func<string, Assembly> loader = null )
+        public GenerateResult Generate( string sourceCode, string assemblyPath, IEnumerable<Assembly> someReferences, bool skipCompilation, Func<string, Assembly>? loader = null )
         {
             var w = _workspaceFactory();
             if( !String.IsNullOrWhiteSpace( sourceCode ) ) w.Global.Append( sourceCode );
@@ -85,7 +87,7 @@ namespace CK.CodeGen
         /// <param name="skipCompilation">True to skip the compilation. Only the parsing and the source generation is done.</param>
         /// <param name="loader">Optional loader function to load the final emitted assembly.</param>
         /// <returns>Encapsulation of the result.</returns>
-        public GenerateResult Generate( ICodeWorkspace code, string assemblyPath, bool skipCompilation, Func<string, Assembly> loader = null )
+        public GenerateResult Generate( ICodeWorkspace code, string assemblyPath, bool skipCompilation, Func<string, Assembly>? loader = null )
         {
             if( code == null ) throw new ArgumentNullException( nameof( code ) );
             using( var weakLoader = WeakAssemblyNameResolver.TemporaryInstall() )
@@ -119,6 +121,50 @@ namespace CK.CodeGen
         }
 
         /// <summary>
+        /// Compiles or parses only a single code source.
+        /// </summary>
+        /// <param name="code"></param>
+        /// <param name="assemblyPath">The output path or null if only parsing is required.</param>
+        /// <param name="references">Optional list of dependent assemblies. Used only if compilation is required. This list will be transitively closed.</param>
+        /// <param name="parseOptions">By default, all default applies, the language version is <see cref="LanguageVersion.Default"/>.</param>
+        /// <param name="compileOptions">The compilation options. Used only if compilation is required. Defaults to <see cref="DefaultCompilationOptions"/>.</param>
+        /// <param name="loader">Optional loader function to load the final emitted assembly. Used only if compilation is required.</param>
+        /// <returns>Encapsulation of the result.</returns>
+        static public GenerateResult Generate(
+            string code,
+            string? assemblyPath = null,
+            IEnumerable<Assembly>? references = null,
+            CSharpParseOptions? parseOptions = null,
+            CSharpCompilationOptions? compileOptions = null,
+            Func<string, Assembly>? loader = null )
+        {
+            SyntaxTree[] trees = new[] { SyntaxFactory.ParseSyntaxTree( code, parseOptions ) };
+            if( String.IsNullOrEmpty( assemblyPath ) )
+            {
+                // Parsing is enough.
+                return new GenerateResult( trees );
+            }
+            using( var weakLoader = WeakAssemblyNameResolver.TemporaryInstall() )
+            {
+                var collector = new HashSet<Assembly>();
+                collector.Add( typeof( object ).Assembly );
+                if( references != null )
+                {
+                    foreach( var a in references )
+                    {
+                        if( collector.Add( a ) ) Discover( a, collector );
+                    }
+                }
+                return Generate( compileOptions,
+                                 trees,
+                                 assemblyPath,
+                                 collector.Select( a => MetadataReference.CreateFromFile( new Uri( a.CodeBase ).LocalPath ) ),
+                                 loader )
+                        .WithLoadFailures( weakLoader.Conflicts );
+            }
+        }
+
+        /// <summary>
         /// Generates an assembly from a <see cref="SyntaxTree"/> list and a
         /// list of <see cref="MetadataReference"/> required reference assemblies.
         /// <para>
@@ -129,20 +175,20 @@ namespace CK.CodeGen
         /// <param name="compileOptions">Compilation options.</param>
         /// <param name="trees">The syntax trees.</param>
         /// <param name="assemblyPath">The full final assembly path (including the .dll extension).</param>
-        /// <param name="allReferences">List of assemblies' references.</param>
+        /// <param name="allReferences">Optional list of assemblies' references.</param>
         /// <param name="loader">Optional loader function to load the final emitted assembly.</param>
         /// <returns>Encapsulation of the result.</returns>
         static public GenerateResult Generate(
-            CSharpCompilationOptions compileOptions,
+            CSharpCompilationOptions? compileOptions,
             IReadOnlyList<SyntaxTree> trees,
             string assemblyPath,
-            IEnumerable<MetadataReference> allReferences,
-            Func<string, Assembly> loader = null )
+            IEnumerable<MetadataReference>? allReferences = null,
+            Func<string, Assembly>? loader = null )
         {
             if( assemblyPath == null ) throw new ArgumentNullException( nameof( assemblyPath ) );
             try
             {
-                var option = compileOptions.WithAssemblyIdentityComparer( DesktopAssemblyIdentityComparer.Default );
+                var option = (compileOptions ?? DefaultCompilationOptions).WithAssemblyIdentityComparer( DesktopAssemblyIdentityComparer.Default );
                 CSharpCompilation compilation = CSharpCompilation.Create(
                     Path.GetFileNameWithoutExtension( assemblyPath ),
                     trees,
@@ -165,7 +211,7 @@ namespace CK.CodeGen
             }
             catch( Exception ex )
             {
-                return new GenerateResult( ex, null, null, null, null, null );
+                return new GenerateResult( ex, Array.Empty<SyntaxTree>(), null, null, null, null );
             }
         }
     }

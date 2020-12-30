@@ -6,13 +6,12 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <Description></Description>
-    <LangVersion>7.2</LangVersion>
+    <Nullable>enable</Nullable>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="CK.Text" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CK.CodeGen.Abstractions\CK.CodeGen.Abstractions.csproj" />
+    <PackageReference Include="CSemVer" />
   </ItemGroup>
 </Project>
