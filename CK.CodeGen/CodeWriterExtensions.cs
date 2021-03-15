@@ -75,6 +75,24 @@ namespace CK.CodeGen
         }
 
         /// <summary>
+        /// Appends a variable name that is prefixed with the @ sign if it's a <see cref="ReservedKeyword"/>.
+        /// </summary>
+        /// <typeparam name="T">The <see cref="ICodeWriter"/>.</typeparam>
+        /// <param name="this">This code writer.</param>
+        /// <param name="name">The variable name. Must not be null, empty or white space.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
+        static public T AppendVariable<T>( this T @this, string name ) where T : ICodeWriter
+        {
+            if( String.IsNullOrWhiteSpace( name ) ) throw new ArgumentNullException( nameof( name ) );
+            if( ReservedKeyword.IsReservedKeyword( name ) )
+            {
+                @this.Append( "@" );
+            }
+            Append( @this, name );
+            return @this;
+        }
+
+        /// <summary>
         /// Appends raw C# code.
         /// This is the most basic Append method to use.
         /// Use <see cref="AppendSourceString{T}(T, string)"/> to append the source string representation.
@@ -251,7 +269,7 @@ namespace CK.CodeGen
         /// <see cref="Type"/>, <see cref="MethodInfo"/>, <see cref="PropertyInfo"/>, <see cref="FieldInfo"/>, <see cref="EventInfo"/>
         /// and <see cref="ConstructorInfo"/>.
         /// Current implementation rely on <see cref="AppendTypeOf{T}(T, Type)"/> on the type (either the <paramref name="m"/> parameter
-        /// or the <see cref="MemberInfo.DeclaringType"/>): the type must be acessible from where it is used.
+        /// or the <see cref="MemberInfo.DeclaringType"/>): the type must be accessible from where it is used.
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>

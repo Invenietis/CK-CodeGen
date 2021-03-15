@@ -25,6 +25,8 @@ namespace CK.CodeGen.Roslyn.Tests
 
         protected abstract string Simple2( string x, Guid g );
 
+        protected abstract string VerbatimParameters( string @this, string @operator );
+
         internal protected abstract BaseToBeOverridden Simple3( out string x, ref Guid g, int p );
 
     }
@@ -72,6 +74,8 @@ namespace CK.CodeGen.Roslyn.Tests
                 .Append( "g = Guid.NewGuid();" ).NewLine()
                 .Append( @"x = ""Hello World!"" + Simple2( ""YES"", g );" ).NewLine()
                 .Append( "return this;" );
+
+            c.CreateOverride( t.GetMethod( "VerbatimParameters", BindingFlags.Instance | BindingFlags.NonPublic ) ).Append( " => @this + @operator;" );
 
             Assembly a = TestHelper.CreateAssembly( workspace.GetGlobalSource(), workspace.AssemblyReferences );
 

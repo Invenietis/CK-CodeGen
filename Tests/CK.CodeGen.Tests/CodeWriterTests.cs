@@ -83,7 +83,7 @@ namespace CK.CodeGen.Tests
         // Missing '('. Specify the correct format and try again. Note that the incorrect format can lead to no test getting executed.
         //
         [Test]
-        public void ToCSharpName_tests_value_types()
+        public void ToCSharpName_tests_Value_Tuples()
         {
             {
                 var writer = new StringCodeWriter( new StringBuilder() );
@@ -117,7 +117,20 @@ namespace CK.CodeGen.Tests
             public class I<T3> { }
         }
 
-
+        [Test]
+        public void AppendVariable_use_At_sign_for_reserved_keywords()
+        {
+            var writer = new StringCodeWriter( new StringBuilder() );
+            foreach( var n in ReservedKeyword.ReservedKeywords )
+            {
+                writer.AppendVariable( n ).Append( "|" );
+            }
+            var c = writer.ToString();
+            foreach( var n in ReservedKeyword.ReservedKeywords )
+            {
+                c.Should().Contain( "@" + n + "|" );
+            }
+        }
     }
 
 }
