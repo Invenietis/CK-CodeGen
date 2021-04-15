@@ -90,7 +90,7 @@ namespace CK.CodeGen
             Type parameterType = p.ParameterType.IsByRef ? p.ParameterType.GetElementType() : p.ParameterType;
             return @this.AppendCSharpName( parameterType, true )
                         .Space()
-                        .Append( p.Name );
+                        .AppendVariable( p.Name );
         }
 
         internal static void CheckIsOverridable( MethodInfo method )
@@ -105,6 +105,5 @@ namespace CK.CodeGen
             int idx = typeName.IndexOf( '<' );
             return idx < 0 ? typeName : typeName.Substring( idx );
         }
-
     }
 }
