@@ -100,6 +100,21 @@ namespace CK.CodeGen.Tests
             CheckAll( member, result, info );
         }
 
+        [TestCase( "ListString", "ListNString" )]
+        [TestCase( "ListString", "NListNString" )]
+        [TestCase( "ListNListListNListAttr", "NListNListListNListAttr" )]
+        public void Types_are_equals_when_only_reference_types_are_used( string m1, string m2 )
+        {
+            var (type1, info1) = GetTypeAndNullability( m1 );
+            var n1 = type1.GetNullableTypeTree( info1 );
+
+            var (type2, info2) = GetTypeAndNullability( m2 );
+            var n2 = type2.GetNullableTypeTree( info2 );
+
+            n1.Should().NotBe( n2, "We handle nullability profile." );
+            type1.Should().BeSameAs( type2 );
+        }
+
 
 #pragma warning disable 169, 414  // The field is never used, The field is assigned but its value is never used
 

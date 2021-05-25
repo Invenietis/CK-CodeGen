@@ -39,7 +39,7 @@ namespace CK.CodeGen
         public readonly NullabilityTypeKind Kind;
 
         /// <summary>
-        /// The subordinates types if any. Can be generic pararameters of the <see cref="Type"/> or the item type of an array.
+        /// The subordinates types if any. Can be generic parameters of the <see cref="Type"/> or the item type of an array.
         /// </summary>
         public readonly IReadOnlyList<NullableTypeTree> SubTypes;
 
@@ -56,9 +56,21 @@ namespace CK.CodeGen
         public bool IsNormalNull => Kind.IsReferenceType() == Kind.IsNullable();
 
         /// <summary>
-        /// Returns this full <see cref="NullableTypeTree"/> in its <see cref="IsNormalNull"/> form:
-        /// reference types are <see cref="NullabilityTypeKind.IsNullable|NullabilityTypeKind.IsTechnicallyNullable"/> and
-        /// value types are not.
+        /// Returns this full <see cref="NullableTypeTree"/> with its top <see cref="Type"/> in <see cref="IsNormalNull"/> form:
+        /// <list type="bullet">
+        /// <item>
+        /// If this is a nullable reference type or a non nullable value type, this is returned unchanged.
+        /// </item>
+        /// <item>
+        /// If this is a non-nullable reference type, a new tree with the same <see cref="Type"/> and a <see cref="NullabilityTypeKind.IsNullable"/> kind
+        /// is returned.
+        /// </item>
+        /// <item>
+        /// If this is a nullable value type, a new tree with the (already not nullable) <see cref="Type"/> and a non <see cref="NullabilityTypeKind.IsNullable"/> kind
+        /// is returned.
+        /// </item>
+        /// </list>
+        /// This doesn't change the type tree in depth, only this top Type/Kind is concerned by this normalization.
         /// </summary>
         /// <returns>This or a normalized tree.</returns>
         public NullableTypeTree ToNormalNull()
@@ -197,7 +209,7 @@ namespace CK.CodeGen
         /// <summary>
         /// Calls <see cref="ToString(StringBuilder,bool)"/> (without namespaces) and returns the result.
         /// </summary>
-        /// <returns>The type name whithout namespace nor nesting types.</returns>
+        /// <returns>The type name without namespace nor nesting types.</returns>
         public override string ToString() => ToString( false );
     }
 }
