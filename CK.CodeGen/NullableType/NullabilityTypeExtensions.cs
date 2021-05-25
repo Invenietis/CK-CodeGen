@@ -64,7 +64,7 @@ namespace CK.CodeGen
         [DebuggerStepThrough]
         public static NullabilityTypeInfo GetNullabilityInfo( this ParameterInfo @this )
         {
-            return GetNullabilityInfo( @this.ParameterType, @this.Member, @this.GetCustomAttributesData(), () => $" parameter '{@this.Name}' of {@this.Member.DeclaringType}.{@this.Member.Name}." );
+            return GetNullabilityInfo( @this.ParameterType, @this.Member, @this.CustomAttributes, () => $" parameter '{@this.Name}' of {@this.Member.DeclaringType}.{@this.Member.Name}." );
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace CK.CodeGen
         [DebuggerStepThrough]
         public static NullabilityTypeInfo GetNullabilityInfo( this PropertyInfo @this )
         {
-            return GetNullabilityInfo( @this.PropertyType, @this.DeclaringType, @this.GetCustomAttributesData(), () => $" property '{@this.Name}' of {@this.DeclaringType}." );
+            return GetNullabilityInfo( @this.PropertyType, @this.DeclaringType, @this.CustomAttributes, () => $" property '{@this.Name}' of {@this.DeclaringType}." );
         }
 
         /// <summary>
@@ -114,7 +114,7 @@ namespace CK.CodeGen
         [DebuggerStepThrough]
         public static NullabilityTypeInfo GetNullabilityInfo( this FieldInfo @this )
         {
-            return GetNullabilityInfo( @this.FieldType, @this.DeclaringType, @this.GetCustomAttributesData(), () => $" field '{@this.Name}' of {@this.DeclaringType}." );
+            return GetNullabilityInfo( @this.FieldType, @this.DeclaringType, @this.CustomAttributes, () => $" field '{@this.Name}' of {@this.DeclaringType}." );
         }
 
         /// <summary>
@@ -216,7 +216,7 @@ namespace CK.CodeGen
                 {
                     while( parent != null )
                     {
-                        a = parent.GetCustomAttributesData().FirstOrDefault( a => a.AttributeType.Name == "NullableContextAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
+                        a = parent.CustomAttributes.FirstOrDefault( a => a.AttributeType.Name == "NullableContextAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
                         if( a != null )
                         {
                             n = HandleByte( locationForError, n, (byte)a.ConstructorArguments[0].Value! );

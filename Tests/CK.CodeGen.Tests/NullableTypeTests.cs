@@ -11,27 +11,35 @@ namespace CK.CodeGen.Tests
     partial class NullableTypeTests
     {
         [Test]
-        public void Type_from_typeof_is_oblivious_to_nullable()
+        public void Type_from_typeof_declaration_is_oblivious_to_nullable()
         {
             var t1 = typeof( List<string?> );
             var t2 = typeof( List<string> );
 
-            t1.Should().BeSameAs( t2 );
+            t1.Should().BeSameAs( t2, "No difference at all, same reference... :(" );
 
-            var a = t1.GetCustomAttributesData().Single( a => a.AttributeType.Name == "NullableAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
+            var a = t1.CustomAttributes.Single( a => a.AttributeType.Name == "NullableAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
             object? data = a.ConstructorArguments[0].Value;
             // A single value means "apply to everything in the type", e.g. 1 for Dictionary<string, string>, 2 for Dictionary<string?, string?>?
             // Here, we have a single 0 (oblivious).
             data.Should().Be( (byte)0 );
 
+            var aCtx = t1.CustomAttributes.Single( a => a.AttributeType.Name == "NullableContextAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
+            aCtx.ConstructorArguments[0].Value.Should().Be( (byte)1, "The type is a also marked with NullableContextAttribute(1). Why?" );
+
+            var pA = t1.GetGenericArguments()[0].CustomAttributes.Single( a => a.AttributeType.Name == "NullableAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
+            pA.ConstructorArguments[0].Value.Should().Be( (byte)0, "The <string> parameter is marked with NullableAttribute(0)..." );
+            var pACtx = t1.GetGenericArguments()[0].CustomAttributes.Single( a => a.AttributeType.Name == "NullableContextAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
+            pACtx.ConstructorArguments[0].Value.Should().Be( (byte)1, "...and also with a NullableContextAttribute(1)." );
+
             var n2 = t2.GetNullableTypeTree();
             n2.ToString().Should().Be( "List<string?>?", "The basic extension methods (oblivious context): all reference types are nullable." );
 
-            // This is the same as a null NRT profile.
-            var n1 = t1.GetNullableTypeTree( new NullabilityTypeInfo( t1.GetNullabilityKind(), null ) );
+            // This is the same as a null NRT profile (every reference types are nullable).
+            NullableTypeTree n1 = t1.GetNullableTypeTree( new NullabilityTypeInfo( t1.GetNullabilityKind(), null ) );
             n1.ToString().Should().Be( "List<string?>?" );
 
-            n1.Equals( n2 ).Should().BeTrue();
+            n1.Equals( n2 ).Should().BeTrue( "NullableTypeTree has a value semantics." );
             n1.GetHashCode().Should().Be( n2.GetHashCode() );
         }
 
