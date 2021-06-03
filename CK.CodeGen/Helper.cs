@@ -25,7 +25,7 @@ namespace CK.CodeGen
             }
             if( protection != AccessProtectionOption.None ) @this.AppendAccessProtection( method, protection );
             @this.Append( frontModifier )
-                 .AppendCSharpName( method.ReturnType )
+                 .AppendCSharpName( method.ReturnType, useValueTupleParentheses: true )
                  .Space()
                  .Append( name )
                  .AppendParameters( method.GetParameters() );
@@ -88,7 +88,7 @@ namespace CK.CodeGen
             else if( p.IsOut ) @this.Append( "out " );
             else if( p.ParameterType.IsByRef ) @this.Append( "ref " );
             Type parameterType = p.ParameterType.IsByRef ? p.ParameterType.GetElementType() : p.ParameterType;
-            return @this.AppendCSharpName( parameterType, true )
+            return @this.AppendCSharpName( parameterType, useValueTupleParentheses: true )
                         .Space()
                         .AppendVariable( p.Name );
         }

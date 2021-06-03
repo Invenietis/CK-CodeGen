@@ -161,12 +161,17 @@ namespace CK.CodeGen
         /// will append "System.Collections.Generic.Dictionary&lt;TKey,TValue&gt;.KeyCollection".
         /// When sets to false, it will append "System.Collections.Generic.Dictionary&lt;,&gt;.KeyCollection".
         /// </summary>
+        /// <remarks>
+        /// Value tuples are expressed (by default) with the (lovely,brackets) but can use the explicit type: <see cref="ValueTuple{T1, T2}"/>
+        /// instead. This is mainly because of pattern matching limitations in (at least) C# 8 (ie. netcoreapp3.1).
+        /// </remarks>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="t">The type to append.</param>
         /// <param name="typeDeclaration">True to include generic parameter names in the output.</param>
+        /// <param name="useValueTupleParentheses">False to use the (safer) "System.ValueTuple<>" instead of the (tuple, with, parentheses, syntax).</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        public static T AppendCSharpName<T>( this T @this, Type? t, bool typeDeclaration = true ) where T : ICodeWriter
+        public static T AppendCSharpName<T>( this T @this, Type? t, bool typeDeclaration = true, bool useValueTupleParentheses = true ) where T : ICodeWriter
         {
             if( t == null ) return @this.Append( "null" );
             if( t.IsGenericParameter ) return typeDeclaration ? @this.Append( t.Name ) : @this;
@@ -176,7 +181,7 @@ namespace CK.CodeGen
             }
             if( t.IsArray )
             {
-                AppendCSharpName( @this, t.GetElementType()!, typeDeclaration );
+                AppendCSharpName( @this, t.GetElementType()!, typeDeclaration, useValueTupleParentheses );
                 return @this.Append( "[" ).Append( new string( ',', t.GetArrayRank() - 1 ) ).Append( "]" );
             }
             var pathTypes = new Stack<Type>();
@@ -209,7 +214,7 @@ namespace CK.CodeGen
                     bool isValueTuple = tName == "System.ValueTuple";
                     Type subType = allGenArgs.Dequeue();
                     bool isNullableValue = !isValueTuple && tName == "System.Nullable" && !subType.IsGenericTypeParameter;
-                    if( isValueTuple )
+                    if( isValueTuple && useValueTupleParentheses )
                     {
                         @this.Append( "(" );
                     }
@@ -223,11 +228,11 @@ namespace CK.CodeGen
                     for(; ; )
                     {
                         if( iGen > 0 ) @this.Append( "," );
-                        AppendCSharpName( @this, subType, typeDeclaration );
+                        AppendCSharpName( @this, subType, typeDeclaration, useValueTupleParentheses );
                         if( iGen++ == nbParams ) break;
                         subType = allGenArgs.Dequeue();
                     }
-                    @this.Append( isNullableValue ? "?" : (isValueTuple ? ")" : ">") );
+                    @this.Append( isNullableValue ? "?" : (isValueTuple && useValueTupleParentheses ? ")" : ">") );
                 }
                 else @this.Append( n );
             }
@@ -245,9 +250,10 @@ namespace CK.CodeGen
         /// <returns>This code writer to enable fluent syntax.</returns>
         public static T AppendTypeOf<T>( this T @this, Type t ) where T : ICodeWriter
         {
+            // typeof handles the (tuple, with, parentheses, syntax).
             return t == null
                     ? @this.Append( "null" )
-                    : @this.Append( "typeof(" ).AppendCSharpName( t, false ).Append( ")" );
+                    : @this.Append( "typeof(" ).AppendCSharpName( t, false, useValueTupleParentheses: true ).Append( ")" );
         }
 
         /// <summary>
@@ -565,12 +571,13 @@ namespace CK.CodeGen
         /// <typeparam name="TItem">The items type.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="e">Set of items for which code must be generated. Can be null.</param>
+        /// <param name="useValueTupleParentheses">False to use the (safer) "System.ValueTuple<>" instead of the (tuple, with, parentheses, syntax).</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T AppendArray<T,TItem>( this T @this, IEnumerable<TItem>? e ) where T : ICodeWriter
+        static public T AppendArray<T,TItem>( this T @this, IEnumerable<TItem>? e, bool useValueTupleParentheses = true ) where T : ICodeWriter
         {
             if( e == null ) return @this.Append( "null" );
-            if( !e.Any() ) return @this.Append( "Array.Empty<" ).AppendCSharpName( typeof( TItem ), false ).Append( ">()" );
-            @this.Append( "new " ).AppendCSharpName( typeof( TItem ), false ).Append( "[]{" );
+            if( !e.Any() ) return @this.Append( "Array.Empty<" ).AppendCSharpName( typeof( TItem ), false, useValueTupleParentheses ).Append( ">()" );
+            @this.Append( "new " ).AppendCSharpName( typeof( TItem ), false, useValueTupleParentheses ).Append( "[]{" );
             bool already = false;
             foreach( TItem x in e )
             {
@@ -592,8 +599,9 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="e">Set of items for which code must be generated. Can be null.</param>
+        /// <param name="useValueTupleParentheses">False to use the (safer) "System.ValueTuple<>" instead of the (tuple, with, parentheses, syntax).</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T AppendArray<T>( this T @this, IEnumerable? e ) where T : ICodeWriter
+        static public T AppendArray<T>( this T @this, IEnumerable? e, bool useValueTupleParentheses = true ) where T : ICodeWriter
         {
             if( e == null ) return @this.Append( "null" );
             Type type = typeof( object );
@@ -609,7 +617,7 @@ namespace CK.CodeGen
             (i as IDisposable)?.Dispose();
             if( any )
             {
-                @this.Append( "new " ).AppendCSharpName( type, false ).Append( "[]{" );
+                @this.Append( "new " ).AppendCSharpName( type, false, useValueTupleParentheses ).Append( "[]{" );
                 bool existing = false;
                 foreach( var x in e )
                 {
@@ -619,7 +627,7 @@ namespace CK.CodeGen
                 }
                 return @this.Append( "}" );
             }
-            return @this.Append( "Array.Empty<" ).AppendCSharpName( type, false ).Append( ">()" );
+            return @this.Append( "Array.Empty<" ).AppendCSharpName( type, false, useValueTupleParentheses ).Append( ">()" );
         }
 
         /// <summary>
@@ -662,16 +670,17 @@ namespace CK.CodeGen
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="o">The object. Can be null.</param>
+        /// <param name="useValueTupleParentheses">False to use the (safer) "System.ValueTuple<>" instead of the (tuple, with, parentheses, syntax).</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T Append<T>( this T @this, object? o ) where T : ICodeWriter
+        static public T Append<T>( this T @this, object? o, bool useValueTupleParentheses = true ) where T : ICodeWriter
         {
             if( o == Type.Missing ) return @this.Append( "System.Type.Missing" );
             if( o == DBNull.Value ) return @this.Append( "System.DBNull.Value" );           
             switch( o )
             {
                 case null: return @this.Append( "null" );
-                case Type x: return @this.Append( "typeof(" ).AppendCSharpName( x, false ).Append( ")" );
-                case MemberInfo m: return @this.Append( "typeof(" ).AppendCSharpName( m.DeclaringType, false ).Append( ")" );
+                case Type x: return @this.Append( "typeof(" ).AppendCSharpName( x, false, true ).Append( ")" );
+                case MemberInfo m: return @this.Append( "typeof(" ).AppendCSharpName( m.DeclaringType, false, true ).Append( ")" );
                 case string x: return Append( @this, x.ToSourceString() );
                 case bool x: return Append( @this, x );
                 case int x: return Append( @this, x );
@@ -686,12 +695,12 @@ namespace CK.CodeGen
                 case char x: return AppendSourceChar( @this, x );
                 case double x: return Append( @this, x );
                 case float x: return Append( @this, x );
-                case Decimal x: return Append( @this, x );
+                case decimal x: return Append( @this, x );
                 case DateTime x: return Append( @this, x );
                 case TimeSpan x: return Append( @this, x );
                 case DateTimeOffset x: return Append( @this, x );
-                case IEnumerable<Type> x: return AppendArray( @this, x );
-                case IEnumerable x: return AppendArray( @this, x );
+                case IEnumerable<Type> x: return AppendArray( @this, x, useValueTupleParentheses );
+                case IEnumerable x: return AppendArray( @this, x, useValueTupleParentheses );
             }
             Type t = o.GetType();
             if( t.IsEnum ) return AppendEnumValue( @this, t, o );
