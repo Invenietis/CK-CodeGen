@@ -208,7 +208,7 @@ namespace CK.CodeGen
                 {
                     int endNbParam = idxTick;
                     while( endNbParam < n.Length && Char.IsDigit( n, endNbParam ) ) endNbParam++;
-                    int nbParams = int.Parse( n.Substring( idxTick, endNbParam - idxTick ), NumberStyles.Integer );
+                    int nbParams = int.Parse( n.AsSpan( idxTick, endNbParam - idxTick ), NumberStyles.Integer, NumberFormatInfo.InvariantInfo );
                     Debug.Assert( nbParams > 0 );
                     var tName = n.Substring( 0, idxTick - 1 );
                     bool isValueTuple = tName == "System.ValueTuple";
@@ -231,6 +231,19 @@ namespace CK.CodeGen
                         AppendCSharpName( @this, subType, typeDeclaration, useValueTupleParentheses );
                         if( iGen++ == nbParams ) break;
                         subType = allGenArgs.Dequeue();
+                        // Long Value Tuple handling here only if useValueTupleParentheses is true.
+                        // This lift the rest content, skipping the rest 8th slot itself.
+                        if( iGen == 7 && isValueTuple && useValueTupleParentheses )
+                        {
+                            Debug.Assert( subType.Name.StartsWith( "ValueTuple", StringComparison.Ordinal ) );
+                            Debug.Assert( allGenArgs.Count == 0 );
+                            var rest = subType.GetGenericArguments();
+                            subType = rest[0];
+                            nbParams = rest.Length - 1;
+                            for( int i = 1; i < rest.Length; ++i ) allGenArgs.Enqueue( rest[i] );
+                            iGen = 0;
+                            @this.Append( "," );
+                        }
                     }
                     @this.Append( isNullableValue ? "?" : (isValueTuple && useValueTupleParentheses ? ")" : ">") );
                 }

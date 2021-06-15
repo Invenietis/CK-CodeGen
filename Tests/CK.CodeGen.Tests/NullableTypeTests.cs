@@ -280,9 +280,15 @@ namespace CK.CodeGen.Tests
 
             t1.IsLongValueTuple.Should().BeTrue();
             t2.RawSubTypes.Should().HaveCount( 8 );
-            t1.SubTypes.Should().HaveCount( 10, "SubTypes lifts the 8th singleton ValueTuple<T>." );
+            t1.SubTypes.Should().HaveCount( 10, "SubTypes lifts the 8th ValueTuple." );
             t1.ToString().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,BigInteger)" );
 
+            t2.RawSubTypes.Count.Should().Be( 8 );
+            t2.RawSubTypes[^1].Type.Name.Should().Be( "ValueTuple`1", "The last 8th possible index, is wrapped in a ValueTuple<T> ('singleton' tuple)." );
+            t2.IsLongValueTuple.Should().BeTrue();
+            t2.RawSubTypes[^1].RawSubTypes[0].Type.Name.Should().Be( "ValueTuple`3" );
+            t2.SubTypes.Should().HaveCount( 8 );
+            t2.ToString().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,(ulong,decimal,BigInteger))" );
 
             t3.RawSubTypes.Count.Should().Be( 8 );
             t3.RawSubTypes[2].Type.Name.Should().Be( "ValueTuple`3" );
@@ -292,13 +298,38 @@ namespace CK.CodeGen.Tests
             t3.SubTypes.Last().Type.Should().Be( typeof( System.Numerics.BigInteger ) );
             t3.ToString().Should().Be( "(sbyte,byte,(short,ushort,int),uint,long,ulong,decimal,BigInteger)" );
 
-            t2.RawSubTypes.Count.Should().Be( 8 );
-            t2.RawSubTypes[^1].Type.Name.Should().Be( "ValueTuple`1", "The last 8th possible index, is wrapped in a ValueTuple<T> ('singleton' tuple)." );
-            t2.IsLongValueTuple.Should().BeTrue();
-            t2.RawSubTypes[^1].RawSubTypes[0].Type.Name.Should().Be( "ValueTuple`3" );
-            t2.SubTypes.Should().HaveCount( 8 );
-            t2.ToString().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,(ulong,decimal,BigInteger))" );
+        }
 
+        (sbyte, byte, short, ushort, int, uint, long, ulong, decimal, System.Numerics.BigInteger, IEnumerable<int>, string?, List<string?>?, sbyte?, byte?, short?, ushort?, int?, uint?, long?, ulong?, decimal?) VeryLongValueTuple { get; }
+
+        [Test]
+        public void handling_very_very_long_value_tuples_works()
+        {
+            var s = GetTypeAndNullability( nameof( VeryLongValueTuple ) );
+            var t = s.Type.GetNullableTypeTree( s.Nullability );
+
+            t.IsLongValueTuple.Should().BeTrue();
+            t.RawSubTypes.Should().HaveCount( 8 );
+            t.SubTypes.Should().HaveCount( 22 );
+            t.ToString().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,BigInteger,IEnumerable<int>,string?,List<string?>?,sbyte?,byte?,short?,ushort?,int?,uint?,long?,ulong?,decimal?)" );
+
+            var rawType = s.Type;
+            rawType.ToCSharpName().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,System.Numerics.BigInteger,System.Collections.Generic.IEnumerable<int>,string,System.Collections.Generic.List<string>,sbyte?,byte?,short?,ushort?,int?,uint?,long?,ulong?,decimal?)" );
+            rawType.ToCSharpName( useValueTupleParentheses: false ).Should().Be( "System.ValueTuple<sbyte,byte,short,ushort,int,uint,long,System.ValueTuple<ulong,decimal,System.Numerics.BigInteger,System.Collections.Generic.IEnumerable<int>,string,System.Collections.Generic.List<string>,sbyte?,System.ValueTuple<byte?,short?,ushort?,int?,uint?,long?,ulong?,System.ValueTuple<decimal?>>>>" );
+        }
+
+        [Test]
+        public void long_value_tuples_ToCSharpName_works()
+        {
+            var t1 = GetTypeAndNullability( nameof( LongValueTuple1 ) ).Type;
+            var t2 = GetTypeAndNullability( nameof( LongValueTuple2 ) ).Type;
+            var t3 = GetTypeAndNullability( nameof( LongValueTuple3 ) ).Type;
+            t1.ToCSharpName().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,System.Numerics.BigInteger)" );
+            t2.ToCSharpName().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,(ulong,decimal,System.Numerics.BigInteger))" );
+            t3.ToCSharpName().Should().Be( "(sbyte,byte,(short,ushort,int),uint,long,ulong,decimal,System.Numerics.BigInteger)" );
+            t1.ToCSharpName( useValueTupleParentheses: false ).Should().Be( "System.ValueTuple<sbyte,byte,short,ushort,int,uint,long,System.ValueTuple<ulong,decimal,System.Numerics.BigInteger>>" );
+            t2.ToCSharpName( useValueTupleParentheses: false ).Should().Be( "System.ValueTuple<sbyte,byte,short,ushort,int,uint,long,System.ValueTuple<System.ValueTuple<ulong,decimal,System.Numerics.BigInteger>>>" );
+            t3.ToCSharpName( useValueTupleParentheses: false ).Should().Be( "System.ValueTuple<sbyte,byte,System.ValueTuple<short,ushort,int>,uint,long,ulong,decimal,System.ValueTuple<System.Numerics.BigInteger>>" );
         }
 
         void CheckAll( string member, string result, string info )
@@ -311,7 +342,7 @@ namespace CK.CodeGen.Tests
         }
 
         [DebuggerStepThrough]
-        private (Type Type, NullabilityTypeInfo Nullability) GetTypeAndNullability( string name )
+        (Type Type, NullabilityTypeInfo Nullability) GetTypeAndNullability( string name )
         {
             var p = GetType()!.GetProperty( name, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic );
             if( p != null ) return (p.PropertyType, p.GetNullabilityInfo());
