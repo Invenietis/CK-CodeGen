@@ -8,7 +8,7 @@ using System.Text;
 namespace CK.CodeGen
 {
     /// <summary>
-    /// Full immutable representation of a Nullable Type with its <see cref="SubTypes"/>.
+    /// Full immutable representation of a Nullable Type with its <see cref="RawSubTypes"/>.
     /// This does not capture nesting/enclosing generic types: this can be computed only for top level types or types nested in non generic types.
     /// <para>
     /// The extension method <see cref="NullabilityTypeExtensions.GetNullableTypeTree(Type, NullabilityTypeInfo)"/> is the factory method to use
@@ -34,14 +34,29 @@ namespace CK.CodeGen
         public readonly Type Type;
 
         /// <summary>
+        /// The subordinates types if any. Can be generic parameters of the <see cref="Type"/> or the item type of an array.
+        /// This "raw" types are the direct children: for <see cref="ValueTuple{T1, T2, T3, T4, T5, T6, T7, TRest}"/> only
+        /// the 8 types appear (including the last singleton value tuple).
+        /// </summary>
+        public readonly IReadOnlyList<NullableTypeTree> RawSubTypes;
+
+        /// <summary>
+        /// The subordinates types if any. This flattens <see cref="RawSubTypes"/> if <see cref="IsLongValueTuple"/> is true.
+        /// </summary>
+        public readonly IEnumerable<NullableTypeTree> SubTypes => IsLongValueTuple
+                                                                    ? RawSubTypes.Take( 7 ).Concat( RawSubTypes[7].SubTypes )
+                                                                    : RawSubTypes;
+
+        /// <summary>
         /// The <see cref="NullabilityTypeKind"/> for this <see cref="Type"/>.
         /// </summary>
         public readonly NullabilityTypeKind Kind;
 
         /// <summary>
-        /// The subordinates types if any. Can be generic parameters of the <see cref="Type"/> or the item type of an array.
+        /// Gets whether this is a <see cref="ValueTuple{T1, T2, T3, T4, T5, T6, T7, TRest}"/>: TRest is a singleton <see cref="ValueTuple{T}"/>:
+        /// the actual value tuple contains 8 parameters or more.
         /// </summary>
-        public readonly IReadOnlyList<NullableTypeTree> SubTypes;
+        public bool IsLongValueTuple => Kind.IsTupleType() && RawSubTypes.Count == 8;
 
         /// <summary>
         /// Gets whether this top <see cref="Type"/> is a "normal null".
@@ -79,10 +94,10 @@ namespace CK.CodeGen
             {
                 return Kind.IsNullable()
                         ? this
-                        : new NullableTypeTree( Type, Kind | NullabilityTypeKind.IsNullable, SubTypes );
+                        : new NullableTypeTree( Type, Kind | NullabilityTypeKind.IsNullable, RawSubTypes );
             }
             return Kind.IsNullable()
-                    ? new NullableTypeTree( Type, Kind & ~(NullabilityTypeKind.IsNullable|NullabilityTypeKind.IsTechnicallyNullable), SubTypes )
+                    ? new NullableTypeTree( Type, Kind & ~(NullabilityTypeKind.IsNullable|NullabilityTypeKind.IsTechnicallyNullable), RawSubTypes )
                     : this;
         }
 
@@ -97,7 +112,7 @@ namespace CK.CodeGen
             Debug.Assert( !t.IsGenericType || t.GetGenericTypeDefinition() != typeof( Nullable<> ) );
             Type = t;
             Kind = k;
-            SubTypes = s;
+            RawSubTypes = s;
         }
 
         /// <summary>
@@ -117,7 +132,7 @@ namespace CK.CodeGen
         {
             return (Kind & ~(NullabilityTypeKind.NRTFullNonNullable | NullabilityTypeKind.NRTFullNullable)) == (other.Kind & ~(NullabilityTypeKind.NRTFullNonNullable | NullabilityTypeKind.NRTFullNullable))
                     && EqualityComparer<Type>.Default.Equals( Type, other.Type )
-                    && SubTypes.SequenceEqual( other.SubTypes );
+                    && RawSubTypes.SequenceEqual( other.RawSubTypes );
         }
 
         /// <summary>
@@ -129,7 +144,7 @@ namespace CK.CodeGen
             HashCode c = new HashCode();
             c.Add( Type );
             c.Add( (byte)(Kind & ~(NullabilityTypeKind.NRTFullNonNullable | NullabilityTypeKind.NRTFullNullable)) );
-            foreach( var t in SubTypes ) c.Add( t.GetHashCode() );
+            foreach( var t in RawSubTypes ) c.Add( t.GetHashCode() );
             return c.ToHashCode();
         }
 
@@ -143,7 +158,7 @@ namespace CK.CodeGen
         {
             if( Type.IsArray )
             {
-                SubTypes[0].ToString( b, withNamespace );
+                RawSubTypes[0].ToString( b, withNamespace );
                 b.Append( '[' ).Append( ',', Type.GetArrayRank() - 1 ).Append( ']' );
             }
             else

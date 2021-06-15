@@ -198,8 +198,7 @@ namespace CK.CodeGen
                 int idx = 0;
                 foreach( var g in genArgs )
                 {
-                    sub[idx] = GetNullableTypeTree( g, annotations, default );
-                    ++idx;
+                    sub[idx++] = GetNullableTypeTree( g, annotations, default );
                 }
             }
             return new NullableTypeTree( t, known, sub );

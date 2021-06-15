@@ -260,6 +260,47 @@ namespace CK.CodeGen.Tests
         }
 
 
+        (sbyte, byte, short, ushort, int, uint, long, ulong, decimal, System.Numerics.BigInteger) LongValueTuple1 { get; }
+        (sbyte, byte, short, ushort, int, uint, long, (ulong, decimal, System.Numerics.BigInteger)) LongValueTuple2 { get; }
+        (sbyte, byte, (short, ushort, int), uint, long, ulong, decimal, System.Numerics.BigInteger) LongValueTuple3 { get; }
+
+        [Test]
+        public void handling_long_value_tuples_is_not_simple()
+        {
+            var s1 = GetTypeAndNullability( nameof( LongValueTuple1 ) );
+            var t1 = s1.Type.GetNullableTypeTree( s1.Nullability );
+
+            var s2 = GetTypeAndNullability( nameof( LongValueTuple2 ) );
+            var t2 = s2.Type.GetNullableTypeTree( s2.Nullability );
+
+            var s3 = GetTypeAndNullability( nameof( LongValueTuple3 ) );
+            var t3 = s3.Type.GetNullableTypeTree( s3.Nullability );
+
+            t1.Should().NotBe( t2 );
+
+            t1.IsLongValueTuple.Should().BeTrue();
+            t2.RawSubTypes.Should().HaveCount( 8 );
+            t1.SubTypes.Should().HaveCount( 10, "SubTypes lifts the 8th singleton ValueTuple<T>." );
+            t1.ToString().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,BigInteger)" );
+
+
+            t3.RawSubTypes.Count.Should().Be( 8 );
+            t3.RawSubTypes[2].Type.Name.Should().Be( "ValueTuple`3" );
+            t3.IsLongValueTuple.Should().BeTrue();
+            t3.SubTypes.Should().HaveCount( 8 );
+            t3.RawSubTypes.Last().Type.Name.Should().Be( "ValueTuple`1" );
+            t3.SubTypes.Last().Type.Should().Be( typeof( System.Numerics.BigInteger ) );
+            t3.ToString().Should().Be( "(sbyte,byte,(short,ushort,int),uint,long,ulong,decimal,BigInteger)" );
+
+            t2.RawSubTypes.Count.Should().Be( 8 );
+            t2.RawSubTypes[^1].Type.Name.Should().Be( "ValueTuple`1", "The last 8th possible index, is wrapped in a ValueTuple<T> ('singleton' tuple)." );
+            t2.IsLongValueTuple.Should().BeTrue();
+            t2.RawSubTypes[^1].RawSubTypes[0].Type.Name.Should().Be( "ValueTuple`3" );
+            t2.SubTypes.Should().HaveCount( 8 );
+            t2.ToString().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,(ulong,decimal,BigInteger))" );
+
+        }
+
         void CheckAll( string member, string result, string info )
         {
             var n = GetTypeAndNullability( member );
