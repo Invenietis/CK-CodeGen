@@ -93,8 +93,8 @@ namespace CK.CodeGen.Tests
             }
             {
                 var writer = new StringCodeWriter( new StringBuilder() );
-                writer.AppendCSharpName( typeof( (int, (string,float)) ), useValueTupleParentheses: useValueTupleParentheses );
-                writer.ToString().Should().Be( useValueTupleParentheses ? "(int,(string,float))"  : "System.ValueTuple<int,System.ValueTuple<string,float>>" );
+                writer.AppendCSharpName( typeof( (int, (string, float)) ), useValueTupleParentheses: useValueTupleParentheses );
+                writer.ToString().Should().Be( useValueTupleParentheses ? "(int,(string,float))" : "System.ValueTuple<int,System.ValueTuple<string,float>>" );
             }
         }
 
@@ -132,6 +132,18 @@ namespace CK.CodeGen.Tests
                 c.Should().Contain( "@" + n + "|" );
             }
         }
-    }
 
+        [Test]
+        public void And_combiner_works()
+        {
+            var w1 = new StringCodeWriter( new StringBuilder() );
+            var w2 = new StringCodeWriter( new StringBuilder() );
+
+            w1.And( w2 ).AppendSourceString( "Hello!" );
+
+            w1.ToString().Should().Be( "@\"Hello!\"" );
+            w2.ToString().Should().Be( "@\"Hello!\"" );
+        }
+
+    }
 }

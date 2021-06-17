@@ -830,5 +830,31 @@ namespace CK.CodeGen
             return @this.Append( String.Format( format, source, lineNumber, methodName ) );
         }
 
+        class Combiner : ICodeWriter
+        {
+            readonly ICodeWriter _w1;
+            readonly ICodeWriter _w2;
+
+            public Combiner( ICodeWriter w1, ICodeWriter w2 )
+            {
+                _w1 = w1;
+                _w2 = w2;
+            }
+
+            public void DoAdd( string? code )
+            {
+                _w1.DoAdd( code );
+                _w2.DoAdd( code );
+            }
+        }
+
+        /// <summary>
+        /// Combines 2 writers into one: the same code will be added to both of them.
+        /// </summary>
+        /// <param name="this">This code writer.</param>
+        /// <param name="other">The other code writer.</param>
+        /// <returns>A writer for this and the other writer.</returns>
+        public static ICodeWriter And( this ICodeWriter @this, ICodeWriter other ) => new Combiner( @this, other );
+
     }
 }
