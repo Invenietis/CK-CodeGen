@@ -81,7 +81,7 @@ namespace CK.CodeGen
         public TupleTypeName? TupleTypeName { get; }
 
         /// <summary>
-        /// Gets wether this is a tuple.
+        /// Gets whether this is a tuple.
         /// </summary>
         [MemberNotNullWhen( true, nameof( TupleTypeName ) )]
         public bool IsTuple => TupleTypeName != null;
