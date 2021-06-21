@@ -43,41 +43,42 @@ namespace CK.CodeGen.Tests
             n1.GetHashCode().Should().Be( n2.GetHashCode() );
         }
 
-#pragma warning disable IDE0052 // Remove unread private members
-#pragma warning disable IDE0051 // Remove unused private members
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
+#pragma warning disable IDE0044 // Add readonly modifier
+#pragma warning disable 0649 // Field 'is never assigned to, and will always have its default value null
 #pragma warning disable IDE1006 // Naming Styles
 
-        List<int> ListInt { get; } = new List<int>();
+        List<int> ListInt { get; } = new();
 
-        List<int?> ListNInt { get; } = new List<int?>();
+        List<int?> ListNInt { get; } = new();
 
-        List<int?>? NListNInt { get; } = new List<int?>();
+        List<int?>? NListNInt { get; } = new();
 
-        List<string> ListString = new List<string>();
+        List<string> ListString = new();
 
-        List<string?> ListNString = new List<string?>();
+        List<string?> ListNString = new();
 
-        List<string?>? NListNString = new List<string?>();
+        List<string?>? NListNString = new();
 
-        List<(int, string)> ListValueTupleIntString = new List<(int, string)>();
+        List<(int, string)> ListValueTupleIntString = new();
 
-        List<(int?, string?)?>? NListNValueTupleNIntNString = new List<(int?, string?)?>();
+        List<(int?, string?)?>? NListNValueTupleNIntNString = new();
 
-        List<(int, string?)>? NListValueTupleIntNString = new List<(int, string?)>();
+        List<(int, string?)>? NListValueTupleIntNString = new();
 
-        List<(int, string?)?>? NListNValueTupleIntNString = new List<(int, string?)?>();
+        List<(int, string?)?>? NListNValueTupleIntNString = new();
 
-        List<(int, string, int, string)> ListValueTupleIntStringIntString = new List<(int, string, int, string)>();
+        List<(int, string, int, string)> ListValueTupleIntStringIntString = new();
 
-        List<((int, string), int, (int,string))> ListValueTupleVTIntStringIntVTIntString = new List<((int, string), int, (int, string))>();
+        List<((int, string), int, (int,string))> ListValueTupleVTIntStringIntVTIntString = new();
 
-        List<(((int, int), (int, int)), ((int, int), (int, int)))> ListVT = new List<(((int, int), (int, int)), ((int, int), (int, int)))>();
+        List<(((int, int), (int, int)), ((int, int), (int, int)))> ListVT = new();
 
-        List<(((int, int), (int, string?)), ((int, int), (int, int)))> ListVTOneNString = new List<(((int, int), (int, string?)), ((int, int), (int, int)))>();
+        List<(((int, int), (int, string?)), ((int, int), (int, int)))> ListVTOneNString = new();
 
-        List<List<List<List<Attribute>?>>?> ListNListListNListAttr = new List<List<List<List<Attribute>?>>?>();
+        List<List<List<List<Attribute>?>>?> ListNListListNListAttr = new();
 
-        List<List<List<List<Attribute>?>>?>? NListNListListNListAttr = new List<List<List<List<Attribute>?>>?>();
+        List<List<List<List<Attribute>?>>?>? NListNListListNListAttr = new();
 
         [TestCase( "ListInt", "List<int>", "NonNullableGenericReferenceType (NRT:FullNonNull)" )]
         [TestCase( "ListNInt", "List<int?>", "NonNullableGenericReferenceType (NRT:FullNonNull)" )]
@@ -144,9 +145,9 @@ namespace CK.CodeGen.Tests
             CheckAll( member, result, info );
         }
 
-        Dictionary<List<string?>, string[]?> Example00 = new Dictionary<List<string?>, string[]?>();
+        Dictionary<List<string?>, string[]?> Example00 = new();
 
-        Dictionary<List<string?>, string[]> Example01 = new Dictionary<List<string?>, string[]>();
+        Dictionary<List<string?>, string[]> Example01 = new();
 
         ISet<IDictionary<string,LinkedList<Func<string?,string,Func<Action<ISet<Action>>>>>>>? Example02() => null;
 
@@ -260,7 +261,7 @@ namespace CK.CodeGen.Tests
         }
 
 
-        (sbyte, byte, short, ushort, int, uint, long, ulong, decimal, System.Numerics.BigInteger) LongValueTuple1 { get; }
+        (sbyte, byte, short, ushort, int, uint, long, ulong, decimal, System.Numerics.BigInteger, string) LongValueTuple1 { get; }
         (sbyte, byte, short, ushort, int, uint, long, (ulong, decimal, System.Numerics.BigInteger)) LongValueTuple2 { get; }
         (sbyte, byte, (short, ushort, int), uint, long, ulong, decimal, System.Numerics.BigInteger) LongValueTuple3 { get; }
 
@@ -279,13 +280,14 @@ namespace CK.CodeGen.Tests
             t1.Should().NotBe( t2 );
 
             t1.IsLongValueTuple.Should().BeTrue();
-            t2.RawSubTypes.Should().HaveCount( 8 );
-            t1.SubTypes.Should().HaveCount( 10, "SubTypes lifts the 8th ValueTuple." );
-            t1.ToString().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,BigInteger)" );
+            t1.RawSubTypes.Should().HaveCount( 8 );
+            t1.RawSubTypes[^1].Type.Name.Should().Be( "ValueTuple`4" );
+            t1.SubTypes.Should().HaveCount( 11, "SubTypes lifts the 8th ValueTuple." );
+            t1.ToString().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,BigInteger,string)" );
 
+            t2.IsLongValueTuple.Should().BeTrue();
             t2.RawSubTypes.Count.Should().Be( 8 );
             t2.RawSubTypes[^1].Type.Name.Should().Be( "ValueTuple`1", "The last 8th possible index, is wrapped in a ValueTuple<T> ('singleton' tuple)." );
-            t2.IsLongValueTuple.Should().BeTrue();
             t2.RawSubTypes[^1].RawSubTypes[0].Type.Name.Should().Be( "ValueTuple`3" );
             t2.SubTypes.Should().HaveCount( 8 );
             t2.ToString().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,(ulong,decimal,BigInteger))" );
@@ -324,10 +326,10 @@ namespace CK.CodeGen.Tests
             var t1 = GetTypeAndNullability( nameof( LongValueTuple1 ) ).Type;
             var t2 = GetTypeAndNullability( nameof( LongValueTuple2 ) ).Type;
             var t3 = GetTypeAndNullability( nameof( LongValueTuple3 ) ).Type;
-            t1.ToCSharpName().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,System.Numerics.BigInteger)" );
+            t1.ToCSharpName().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,System.Numerics.BigInteger,string)" );
             t2.ToCSharpName().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,(ulong,decimal,System.Numerics.BigInteger))" );
             t3.ToCSharpName().Should().Be( "(sbyte,byte,(short,ushort,int),uint,long,ulong,decimal,System.Numerics.BigInteger)" );
-            t1.ToCSharpName( useValueTupleParentheses: false ).Should().Be( "System.ValueTuple<sbyte,byte,short,ushort,int,uint,long,System.ValueTuple<ulong,decimal,System.Numerics.BigInteger>>" );
+            t1.ToCSharpName( useValueTupleParentheses: false ).Should().Be( "System.ValueTuple<sbyte,byte,short,ushort,int,uint,long,System.ValueTuple<ulong,decimal,System.Numerics.BigInteger,string>>" );
             t2.ToCSharpName( useValueTupleParentheses: false ).Should().Be( "System.ValueTuple<sbyte,byte,short,ushort,int,uint,long,System.ValueTuple<System.ValueTuple<ulong,decimal,System.Numerics.BigInteger>>>" );
             t3.ToCSharpName( useValueTupleParentheses: false ).Should().Be( "System.ValueTuple<sbyte,byte,System.ValueTuple<short,ushort,int>,uint,long,ulong,decimal,System.ValueTuple<System.Numerics.BigInteger>>" );
         }
@@ -353,6 +355,13 @@ namespace CK.CodeGen.Tests
             Debug.Assert( m != null );
             var parameter = m.ReturnType != typeof( void ) ? m.ReturnParameter : m.GetParameters()[0];
             return (parameter.ParameterType, parameter.GetNullabilityInfo()); 
+        }
+
+        [DebuggerStepThrough]
+        NullableTypeTree GetNullableTypeTree( string name )
+        {
+            var s = GetTypeAndNullability( name );
+            return s.Type.GetNullableTypeTree( s.Nullability );
         }
 
 

@@ -102,7 +102,7 @@ namespace CK.CodeGen
 
         internal static string RemoveGenericParameters( string typeName )
         {
-            int idx = typeName.IndexOf( '<' );
+            int idx = typeName.IndexOf( '<', StringComparison.Ordinal );
             return idx < 0 ? typeName : typeName.Substring( idx );
         }
     }

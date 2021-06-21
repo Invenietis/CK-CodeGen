@@ -169,7 +169,7 @@ namespace CK.CodeGen
         /// <param name="this">This code writer.</param>
         /// <param name="t">The type to append.</param>
         /// <param name="typeDeclaration">True to include generic parameter names in the output.</param>
-        /// <param name="useValueTupleParentheses">False to use the (safer) "System.ValueTuple<>" instead of the (tuple, with, parentheses, syntax).</param>
+        /// <param name="useValueTupleParentheses">False to use the (safer) "System.ValueTuple&lt;&gt;" instead of the (tuple, with, parentheses, syntax).</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
         public static T AppendCSharpName<T>( this T @this, Type? t, bool typeDeclaration = true, bool useValueTupleParentheses = true ) where T : ICodeWriter
         {
@@ -203,7 +203,7 @@ namespace CK.CodeGen
                     n = theT.Name;
                     @this.Append( "." );
                 }
-                int idxTick = n.IndexOf( '`' ) + 1;
+                int idxTick = n.IndexOf( '`', StringComparison.Ordinal ) + 1;
                 if( idxTick > 0 )
                 {
                     int endNbParam = idxTick;
@@ -529,7 +529,7 @@ namespace CK.CodeGen
                 || (vC >= 127 && vC <= 160)
                 || vC >= 888 )
             {
-                return @this.Append( "'\\u" ).Append( vC.ToString( "X4" ) ).Append( "'" );
+                return @this.Append( "'\\u" ).Append( vC.ToString( "X4", NumberFormatInfo.InvariantInfo ) ).Append( "'" );
             }
             return @this.Append( "'" ).Append( c.ToString() ).Append( "'" );
         }
@@ -575,16 +575,16 @@ namespace CK.CodeGen
         }
 
         /// <summary>
-        /// Appends the code of a collection of objetcs of a given type <typeparamref name="T"/>.
+        /// Appends the code of a collection of objects of a given type <typeparamref name="T"/>.
         /// The code is either "null", <see cref="Array.Empty{T}()"/> or an actual new array
-        /// with the items appended with <see cref="Append{T}(T, object)"/>: only
+        /// with the items appended with <see cref="Append{T}(T, object?, bool)"/>: only
         /// basic types are supported.
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <typeparam name="TItem">The items type.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="e">Set of items for which code must be generated. Can be null.</param>
-        /// <param name="useValueTupleParentheses">False to use the (safer) "System.ValueTuple<>" instead of the (tuple, with, parentheses, syntax).</param>
+        /// <param name="useValueTupleParentheses">False to use the (safer) "System.ValueTuple&lt;&gt;" instead of the (tuple, with, parentheses, syntax).</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T AppendArray<T,TItem>( this T @this, IEnumerable<TItem>? e, bool useValueTupleParentheses = true ) where T : ICodeWriter
         {
@@ -606,13 +606,13 @@ namespace CK.CodeGen
         /// If the actual set is a <see cref="IEnumerable{T}"/>, the actual type is extracted
         /// otherwise the type of the items is considered as being object.
         /// The code is either "null", <see cref="Array.Empty{T}()"/> or an actual new array
-        /// with the items appended with <see cref="Append{T}(T, object)"/>: only
+        /// with the items appended with <see cref="Append{T}(T, object?, bool)"/>: only
         /// basic types are supported.
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="e">Set of items for which code must be generated. Can be null.</param>
-        /// <param name="useValueTupleParentheses">False to use the (safer) "System.ValueTuple<>" instead of the (tuple, with, parentheses, syntax).</param>
+        /// <param name="useValueTupleParentheses">False to use the (safer) "System.ValueTuple&lt;&gt;" instead of the (tuple, with, parentheses, syntax).</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T AppendArray<T>( this T @this, IEnumerable? e, bool useValueTupleParentheses = true ) where T : ICodeWriter
         {
@@ -662,12 +662,12 @@ namespace CK.CodeGen
             {
                 // An enum based on byte (enum EByte : byte) or any other unsigned integral type shorter than a ulong
                 // cannot be cast into a ulong... We must use Convert that handles this correctly.
-                @this.Append( Convert.ToUInt64( o ) );
+                @this.Append( Convert.ToUInt64( o, NumberFormatInfo.InvariantInfo ) );
             }
             else
             {
                 // Parentheses are required around negative values.
-                long v = Convert.ToInt64( o );
+                long v = Convert.ToInt64( o, NumberFormatInfo.InvariantInfo );
                 if( v >= 0 ) @this.Append( v );
                 else @this.Append( '(' ).Append( v ).Append( ')' );
             }
@@ -676,14 +676,14 @@ namespace CK.CodeGen
 
         /// <summary>
         /// Appends the code source for an untyped object.
-        /// Only types that are implemented throug one of the existing Append, AppendArray (all IEnumerable are
+        /// Only types that are implemented through one of the existing Append, AppendArray (all IEnumerable are
         /// handled) and enum values.
-        /// extension methods are supported: an <see cref="ArgumentException"/> is thrown for unsuported type.
+        /// extension methods are supported: an <see cref="ArgumentException"/> is thrown for unsupported type.
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="o">The object. Can be null.</param>
-        /// <param name="useValueTupleParentheses">False to use the (safer) "System.ValueTuple<>" instead of the (tuple, with, parentheses, syntax).</param>
+        /// <param name="useValueTupleParentheses">False to use the (safer) "System.ValueTuple&lt;&gt;" instead of the (tuple, with, parentheses, syntax).</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, object? o, bool useValueTupleParentheses = true ) where T : ICodeWriter
         {
@@ -827,7 +827,7 @@ namespace CK.CodeGen
         /// <returns>This code writer to enable fluent syntax.</returns>
         public static T GeneratedByComment<T>( this T @this, string format = "/* Generated by {0}, line: {1} (method {2}). */", [CallerFilePath]string? source = null, [CallerLineNumber] int lineNumber = 0, [CallerMemberName] string? methodName = null ) where T : ICodeWriter
         {
-            return @this.Append( String.Format( format, source, lineNumber, methodName ) );
+            return @this.Append( String.Format( CultureInfo.InvariantCulture, format, source, lineNumber, methodName ) );
         }
 
         class Combiner : ICodeWriter

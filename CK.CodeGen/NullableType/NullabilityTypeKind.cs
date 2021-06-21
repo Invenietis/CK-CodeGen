@@ -48,11 +48,11 @@ namespace CK.CodeGen
         /// <summary>
         /// Optional flag that describes a Nullable Reference Type marked with NullableAttribute(2): the type
         /// is necessarily <see cref="IsReferenceType"/> and <see cref="IsNullable"/> and if the type has generic arguments, then
-        /// all its subordinated types that are reference types are also nullables.
+        /// all its subordinated types that are reference types are also nullable.
         /// <para>
         /// This flag can also be set simultaneously with the <see cref="NRTFullNonNullable"/>: when both are set it means that
         /// the type is marked with a complex NRT NullableAttribute.
-        /// Use <see cref="NullablityTypeKindExtension.IsNRTFullNullable"/> to test if this type is really NRT nullable.
+        /// Use <see cref="NullablityTypeKindExtension.IsNRTFullNullable"/> to test if this type is really NRT full nullable.
         /// </para>
         /// </summary>
         NRTFullNullable = 64,
@@ -60,7 +60,7 @@ namespace CK.CodeGen
         /// <summary>
         /// Optional flag that describes a Nullable Reference Type marked with NullableAttribute(1): the type
         /// is necessarily <see cref="IsReferenceType"/> and only <see cref="IsTechnicallyNullable"/> and
-        /// if it is a generic type, then all its subordinated types that are reference types are also non nullables reference types.
+        /// if it is a generic type, then all its subordinated types that are reference types are also non nullable reference types.
         /// <para>
         /// This flag can also be set simultaneously with the <see cref="NRTFullNullable"/>: when both are set it means that
         /// the type is marked with a complex NRT NullableAttribute.

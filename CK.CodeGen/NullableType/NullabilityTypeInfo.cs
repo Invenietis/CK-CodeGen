@@ -23,13 +23,13 @@ namespace CK.CodeGen
         /// <summary>
         /// Gets the root <see cref="NullabilityTypeKind"/>.
         /// </summary>
-        public readonly NullabilityTypeKind Kind;
+        public NullabilityTypeKind Kind { get; }
 
         /// <summary>
         /// Gets the full nullable profile or an empty span if there is no complex NRT marker.
         /// When not empty, it starts with the nullable indicator of the root type. 
         /// </summary>
-        public ReadOnlySpan<byte> NullableProfile => _profile == null ? ReadOnlySpan<byte>.Empty : _profile;
+        public ReadOnlySpan<byte> NullableProfile => _profile ?? ReadOnlySpan<byte>.Empty;
 
         /// <summary>
         /// Initializes a new <see cref="NullabilityTypeInfo"/>.
@@ -109,7 +109,7 @@ namespace CK.CodeGen
         }
 
         /// <summary>
-        /// Gets a readeable string.
+        /// Gets a readable string.
         /// </summary>
         /// <returns>A readable string.</returns>
         public override string ToString()
@@ -122,5 +122,11 @@ namespace CK.CodeGen
             }
             return s;
         }
+
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        public static bool operator ==( NullabilityTypeInfo left, NullabilityTypeInfo right ) => left.Equals( right );
+
+        public static bool operator !=( NullabilityTypeInfo left, NullabilityTypeInfo right ) => !(left == right);
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }

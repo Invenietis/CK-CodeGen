@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
 
   <!--<SourceLink>: is enabled only for ContinuousIntegrationBuild build. -->
   <ItemGroup Condition=" '$(ContinuousIntegrationBuild)' == 'true' ">

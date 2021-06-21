@@ -17,12 +17,12 @@ namespace CK.CodeGen
             /// <summary>
             /// Gets the type of the field (that may be itself a <see cref="TupleTypeName"/>).
             /// </summary>
-            public readonly ExtendedTypeName FieldType;
+            public ExtendedTypeName FieldType { get; }
 
             /// <summary>
             /// Gets the optional field name.
             /// </summary>
-            public readonly string? FieldName;
+            public string? FieldName { get; }
 
             /// <summary>
             /// Initializes a new <see cref="Field"/>.
@@ -77,6 +77,7 @@ namespace CK.CodeGen
         /// <returns>The StringBuilder to enable fluent syntax.</returns>
         public StringBuilder Write( StringBuilder b, Func<string, string>? typeNameReplacer = null )
         {
+            if( b == null ) throw new ArgumentNullException( nameof( b ) );
             b.Append( '(' );
             bool atLeastOne = false;
             foreach( var f in Fields )

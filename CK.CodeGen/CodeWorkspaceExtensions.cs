@@ -23,7 +23,6 @@ namespace CK.CodeGen
         {
             if( assembly == null ) throw new ArgumentNullException( nameof( assembly ) );
             @this.DoEnsureAssemblyReference( assembly );
-            if( others == null ) throw new ArgumentNullException( nameof( others ) );
             foreach( var a in others ) @this.DoEnsureAssemblyReference( a );
             return @this;
         }
@@ -54,7 +53,6 @@ namespace CK.CodeGen
         {
             if( t == null ) throw new ArgumentNullException( nameof( t ) );
             @this.DoEnsureAssemblyReference( t.Assembly );
-            if( others == null ) throw new ArgumentNullException( nameof( others ) );
             foreach( var o in others )
             {
                 if( o == null ) throw new ArgumentNullException( nameof(others), "Null type in parameters." );

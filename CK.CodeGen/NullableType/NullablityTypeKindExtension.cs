@@ -1,4 +1,4 @@
-﻿namespace CK.CodeGen
+namespace CK.CodeGen
 {
     /// <summary>
     /// Extends <see cref="NullabilityTypeKind"/>.
@@ -76,7 +76,7 @@
         public static bool IsTechnicallyNullable( this NullabilityTypeKind @this ) => (@this & NullabilityTypeKind.IsTechnicallyNullable) != 0;
 
         /// <summary>
-        /// Gets a readeable string.
+        /// Gets a readable string.
         /// </summary>
         /// <param name="this">This info.</param>
         /// <returns>A readable string.</returns>

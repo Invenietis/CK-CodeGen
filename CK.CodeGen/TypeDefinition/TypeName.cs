@@ -6,7 +6,7 @@ using System.Text;
 namespace CK.CodeGen
 {
     /// <summary>
-    /// Immutable type name that can be a single indentifier ("T" or "int"), a generic definition
+    /// Immutable type name that can be a single identifier ("T" or "int"), a generic definition
     /// or generic type ("C&lt;T&gt;" or S&lt;&lt;string&gt;,List&lt;int&gt;&gt;) with a list of <see cref="GenericParameters"/>.
     /// Arrays and tuples are handled at the <see cref="ExtendedTypeName"/> level.
     /// </summary>
@@ -21,7 +21,7 @@ namespace CK.CodeGen
         /// Captures a generic argument (with its optional <see cref="TypeVariance"/>) or a
         /// generic type parameter.
         /// </summary>
-        public readonly struct GenParam
+        public readonly struct GenParam : IEquatable<GenParam>
         {
             /// <summary>
             /// Gets an empty generic parameter instance.
@@ -44,7 +44,7 @@ namespace CK.CodeGen
                 In,
 
                 /// <summary>
-                /// Indicates convariance.
+                /// Indicates covariance.
                 /// </summary>
                 Out
             }
@@ -52,12 +52,12 @@ namespace CK.CodeGen
             /// <summary>
             /// The optional variance.
             /// </summary>
-            public readonly Variance TypeVariance;
+            public Variance TypeVariance { get; }
 
             /// <summary>
             /// The type name. May be a generic argument or an actual type.
             /// </summary>
-            public readonly ExtendedTypeName Type;
+            public ExtendedTypeName Type { get; }
 
             /// <summary>
             /// Initializes a new generic parameter.
@@ -80,6 +80,18 @@ namespace CK.CodeGen
                 Variance.Out => "out " + Type.ToString(),
                 _ => Type.ToString()
             };
+
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+            public override bool Equals( object obj ) => obj is GenParam o ? Equals( o ) : false;
+
+            public override int GetHashCode() => Type.GetHashCode();
+
+            public bool Equals( GenParam other ) => TypeVariance == other.TypeVariance && Type == other.Type;
+
+            public static bool operator ==( GenParam left, GenParam right ) => left.Equals( right );
+
+            public static bool operator !=( GenParam left, GenParam right ) => !(left == right);
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
         }
 
         readonly string _name;

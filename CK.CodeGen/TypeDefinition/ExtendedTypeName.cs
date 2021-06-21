@@ -125,6 +125,7 @@ namespace CK.CodeGen
         /// <returns>The StringBuilder to enable fluent syntax.</returns>
         public StringBuilder Write( StringBuilder b, Func<string, string>? nameReplacer = null )
         {
+            if( b == null ) throw new ArgumentNullException( nameof( b ) );
             if( IsTuple )
             {
                 Debug.Assert( TupleTypeName != null );

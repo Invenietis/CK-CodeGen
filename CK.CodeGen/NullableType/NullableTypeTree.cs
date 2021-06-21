@@ -27,18 +27,18 @@ namespace CK.CodeGen
     public readonly struct NullableTypeTree : IEquatable<NullableTypeTree>
     {
         /// <summary>
-        /// The type.
+        /// Gets the type.
         /// When this <see cref="Kind"/> is a <see cref="NullablityTypeKindExtension.IsNullableValueType(NullabilityTypeKind)"/> (a <see cref="Nullable{T}"/>),
         /// then this type is the inner type, not the Nullable generic type.
         /// </summary>
-        public readonly Type Type;
+        public Type Type { get; }
 
         /// <summary>
         /// The subordinates types if any. Can be generic parameters of the <see cref="Type"/> or the item type of an array.
         /// This "raw" types are the direct children: for <see cref="ValueTuple{T1, T2, T3, T4, T5, T6, T7, TRest}"/> only
         /// the 8 types appear (including the last singleton value tuple).
         /// </summary>
-        public readonly IReadOnlyList<NullableTypeTree> RawSubTypes;
+        public IReadOnlyList<NullableTypeTree> RawSubTypes { get; }
 
         /// <summary>
         /// The subordinates types if any. This flattens <see cref="RawSubTypes"/> if <see cref="IsLongValueTuple"/> is true.
@@ -50,11 +50,11 @@ namespace CK.CodeGen
         /// <summary>
         /// The <see cref="NullabilityTypeKind"/> for this <see cref="Type"/>.
         /// </summary>
-        public readonly NullabilityTypeKind Kind;
+        public NullabilityTypeKind Kind { get; }
 
         /// <summary>
-        /// Gets whether this is a <see cref="ValueTuple{T1, T2, T3, T4, T5, T6, T7, TRest}"/>: TRest is a singleton <see cref="ValueTuple{T}"/>:
-        /// the actual value tuple contains 8 parameters or more.
+        /// Gets whether this is a <see cref="ValueTuple{T1, T2, T3, T4, T5, T6, T7, TRest}"/>: TRest is a value tuple that
+        /// may be the singleton <see cref="ValueTuple{T}"/> when the actual value tuple contains no more than 8 parameters.
         /// </summary>
         public bool IsLongValueTuple => Kind.IsTupleType() && RawSubTypes.Count == 8;
 
@@ -116,6 +116,148 @@ namespace CK.CodeGen
         }
 
         /// <summary>
+        /// Merges nullabilities of reference types only: the final types are not changed by this method.
+        /// The other <see cref="Type"/> must be the same type as this one (otherwise an <see cref="ArgumentException"/> is thrown).
+        /// Nullable reference type wins: this implements a kind of "generalization" for contravariance. 
+        /// </summary>
+        /// <param name="other">The other type information.</param>
+        /// <returns>This or a new NullableTypeTree.</returns>
+        public NullableTypeTree MergeReferenceTypesNullability( NullableTypeTree other )
+        {
+            if( Type != other.Type ) throw new ArgumentException( $"Nullability informations can only be merged for the same type. '{Type.ToCSharpName()}' is not the same as '{other.Type.ToCSharpName()}'.", nameof( other ) );
+            Debug.Assert( RawSubTypes.Count == other.RawSubTypes.Count );
+
+            NullableTypeTree[]? subTypes = null;
+            for( int i = 0; i < RawSubTypes.Count; ++i )
+            {
+                var t = RawSubTypes[i];
+                Debug.Assert( t.Type == other.RawSubTypes[i].Type );
+                var m = t.MergeReferenceTypesNullability( other.RawSubTypes[i] );
+                if( subTypes == null
+                    && ((m.Kind & ~(NullabilityTypeKind.NRTFullNonNullable | NullabilityTypeKind.NRTFullNullable)) != (t.Kind & ~(NullabilityTypeKind.NRTFullNonNullable | NullabilityTypeKind.NRTFullNullable))
+                        || m.RawSubTypes != t.RawSubTypes) )
+                {
+                    subTypes = new NullableTypeTree[RawSubTypes.Count];
+                    for( int j = 0; j < i; j++ ) subTypes[j] = RawSubTypes[j];
+                }
+                if( subTypes != null ) subTypes[i] = m;
+            }
+            var kind = Kind;
+            if( !Type.IsValueType )
+            {
+                kind = Kind | (other.Kind & (NullabilityTypeKind.IsNullable | NullabilityTypeKind.NRTFullNullable | NullabilityTypeKind.NRTFullNonNullable));
+            }
+            return new NullableTypeTree( Type, kind, subTypes ?? RawSubTypes );
+        }
+
+        /// <summary>
+        /// Merges nullabilities of reference and value types: the final types can be changed (when nullable value types are concerned).
+        /// The other <see cref="Type"/> must be the "same type regardless of nullability" as this one (otherwise an <see cref="ArgumentException"/> is thrown).
+        /// Nullable type wins: this implements a kind of "generalization" for contravariance.
+        /// <para>
+        /// Since "equality" of the two candidate types cannot be easily tested (this would imply to do a good part of what this method does),
+        /// this returns a null NullableTypeTree if the two "types regardless of nullability" are different.
+        /// </para>
+        /// </summary>
+        /// <param name="other">The other type information.</param>
+        /// <returns>A NullableTypeTree or null if the two types are different (regardless of nullability).</returns>
+        public NullableTypeTree? TryMergeNullabilities( NullableTypeTree other )
+        {
+            if( Kind == NullabilityTypeKind.Unknown ) throw new InvalidOperationException( "Unitialized NullableTypeTree." );
+            if( other.Kind == NullabilityTypeKind.Unknown ) throw new ArgumentException( "Unitialized NullableTypeTree.", nameof( other ) );
+            if( RawSubTypes.Count != other.RawSubTypes.Count )
+            {
+                // Not the same number of subtypes. Types are really different.
+                return null;
+            }
+            // Prepare the work by checking the type and choosing the winner at this level.
+            var kind = Kind;
+            // The type will be used only if subTypes have not changed.
+            var type = Type;
+            // Regardless of their exact types, the two types must be both generic or not. And if they are generics,
+            // they must share the same definition.
+            Type? genDef = null;
+            if( type.IsGenericType )
+            {
+                if( !other.Type.IsGenericType )
+                {
+                    return null;
+                }
+                genDef = type.GetGenericTypeDefinition();
+                if( genDef != other.Type.GetGenericTypeDefinition() )
+                {
+                    return null;
+                }
+                // For generic types cannot conclude anything more here about "equality" without recursively processing the subTypes:
+                // a List<(string,(int?,int?)> is not the same type as a List<(string,(int,int))>
+                // so challenging the types here is useless.
+            }
+            else
+            {
+                // For non-generic types, the types must be the same (Nullable<T> is lifted by the NullableTypeTree).
+                if( Type != other.Type ) return null;
+            }
+
+            if( type.IsValueType )
+            {
+                // If this is not a nullable value type, choose the other one,
+                // whatever it may be.
+                if( !kind.IsNullable() ) kind = other.Kind;
+            }
+            else
+            {
+                kind = Kind | (other.Kind & (NullabilityTypeKind.IsNullable | NullabilityTypeKind.NRTFullNullable | NullabilityTypeKind.NRTFullNonNullable));
+            }
+
+            // Merging the subTypes.
+            bool atLeastOneActualSubTypeDifferFromThis = false;
+            bool atLeastOneActualSubTypeDifferFromOther = false;
+            NullableTypeTree[]? subTypes = null;
+            for( int i = 0; i < RawSubTypes.Count; ++i )
+            {
+                var t = RawSubTypes[i];
+                var m = t.TryMergeNullabilities( other.RawSubTypes[i] );
+                if( m == null )
+                {
+                    // One of the subtypes differ: types are really different.
+                    return null;
+                }
+                Debug.Assert( m.Value.Kind != NullabilityTypeKind.Unknown );
+                if( subTypes == null
+                    && ((m.Value.Kind & ~(NullabilityTypeKind.NRTFullNonNullable | NullabilityTypeKind.NRTFullNullable)) != (t.Kind & ~(NullabilityTypeKind.NRTFullNonNullable | NullabilityTypeKind.NRTFullNullable))
+                        || m.Value.RawSubTypes != t.RawSubTypes) )
+                {
+                    subTypes = new NullableTypeTree[RawSubTypes.Count];
+                    for( int j = 0; j < i; j++ )
+                    {
+                        var tJ = RawSubTypes[j];
+                        subTypes[j] = tJ;
+                        var tJo = other.RawSubTypes[j];
+                        atLeastOneActualSubTypeDifferFromOther |= (tJ.Type != tJo.Type || tJ.Kind.IsNullableValueType() != tJo.Kind.IsNullableValueType());
+                    }
+                }
+                if( subTypes != null )
+                {
+                    subTypes[i] = m.Value;
+                    atLeastOneActualSubTypeDifferFromThis |= (m.Value.Type != t.Type || m.Value.Kind.IsNullableValueType() != t.Kind.IsNullableValueType() );
+                    atLeastOneActualSubTypeDifferFromOther |= (m.Value.Type != other.RawSubTypes[i].Type || m.Value.Kind.IsNullableValueType() != other.RawSubTypes[i].Kind.IsNullableValueType());
+                }
+            }
+            // If subTypes have not changed, there's nothing to do, but if they have changed and the
+            // types are generics, then a new generic type may be needed based on the subTypes.
+            if( genDef != null && subTypes != null )
+            {
+                if( !atLeastOneActualSubTypeDifferFromOther ) type = other.Type;
+                else if( !atLeastOneActualSubTypeDifferFromThis ) type = Type;
+                else
+                {
+                    type = genDef.MakeGenericType( subTypes.Select( t => t.Kind.IsNullableValueType() ? typeof(Nullable<>).MakeGenericType( t.Type ) : t.Type ).ToArray() );
+                }
+            }
+            return new NullableTypeTree( type, kind, subTypes ?? RawSubTypes );
+        }
+
+        /// <summary>
         /// See <see cref="Equals(NullableTypeTree)"/>.
         /// </summary>
         /// <param name="obj">The other object.</param>
@@ -124,14 +266,14 @@ namespace CK.CodeGen
 
         /// <summary>
         /// Implements a strict equality except that <see cref="NullabilityTypeKind.NRTFullNullable"/> and <see cref="NullabilityTypeKind.NRTFullNonNullable"/> bits
-        /// are ignored.
+        /// are ignored (these bits are implementation details).
         /// </summary>
         /// <param name="other">The other nullable type tree.</param>
         /// <returns>True if they are the same, false otherwise.</returns>
         public bool Equals( NullableTypeTree other )
         {
             return (Kind & ~(NullabilityTypeKind.NRTFullNonNullable | NullabilityTypeKind.NRTFullNullable)) == (other.Kind & ~(NullabilityTypeKind.NRTFullNonNullable | NullabilityTypeKind.NRTFullNullable))
-                    && EqualityComparer<Type>.Default.Equals( Type, other.Type )
+                    && Type == other.Type
                     && RawSubTypes.SequenceEqual( other.RawSubTypes );
         }
 
@@ -176,7 +318,7 @@ namespace CK.CodeGen
                         if( n == null )
                         {
                             n = Type.Name;
-                            int idx = n.IndexOf( '`' );
+                            int idx = n.IndexOf( '`', StringComparison.Ordinal );
                             if( idx > 0 ) n = n.Substring( 0, idx );
                             if( withNamespace ) DumpNamespace( b, Type );
                         }
@@ -226,6 +368,10 @@ namespace CK.CodeGen
         /// </summary>
         /// <returns>The type name without namespace nor nesting types.</returns>
         public override string ToString() => ToString( false );
+
+        public static bool operator ==( NullableTypeTree x, NullableTypeTree y ) => x.Equals( y );
+
+        public static bool operator !=( NullableTypeTree x, NullableTypeTree y ) => !x.Equals( y );
     }
 }
 

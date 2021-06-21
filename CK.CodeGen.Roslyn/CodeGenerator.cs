@@ -105,7 +105,7 @@ namespace CK.CodeGen
                 return Generate( CompilationOptions,
                                  input.Trees,
                                  assemblyPath,
-                                 collector.Select( a => MetadataReference.CreateFromFile( new Uri( a.CodeBase ).LocalPath ) ),
+                                 collector.Select( a => MetadataReference.CreateFromFile( new Uri( a.Location ).LocalPath ) ),
                                  loader )
                         .WithLoadFailures( weakLoader.Conflicts );
             }
@@ -158,7 +158,7 @@ namespace CK.CodeGen
                 return Generate( compileOptions,
                                  trees,
                                  assemblyPath,
-                                 collector.Select( a => MetadataReference.CreateFromFile( new Uri( a.CodeBase ).LocalPath ) ),
+                                 collector.Select( a => MetadataReference.CreateFromFile( new Uri( a.Location ).LocalPath ) ),
                                  loader )
                         .WithLoadFailures( weakLoader.Conflicts );
             }

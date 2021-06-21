@@ -10,6 +10,13 @@
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
+  <!-- See https://docs.microsoft.com/en-us/dotnet/standard/base-types/string-comparison-net-5-plus -->
+  <PropertyGroup>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <WarningsAsErrors>$(WarningsAsErrors);CA1307;CA1309;CA1310</WarningsAsErrors>
+  </PropertyGroup>
+
+
   <ItemGroup>
     <PackageReference Include="CK.Text" />
     <PackageReference Include="CSemVer" />

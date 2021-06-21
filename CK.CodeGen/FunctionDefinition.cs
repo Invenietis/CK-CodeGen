@@ -273,6 +273,7 @@ namespace CK.CodeGen
         /// <returns>The StringBuilder to enable fluent syntax.</returns>
         public StringBuilder Write( StringBuilder b )
         {
+            if( b == null ) throw new ArgumentNullException( nameof( b ) );
             if( Attributes.HasAttributes )
             {
                 Attributes.Write( b );

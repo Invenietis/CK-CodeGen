@@ -63,4 +63,11 @@ dotnet_style_require_accessibility_modifiers = omit_if_default:silent
 # CA1034: Nested types should not be visible.
 dotnet_diagnostic.CA1034.severity = none
 # Motive: Nested types can be used to design a good API.
+
+# CA1508: Avoid dead conditional code
+dotnet_diagnostic.CA1508.severity = none
+# Motive: Too much false positive!
+
+
 # /Signature-Code .editorconfig
+
