@@ -163,7 +163,7 @@ namespace CK.CodeGen
         /// </summary>
         /// <remarks>
         /// Value tuples are expressed (by default) with the (lovely,brackets) but can use the explicit type: <see cref="ValueTuple{T1, T2}"/>
-        /// instead. This is mainly because of pattern matching limitations in (at least) C# 8 (ie. netcoreapp3.1).
+        /// instead. This is mainly because of pattern matching limitations in (at least) C# 8 (i.e. netcoreapp3.1).
         /// </remarks>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
