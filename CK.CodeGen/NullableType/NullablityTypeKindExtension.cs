@@ -52,7 +52,7 @@ namespace CK.CodeGen
 
         /// <summary>
         /// Gets whether this is a nullable type.
-        /// See <see cref="NullabilityTypeKind.IsNullable"/>.
+        /// This simply check the <see cref="NullabilityTypeKind.IsNullable"/> bit.
         /// </summary>
         /// <param name="this">This <see cref="NullabilityTypeKind"/>.</param>
         /// <returns>True for nullable type.</returns>
