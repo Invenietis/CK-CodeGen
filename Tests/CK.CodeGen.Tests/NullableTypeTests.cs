@@ -10,6 +10,84 @@ namespace CK.CodeGen.Tests
     [TestFixture]
     partial class NullableTypeTests
     {
+        [TestCase( "NonNullableRef" )]
+        [TestCase( "Ref" )]
+        [TestCase( "NullableValueType" )]
+        [TestCase( "ValueType" )]
+        public void Normal_and_Abnormal_null( string kind )
+        {
+            switch( kind )
+            {
+                case "NonNullableRef":
+                    {
+                        var tRef = GetNullableTypeTree( nameof( ListInt ) );
+                        tRef.Kind.IsNullable().Should().BeFalse();
+
+                        var tNormal = tRef.ToNormalNull();
+                        tNormal.Kind.IsNullable().Should().BeTrue();
+                        tNormal.Should().NotBe( tRef );
+
+                        var tAbnormal = tRef.ToAbnormalNull();
+                        tAbnormal.Should().Be( tRef );
+
+                        CheckMirror( tNormal, tAbnormal );
+                        break;
+                    }
+                case "Ref":
+                    {
+                        var t = GetNullableTypeTree( nameof( NListNInt ) );
+                        t.Kind.IsNullable().Should().BeTrue();
+
+                        var tNormal = t.ToNormalNull();
+                        tNormal.Should().Be( t );
+
+                        var tAbnormal = t.ToAbnormalNull();
+                        tAbnormal.Kind.IsNullable().Should().BeFalse();
+                        tAbnormal.Should().NotBe( t );
+
+                        CheckMirror( tNormal, tAbnormal );
+                        break;
+                    }
+                case "NullableValueType":
+                    {
+                        var t = GetNullableTypeTree( nameof( NVT ) );
+                        t.Kind.IsNullable().Should().BeTrue();
+
+                        var tNormal = t.ToNormalNull();
+                        tNormal.Should().NotBe( t );
+
+                        var tAbnormal = t.ToAbnormalNull();
+                        tAbnormal.Kind.IsNullable().Should().BeTrue();
+                        tAbnormal.Should().Be( t );
+
+                        CheckMirror( tNormal, tAbnormal );
+                        break;
+                    }
+                case "ValueType":
+                    {
+                        var t = GetNullableTypeTree( nameof( VT ) );
+                        t.Kind.IsNullable().Should().BeFalse();
+
+                        var tNormal = t.ToNormalNull();
+                        tNormal.Should().Be( t );
+
+                        var tAbnormal = t.ToAbnormalNull();
+                        tAbnormal.Kind.IsNullable().Should().BeTrue();
+                        tAbnormal.Should().NotBe( t );
+
+                        CheckMirror( tNormal, tAbnormal );
+                        break;
+                    }
+                default: throw new NotSupportedException();
+            }
+            static void CheckMirror( NullableTypeTree normal, NullableTypeTree abnormal )
+            {
+                normal.ToAbnormalNull().ToNormalNull().Should().Be( normal );
+                abnormal.ToNormalNull().ToAbnormalNull().Should().Be( abnormal );
+            }
+        }
+
+
         [Test]
         public void Type_from_typeof_declaration_is_oblivious_to_nullable()
         {

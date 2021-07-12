@@ -11,7 +11,7 @@ namespace CK.CodeGen.Tests
     partial class NullableTypeTests
     {
 
-#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
+#pragma warning disable CS0414 //  The field 'NullableTypeTests.Vd' is assigned but its value is never used.
 #pragma warning disable IDE0044 // Add readonly modifier
 #pragma warning disable 0649 // Field 'is never assigned to, and will always have its default value null
 #pragma warning disable IDE1006 // Naming Styles
