@@ -26,6 +26,8 @@ namespace CK.CodeGen
     /// </summary>
     public readonly struct NullableTypeTree : IEquatable<NullableTypeTree>
     {
+        readonly NullableTypeTree[] _rawSubTypes;
+
         /// <summary>
         /// Gets the type.
         /// When this <see cref="Kind"/> is a <see cref="NullablityTypeKindExtension.IsNullableValueType(NullabilityTypeKind)"/> (a <see cref="Nullable{T}"/>),
@@ -34,11 +36,16 @@ namespace CK.CodeGen
         public Type Type { get; }
 
         /// <summary>
+        /// The <see cref="NullabilityTypeKind"/> for this <see cref="Type"/>.
+        /// </summary>
+        public NullabilityTypeKind Kind { get; }
+
+        /// <summary>
         /// The subordinates types if any. Can be generic parameters of the <see cref="Type"/> or the item type of an array.
         /// This "raw" types are the direct children: for <see cref="ValueTuple{T1, T2, T3, T4, T5, T6, T7, TRest}"/> only
         /// the 8 types appear (including the last singleton value tuple).
         /// </summary>
-        public IReadOnlyList<NullableTypeTree> RawSubTypes { get; }
+        public IReadOnlyList<NullableTypeTree> RawSubTypes => _rawSubTypes;
 
         /// <summary>
         /// The subordinates types if any. This flattens <see cref="RawSubTypes"/> if <see cref="IsLongValueTuple"/> is true.
@@ -46,11 +53,6 @@ namespace CK.CodeGen
         public readonly IEnumerable<NullableTypeTree> SubTypes => IsLongValueTuple
                                                                     ? RawSubTypes.Take( 7 ).Concat( RawSubTypes[7].SubTypes )
                                                                     : RawSubTypes;
-
-        /// <summary>
-        /// The <see cref="NullabilityTypeKind"/> for this <see cref="Type"/>.
-        /// </summary>
-        public NullabilityTypeKind Kind { get; }
 
         /// <summary>
         /// Gets whether this is a <see cref="ValueTuple{T1, T2, T3, T4, T5, T6, T7, TRest}"/>: TRest is a value tuple that
@@ -94,10 +96,10 @@ namespace CK.CodeGen
             {
                 return Kind.IsNullable()
                         ? this
-                        : new NullableTypeTree( Type, Kind | NullabilityTypeKind.IsNullable, RawSubTypes );
+                        : new NullableTypeTree( Type, Kind | NullabilityTypeKind.IsNullable, _rawSubTypes );
             }
             return Kind.IsNullable()
-                    ? new NullableTypeTree( Type, Kind & ~(NullabilityTypeKind.IsNullable|NullabilityTypeKind.IsTechnicallyNullable), RawSubTypes )
+                    ? new NullableTypeTree( Type, Kind & ~(NullabilityTypeKind.IsNullable | NullabilityTypeKind.IsTechnicallyNullable), _rawSubTypes )
                     : this;
         }
 
@@ -111,12 +113,12 @@ namespace CK.CodeGen
             if( Kind.IsReferenceType() )
             {
                 return Kind.IsNullable()
-                        ? new NullableTypeTree( Type, Kind & ~NullabilityTypeKind.IsNullable, RawSubTypes )
+                        ? new NullableTypeTree( Type, Kind & ~NullabilityTypeKind.IsNullable, _rawSubTypes )
                         : this;
             }
             return Kind.IsNullable()
                     ? this
-                    : new NullableTypeTree( Type, Kind | NullabilityTypeKind.IsNullable | NullabilityTypeKind.IsTechnicallyNullable, RawSubTypes );
+                    : new NullableTypeTree( Type, Kind | NullabilityTypeKind.IsNullable | NullabilityTypeKind.IsTechnicallyNullable, _rawSubTypes );
         }
 
         /// <summary>
@@ -131,7 +133,30 @@ namespace CK.CodeGen
         public NullableTypeTree WithType( Type t )
         {
             if( t == null ) throw new ArgumentNullException( nameof( t ) );
-            return new NullableTypeTree( t, Kind, RawSubTypes );
+            return new NullableTypeTree( t, Kind, _rawSubTypes );
+        }
+
+        /// <summary>
+        /// Returns a <see cref="NullableTypeTree"/> with a changed subordinated <see cref="SubTypes"/> but
+        /// with exactly the same <see cref="Kind"/> and <see cref="Type"/> as this one.
+        /// This must be used with care (no check is done on the updated subordinated type).
+        /// </summary>
+        /// <param name="idx">Index in the <see cref="SubTypes"/> that must be set.</param>
+        /// <param name="newOne">The new subordinated type.</param>
+        /// <returns>A new tree.</returns>
+        public NullableTypeTree WithSubTypeAt( int idx, NullableTypeTree newOne )
+        {
+            var s = (NullableTypeTree[])_rawSubTypes.Clone();
+            if( !IsLongValueTuple || idx < 7 )
+            {
+                if( idx < 0 || idx >= RawSubTypes.Count ) throw new ArgumentOutOfRangeException( nameof( idx ) );
+                s[idx] = newOne;
+            }
+            else
+            {
+                s[7] = s[7].WithSubTypeAt( idx - 7, newOne );
+            }
+            return new NullableTypeTree( Type, Kind, s );
         }
 
         /// <summary>
@@ -140,12 +165,13 @@ namespace CK.CodeGen
         /// <param name="t">The Type.</param>
         /// <param name="k">The <see cref="NullabilityTypeKind"/>.</param>
         /// <param name="s">The sub types (generic parameters or array element).</param>
-        internal NullableTypeTree( Type t, NullabilityTypeKind k, IReadOnlyList<NullableTypeTree> s )
+        internal NullableTypeTree( Type t, NullabilityTypeKind k, NullableTypeTree[] s )
         {
             Debug.Assert( !t.IsGenericType || t.GetGenericTypeDefinition() != typeof( Nullable<> ) );
+            Debug.Assert( s != null );
             Type = t;
             Kind = k;
-            RawSubTypes = s;
+            _rawSubTypes = s;
         }
 
         /// <summary>
@@ -180,7 +206,7 @@ namespace CK.CodeGen
             {
                 kind = Kind | (other.Kind & (NullabilityTypeKind.IsNullable | NullabilityTypeKind.NRTFullNullable | NullabilityTypeKind.NRTFullNonNullable));
             }
-            return new NullableTypeTree( Type, kind, subTypes ?? RawSubTypes );
+            return new NullableTypeTree( Type, kind, subTypes ?? _rawSubTypes );
         }
 
         /// <summary>
@@ -287,7 +313,7 @@ namespace CK.CodeGen
                     type = genDef.MakeGenericType( subTypes.Select( t => t.Kind.IsNullableValueType() ? typeof(Nullable<>).MakeGenericType( t.Type ) : t.Type ).ToArray() );
                 }
             }
-            return new NullableTypeTree( type, kind, subTypes ?? RawSubTypes );
+            return new NullableTypeTree( type, kind, subTypes ?? _rawSubTypes );
         }
 
         /// <summary>

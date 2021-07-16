@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 
 namespace CK.CodeGen.Tests
 {
@@ -119,6 +120,93 @@ namespace CK.CodeGen.Tests
 
             n1.Equals( n2 ).Should().BeTrue( "NullableTypeTree has a value semantics." );
             n1.GetHashCode().Should().Be( n2.GetHashCode() );
+        }
+
+
+        interface IDic<TKey, TValue> {}
+
+        interface IDicNKey<TKey, TValue> where TKey : notnull { }
+
+        interface IDicNValue<TKey, TValue> where TValue : notnull { }
+
+        interface IDicNKeyNValue<TKey, TValue> where TKey : notnull where TValue : notnull { }
+
+        [Test]
+        public void WithSubTypeAt_updates_SubTypes()
+        {
+            var s = GetTypeAndNullability( nameof( VeryLongValueTuple ) );
+            var t = s.Type.GetNullableTypeTree( s.Nullability );
+            t.ToString().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,BigInteger,IEnumerable<int>,string?,List<string?>?,sbyte?,byte?,short?,ushort?,int?,uint?,long?,ulong?,decimal?)" );
+            t.SubTypes.ElementAt( 0 ).ToString().Should().Be( "sbyte" );
+            for(int idx = 0; idx < t.SubTypes.Count(); ++idx )
+            {
+                var t1 = t.WithSubTypeAt( idx, GetType().GetNullableTypeTree() );
+                t1.SubTypes.ElementAt( idx ).ToString().Should().Be( "NullableTypeTests?" );
+            }
+        }
+
+
+        [Test]
+        public void research_on_notnull_generic_constraint()
+        {
+            // No constraint at all.
+            {
+                var t = typeof( IDic<,> );
+                t.GetCustomAttributesData()
+                        .FirstOrDefault( a => a.AttributeType.Name == "NullableAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" )
+                        .Should().BeNull();
+
+                var a = t.GetCustomAttributesData()
+                        .FirstOrDefault( a => a.AttributeType.Name == "NullableContextAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
+                object? data = a.ConstructorArguments[0].Value;
+                data.Should().Be( (byte)2 );
+            }
+            // TKey notnull.
+            {
+                var t = typeof( IDicNKey<,> );
+                t.GetCustomAttributesData()
+                        .FirstOrDefault( a => a.AttributeType.Name == "NullableAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" )
+                        .Should().BeNull();
+
+                t.GetCustomAttributesData()
+                        .FirstOrDefault( a => a.AttributeType.Name == "NullableContextAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" )
+                        .Should().BeNull();
+
+                // Should be the same as IDictionary... but it's not!
+                // It's marked with context 1.
+                var tDic = typeof( IDictionary<,> );
+                tDic.GetCustomAttributesData()
+                        .FirstOrDefault( a => a.AttributeType.Name == "NullableAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" )
+                        .Should().BeNull();
+
+                var a = tDic.GetCustomAttributesData()
+                        .FirstOrDefault( a => a.AttributeType.Name == "NullableContextAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
+                object? data = a.ConstructorArguments[0].Value;
+                data.Should().Be( (byte)1 );
+            }
+            // TValue notnull.
+            {
+                var t = typeof( IDicNValue<,> );
+                t.GetCustomAttributesData()
+                        .FirstOrDefault( a => a.AttributeType.Name == "NullableAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" )
+                        .Should().BeNull();
+
+                var a = t.GetCustomAttributesData()
+                        .FirstOrDefault( a => a.AttributeType.Name == "NullableContextAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" )
+                        .Should().BeNull();
+            }
+            // TKey and TValue notnull.
+            {
+                var t = typeof( IDicNKeyNValue<,> );
+                t.GetCustomAttributesData()
+                        .FirstOrDefault( a => a.AttributeType.Name == "NullableAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" )
+                        .Should().BeNull();
+
+                t.GetCustomAttributesData()
+                  .FirstOrDefault( a => a.AttributeType.Name == "NullableContextAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" )
+                  .Should().BeNull();
+
+            }
         }
 
 #pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.

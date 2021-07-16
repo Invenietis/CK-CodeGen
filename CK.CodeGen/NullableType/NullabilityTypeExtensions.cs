@@ -33,6 +33,7 @@ namespace CK.CodeGen
         /// <returns>The nullability kind.</returns>
         public static NullabilityTypeKind GetNullabilityKind( this Type @this )
         {
+            if( @this == null ) throw new ArgumentNullException( nameof( @this ) );
             if( @this.IsInterface )
             {
                 return @this.IsGenericType ? NullabilityTypeKind.NullableGenericReferenceType : NullabilityTypeKind.NullableReferenceType;
@@ -53,7 +54,7 @@ namespace CK.CodeGen
                 if( !@this.IsGenericType ) return NullabilityTypeKind.NonNullableValueType;
                 return @this.IsValueTuple() ? NullabilityTypeKind.NonNullableTupleType : NullabilityTypeKind.NonNullableGenericValueType;
             }
-            throw new Exception( $"What's this type that is not an interface, a class or a value type?: {@this.AssemblyQualifiedName}" );
+            throw new ArgumentException( $"What's this type that is not an interface, a class or a value type?: {@this.AssemblyQualifiedName}", nameof(@this) );
         }
 
         /// <summary>
