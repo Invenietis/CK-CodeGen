@@ -10,7 +10,7 @@ namespace CK.CodeGen
     /// <summary>
     /// Extends Type with helper methods.
     /// </summary>
-    public static class NullabilityTypeExtensions
+    public static partial class NullabilityTypeExtensions
     {
         /// <summary>
         /// Gets the <see cref="NullabilityTypeKind"/> for a type.
@@ -74,12 +74,13 @@ namespace CK.CodeGen
         /// otherwise an <see cref="ArgumentException"/> is thrown.
         /// </summary>
         /// <param name="this">This parameter.</param>
+        /// <param name="builder">Optional builder.</param>
         /// <returns>The nullable tree for the parameter' type.</returns>
         [DebuggerStepThrough]
-        public static NullableTypeTree GetNullableTypeTree( this ParameterInfo @this )
+        public static NullableTypeTree GetNullableTypeTree( this ParameterInfo @this, INullableTypeTreeBuilder? builder = null )
         {
             var info = GetNullabilityInfo( @this );
-            return GetNullableTypeTree( @this.ParameterType, info );
+            return GetNullableTypeTree( @this.ParameterType, info, builder );
         }
 
         /// <summary>
@@ -99,12 +100,13 @@ namespace CK.CodeGen
         /// otherwise an <see cref="ArgumentException"/> is thrown.
         /// </summary>
         /// <param name="this">This property.</param>
+        /// <param name="builder">Optional builder.</param>
         /// <returns>The nullable tree for the property's type.</returns>
         [DebuggerStepThrough]
-        public static NullableTypeTree GetNullableTypeTree( this PropertyInfo @this )
+        public static NullableTypeTree GetNullableTypeTree( this PropertyInfo @this, INullableTypeTreeBuilder? builder = null )
         {
             var info = GetNullabilityInfo( @this );
-            return GetNullableTypeTree( @this.PropertyType, info );
+            return GetNullableTypeTree( @this.PropertyType, info, builder );
         }
 
         /// <summary>
@@ -124,12 +126,13 @@ namespace CK.CodeGen
         /// otherwise an <see cref="ArgumentException"/> is thrown.
         /// </summary>
         /// <param name="this">This field.</param>
+        /// <param name="builder">Optional builder.</param>
         /// <returns>The nullable tree for the fields's type.</returns>
         [DebuggerStepThrough]
-        public static NullableTypeTree GetNullableTypeTree( this FieldInfo @this )
+        public static NullableTypeTree GetNullableTypeTree( this FieldInfo @this, INullableTypeTreeBuilder? builder = null )
         {
             var info = GetNullabilityInfo( @this );
-            return GetNullableTypeTree( @this.FieldType, info );
+            return GetNullableTypeTree( @this.FieldType, info, builder );
         }
 
         /// <summary>
@@ -138,26 +141,30 @@ namespace CK.CodeGen
         /// </summary>
         /// <param name="this">This type.</param>
         /// <param name="info">The nullability info.</param>
+        /// <param name="builder">Optional builder.</param>
         /// <returns>The detailed, recursive, <see cref="NullableTypeTree"/>.</returns>
         [DebuggerStepThrough]
-        public static NullableTypeTree GetNullableTypeTree( this Type @this, NullabilityTypeInfo info )
+        public static NullableTypeTree GetNullableTypeTree( this Type @this, NullabilityTypeInfo info, INullableTypeTreeBuilder? builder = null )
         {
-            return GetNullableTypeTree( @this, info.GenerateAnnotations().GetEnumerator(), info.Kind );
+            return GetNullableTypeTree( @this, info.GenerateAnnotations().GetEnumerator(), info.Kind, builder );
         }
 
         /// <summary>
         /// Creates a <see cref="NullableTypeTree"/> for this type based on no specific NRT profile (oblivious context):
-        /// all reference types that appear in the tree are de facto nullable. 
+        /// all reference types that appear in the tree are de facto nullable.
+        /// The generic 'notnull' constraint is (currently and unfortunately) ignored (failed to handle it so far).
+        /// As a workaround, when the <paramref name="builder"/> is null, the <see cref="NullableTypeTree.ObliviousDefaultBuilder"/> is used
+        /// that corrects this.
         /// </summary>
         /// <param name="this">This type.</param>
         /// <returns>The detailed, recursive, <see cref="NullableTypeTree"/>.</returns>
         [DebuggerStepThrough]
-        public static NullableTypeTree GetNullableTypeTree( this Type @this )
+        public static NullableTypeTree GetNullableTypeTree( this Type @this, INullableTypeTreeBuilder? builder = null )
         {
-            return GetNullableTypeTree( @this, new NullabilityTypeInfo( GetNullabilityKind( @this ), null ) );
+            return GetNullableTypeTree( @this, new NullabilityTypeInfo( GetNullabilityKind( @this ), null ), builder ?? NullableTypeTree.ObliviousDefaultBuilder );
         }
 
-        static NullableTypeTree GetNullableTypeTree( Type t, IEnumerator<byte> annotations, NullabilityTypeKind known )
+        static NullableTypeTree GetNullableTypeTree( Type t, IEnumerator<byte> annotations, NullabilityTypeKind known, INullableTypeTreeBuilder? builder )
         {
             if( t.DeclaringType != null && t.DeclaringType.IsGenericType ) throw new ArgumentException( $"Type '{t.Name}' is nested in a generic type ({t.DeclaringType.ToCSharpName()}). Only nested types in non generic types are supported.", nameof( t ) );
             NullableTypeTree[] sub = Array.Empty<NullableTypeTree>();
@@ -186,23 +193,24 @@ namespace CK.CodeGen
                     known &= ~NullabilityTypeKind.IsNullable;
                 }
             }
+            Type[]? genArgs = null;
             if( t.HasElementType )
             {
                 Debug.Assert( known.IsReferenceType() );
-                sub = new[] { GetNullableTypeTree( t.GetElementType()!, annotations, default ) };
+                sub = new[] { GetNullableTypeTree( t.GetElementType()!, annotations, default, builder ) };
             }
             else if( t.IsGenericType )
             {
                 Debug.Assert( (known & NullabilityTypeKind.IsGenericType) != 0, "This has been already computed." );
-                var genArgs = t.GetGenericArguments();
+                genArgs = t.GetGenericArguments();
                 sub = new NullableTypeTree[genArgs.Length];
                 int idx = 0;
                 foreach( var g in genArgs )
                 {
-                    sub[idx++] = GetNullableTypeTree( g, annotations, default );
+                    sub[idx++] = GetNullableTypeTree( g, annotations, default, builder );
                 }
             }
-            return new NullableTypeTree( t, known, sub );
+            return builder != null ? builder.Create( t, known, sub, genArgs ) : new NullableTypeTree( t, known, sub );
         }
 
         static NullabilityTypeInfo GetNullabilityInfo( Type t, MemberInfo? parent, IEnumerable<CustomAttributeData> attributes, Func<string> locationForError )

@@ -146,15 +146,41 @@ namespace CK.CodeGen.Tests
             }
         }
 
+        class NoFix : INullableTypeTreeBuilder
+        {
+            public NullableTypeTree Create( Type t, NullabilityTypeKind kind, NullableTypeTree[] subTypes, Type[]? genericArguments = null )
+            {
+                return new NullableTypeTree( t, kind, subTypes );
+            }
+        }
+
         [Test]
-        public void WithUpdatedSubTypes_updates_SubTypes()
+        public void ObliviousDefaultBuilder_fixes_the_notnull_key_constraints_dictionary()
+        {
+            {
+                Type t = typeof( IDictionary<string, int> );
+                t.GetNullableTypeTree().RawSubTypes[0].Kind.IsNullable().Should().BeFalse();
+
+                t.GetNullableTypeTree( new NoFix() ).RawSubTypes[0].Kind.IsNullable().Should().BeTrue();
+            }
+            {
+                Type t = typeof( Dictionary<NullableTypeTests, int> );
+                t.GetNullableTypeTree().RawSubTypes[0].Kind.IsNullable().Should().BeFalse();
+
+                t.GetNullableTypeTree( new NoFix() ).RawSubTypes[0].Kind.IsNullable().Should().BeTrue();
+            }
+
+        }
+
+        [Test]
+        public void Transform_on_very_long_tuple()
         {
             var s = GetTypeAndNullability( nameof( VeryLongValueTuple ) );
             var t = s.Type.GetNullableTypeTree( s.Nullability );
             t.ToString().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,BigInteger,IEnumerable<int>,string?,List<string?>?,sbyte?,byte?,short?,ushort?,int?,uint?,long?,ulong?,decimal?)" );
             t.SubTypes.ElementAt( 0 ).ToString().Should().Be( "sbyte" );
 
-            var r = t.WithUpdatedSubTypes( s =>
+            var r = t.Transform( s =>
             {
                 return s.Type.IsValueTuple() ? null : GetType().GetNullableTypeTree();
             } );
@@ -164,7 +190,7 @@ namespace CK.CodeGen.Tests
                 r.Result.SubTypes.ElementAt( idx ).ToString().Should().Be( "NullableTypeTests?" );
             }
 
-            var noChange = t.WithUpdatedSubTypes( s => null );
+            var noChange = t.Transform( s => null );
             noChange.HasChanged.Should().BeFalse();
             noChange.Result.Should().Be( t );
         }

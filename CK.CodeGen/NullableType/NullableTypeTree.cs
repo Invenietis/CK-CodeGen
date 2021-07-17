@@ -28,6 +28,36 @@ namespace CK.CodeGen
     {
         readonly NullableTypeTree[] _rawSubTypes;
 
+        class FixDictionaryBuilder : INullableTypeTreeBuilder
+        {
+            public static readonly INullableTypeTreeBuilder Instance = new FixDictionaryBuilder();
+
+            public NullableTypeTree Create( Type t, NullabilityTypeKind kind, NullableTypeTree[] subTypes, Type[]? genericArguments = null )
+            {
+                if( genericArguments?.Length == 2 )
+                {
+                    var tGen = t.GetGenericTypeDefinition();
+                    if( tGen == typeof( IDictionary<,> ) || tGen == typeof( Dictionary<,> ) )
+                    {
+                        var tKey = subTypes[0];
+                        if( tKey.Kind.IsNullable() && tKey.Kind.IsReferenceType() )
+                        {
+                            subTypes[0] = tKey.ToAbnormalNull();
+                        }
+                    }
+                }
+                return new NullableTypeTree( t, kind, subTypes );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a builder that will be used by <see cref="NullabilityTypeExtensions.GetNullableTypeTree(Type, INullableTypeTreeBuilder?)"/>
+        /// when no other builder is specified.
+        /// This defaults to a builder that ensures that the key of <see cref="Dictionary{TKey, TValue}"/> and <see cref="IDictionary{TKey, TValue}"/>
+        /// is not nullable.
+        /// </summary>
+        public static INullableTypeTreeBuilder ObliviousDefaultBuilder { get; set; } = FixDictionaryBuilder.Instance;
+
         /// <summary>
         /// Gets the type.
         /// When this <see cref="Kind"/> is a <see cref="NullablityTypeKindExtension.IsNullableValueType(NullabilityTypeKind)"/> (a <see cref="Nullable{T}"/>),
@@ -174,54 +204,65 @@ namespace CK.CodeGen
         }
 
         /// <summary>
-        /// Returns a <see cref="NullableTypeTree"/> with changed subordinated <see cref="SubTypes"/> but
-        /// with exactly the same <see cref="Kind"/> and <see cref="Type"/> as this one.
-        /// This must be used with care (no check is done on the updated subordinated types).
-        /// <para>
-        /// The traversal is depth-first.
-        /// </para>
+        /// Returns a transformed <see cref="NullableTypeTree"/> by a depth-first traversal.
+        /// This must be used with care (no check is done on the changed types).
         /// </summary>
-        /// <param name="transform">A function that can transform all new subordinated types and returns null for unchanged type.</param>
+        /// <param name="transformer">A function that can transform all new subordinated types and returns null for unchanged type.</param>
+        /// <param name="subTypesOnly">True to apply the transformer only on subordinated types, skipping this one.</param>
         /// <returns>A new tree.</returns>
         /// <remarks>
         /// Returning the HasChanged flag avoids another comparison (that is in depth) to know if the
         /// update have had any effect.
         /// </remarks>
-        public (NullableTypeTree Result, bool HasChanged) WithUpdatedSubTypes( Func<NullableTypeTree, NullableTypeTree?> transform )
+        public (NullableTypeTree Result, bool HasChanged) Transform( Func<NullableTypeTree, NullableTypeTree?> transformer, bool subTypesOnly = false )
         {
-            if( transform == null ) throw new ArgumentNullException( nameof( transform ) );
+            if( transformer == null ) throw new ArgumentNullException( nameof( transformer ) );
             var s = _rawSubTypes;
             for( int idx = 0; idx < _rawSubTypes.Length; ++idx )
             {
-                var applied = s[idx].WithUpdatedSubTypes( transform );
+                var applied = s[idx].Transform( transformer );
                 if( applied.HasChanged )
                 {
                     if( _rawSubTypes == s ) s = (NullableTypeTree[])_rawSubTypes.Clone();
                     s[idx] = applied.Result;
                 }
-                var newOne = transform( s[idx] );
+                var newOne = transformer( s[idx] );
                 if( newOne != null )
                 {
                     if( _rawSubTypes == s ) s = (NullableTypeTree[])_rawSubTypes.Clone();
                     s[idx] = newOne.Value;
                 }
             }
-            return (new NullableTypeTree( Type, Kind, s ), s != _rawSubTypes );
+            bool hasChanged = s != _rawSubTypes;
+            var t = new NullableTypeTree( Type, Kind, s );
+            if( !subTypesOnly )
+            {
+                var tThis = transformer( t );
+                if( tThis != null )
+                {
+                    t = tThis.Value;
+                    hasChanged = true;
+                }
+            }
+            return (t, hasChanged);
         }
 
         /// <summary>
         /// Initializes a new <see cref="NullableTypeTree"/>.
+        /// No checks are done on the parameters (except ArgumentNullException and the fact that <paramref name="t"/> must not be Nullable&lt;&gt;):
+        /// they must be coherent otherwise behavior is undefined.
         /// </summary>
         /// <param name="t">The Type.</param>
         /// <param name="k">The <see cref="NullabilityTypeKind"/>.</param>
-        /// <param name="s">The sub types (generic parameters or array element).</param>
-        internal NullableTypeTree( Type t, NullabilityTypeKind k, NullableTypeTree[] s )
+        /// <param name="subTypes">The sub types (generic parameters or array element).</param>
+        public NullableTypeTree( Type t, NullabilityTypeKind k, NullableTypeTree[] subTypes )
         {
-            Debug.Assert( !t.IsGenericType || t.GetGenericTypeDefinition() != typeof( Nullable<> ) );
-            Debug.Assert( s != null );
+            if( t == null ) throw new ArgumentNullException( nameof( t ) );
+            if( subTypes == null ) throw new ArgumentNullException( nameof( subTypes ) );
+            if( t.IsGenericType && t.GetGenericTypeDefinition() == typeof( Nullable<> ) ) throw new ArgumentException( "Cannot be a Nullable<>.", nameof( t ) );
             Type = t;
             Kind = k;
-            _rawSubTypes = s;
+            _rawSubTypes = subTypes;
         }
 
         /// <summary>
@@ -383,7 +424,7 @@ namespace CK.CodeGen
         {
             return (Kind & ~(NullabilityTypeKind.NRTFullNonNullable | NullabilityTypeKind.NRTFullNullable)) == (other.Kind & ~(NullabilityTypeKind.NRTFullNonNullable | NullabilityTypeKind.NRTFullNullable))
                     && Type == other.Type
-                    && RawSubTypes.SequenceEqual( other.RawSubTypes );
+                    && _rawSubTypes.SequenceEqual( other._rawSubTypes );
         }
 
         /// <summary>
