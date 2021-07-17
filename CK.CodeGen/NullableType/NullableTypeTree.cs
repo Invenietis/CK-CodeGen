@@ -43,7 +43,7 @@ namespace CK.CodeGen
         /// <summary>
         /// The subordinates types if any. Can be generic parameters of the <see cref="Type"/> or the item type of an array.
         /// This "raw" types are the direct children: for <see cref="ValueTuple{T1, T2, T3, T4, T5, T6, T7, TRest}"/> only
-        /// the 8 types appear (including the last singleton value tuple).
+        /// the 8 types appear (including the last value tuple that can be a singleton).
         /// </summary>
         public IReadOnlyList<NullableTypeTree> RawSubTypes => _rawSubTypes;
 
@@ -56,7 +56,7 @@ namespace CK.CodeGen
 
         /// <summary>
         /// Gets whether this is a <see cref="ValueTuple{T1, T2, T3, T4, T5, T6, T7, TRest}"/>: TRest is a value tuple that
-        /// may be the singleton <see cref="ValueTuple{T}"/> when the actual value tuple contains no more than 8 parameters.
+        /// is the singleton <see cref="ValueTuple{T}"/> when the actual value tuple contains exactly 8 parameters.
         /// </summary>
         public bool IsLongValueTuple => Kind.IsTupleType() && RawSubTypes.Count == 8;
 
@@ -137,26 +137,76 @@ namespace CK.CodeGen
         }
 
         /// <summary>
-        /// Returns a <see cref="NullableTypeTree"/> with a changed subordinated <see cref="SubTypes"/> but
-        /// with exactly the same <see cref="Kind"/> and <see cref="Type"/> as this one.
+        /// Returns a <see cref="NullableTypeTree"/> with a changed (or not) subordinated <see cref="SubTypes"/> but
+        /// always with exactly the same <see cref="Kind"/> and <see cref="Type"/> as this one.
         /// This must be used with care (no check is done on the updated subordinated type).
         /// </summary>
         /// <param name="idx">Index in the <see cref="SubTypes"/> that must be set.</param>
         /// <param name="newOne">The new subordinated type.</param>
-        /// <returns>A new tree.</returns>
-        public NullableTypeTree WithSubTypeAt( int idx, NullableTypeTree newOne )
+        /// <returns>A new tree with a true flag or the same tree with a false flag.</returns>
+        /// <remarks>
+        /// Returning the HasChanged flag avoids another comparison (that is in depth) to know if the
+        /// update have had any effect.
+        /// </remarks>
+        public (NullableTypeTree Result, bool HasChanged) WithSubTypeAt( int idx, NullableTypeTree newOne )
         {
-            var s = (NullableTypeTree[])_rawSubTypes.Clone();
+            if( idx < 0 ) throw new ArgumentOutOfRangeException( nameof( idx ) );
+            var s = _rawSubTypes;
             if( !IsLongValueTuple || idx < 7 )
             {
-                if( idx < 0 || idx >= RawSubTypes.Count ) throw new ArgumentOutOfRangeException( nameof( idx ) );
-                s[idx] = newOne;
+                if( idx >= _rawSubTypes.Length ) throw new ArgumentOutOfRangeException( nameof( idx ) );
+                if( _rawSubTypes[idx] != newOne )
+                {
+                    s = (NullableTypeTree[])_rawSubTypes.Clone();
+                    s[idx] = newOne;
+                }
             }
             else
             {
-                s[7] = s[7].WithSubTypeAt( idx - 7, newOne );
+                var n = s[7].WithSubTypeAt( idx - 7, newOne );
+                if( n.HasChanged )
+                {
+                    s = (NullableTypeTree[])_rawSubTypes.Clone();
+                    s[7] = n.Result;
+                }
             }
-            return new NullableTypeTree( Type, Kind, s );
+            return (new NullableTypeTree( Type, Kind, s ), s != _rawSubTypes);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="NullableTypeTree"/> with changed subordinated <see cref="SubTypes"/> but
+        /// with exactly the same <see cref="Kind"/> and <see cref="Type"/> as this one.
+        /// This must be used with care (no check is done on the updated subordinated types).
+        /// <para>
+        /// The traversal is depth-first.
+        /// </para>
+        /// </summary>
+        /// <param name="transform">A function that can transform all new subordinated types and returns null for unchanged type.</param>
+        /// <returns>A new tree.</returns>
+        /// <remarks>
+        /// Returning the HasChanged flag avoids another comparison (that is in depth) to know if the
+        /// update have had any effect.
+        /// </remarks>
+        public (NullableTypeTree Result, bool HasChanged) WithUpdatedSubTypes( Func<NullableTypeTree, NullableTypeTree?> transform )
+        {
+            if( transform == null ) throw new ArgumentNullException( nameof( transform ) );
+            var s = _rawSubTypes;
+            for( int idx = 0; idx < _rawSubTypes.Length; ++idx )
+            {
+                var applied = s[idx].WithUpdatedSubTypes( transform );
+                if( applied.HasChanged )
+                {
+                    if( _rawSubTypes == s ) s = (NullableTypeTree[])_rawSubTypes.Clone();
+                    s[idx] = applied.Result;
+                }
+                var newOne = transform( s[idx] );
+                if( newOne != null )
+                {
+                    if( _rawSubTypes == s ) s = (NullableTypeTree[])_rawSubTypes.Clone();
+                    s[idx] = newOne.Value;
+                }
+            }
+            return (new NullableTypeTree( Type, Kind, s ), s != _rawSubTypes );
         }
 
         /// <summary>

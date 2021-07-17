@@ -138,13 +138,36 @@ namespace CK.CodeGen.Tests
             var t = s.Type.GetNullableTypeTree( s.Nullability );
             t.ToString().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,BigInteger,IEnumerable<int>,string?,List<string?>?,sbyte?,byte?,short?,ushort?,int?,uint?,long?,ulong?,decimal?)" );
             t.SubTypes.ElementAt( 0 ).ToString().Should().Be( "sbyte" );
-            for(int idx = 0; idx < t.SubTypes.Count(); ++idx )
+            for( int idx = 0; idx < t.SubTypes.Count(); ++idx )
             {
-                var t1 = t.WithSubTypeAt( idx, GetType().GetNullableTypeTree() );
-                t1.SubTypes.ElementAt( idx ).ToString().Should().Be( "NullableTypeTests?" );
+                var r = t.WithSubTypeAt( idx, GetType().GetNullableTypeTree() );
+                r.HasChanged.Should().BeTrue();
+                r.Result.SubTypes.ElementAt( idx ).ToString().Should().Be( "NullableTypeTests?" );
             }
         }
 
+        [Test]
+        public void WithUpdatedSubTypes_updates_SubTypes()
+        {
+            var s = GetTypeAndNullability( nameof( VeryLongValueTuple ) );
+            var t = s.Type.GetNullableTypeTree( s.Nullability );
+            t.ToString().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,BigInteger,IEnumerable<int>,string?,List<string?>?,sbyte?,byte?,short?,ushort?,int?,uint?,long?,ulong?,decimal?)" );
+            t.SubTypes.ElementAt( 0 ).ToString().Should().Be( "sbyte" );
+
+            var r = t.WithUpdatedSubTypes( s =>
+            {
+                return s.Type.IsValueTuple() ? null : GetType().GetNullableTypeTree();
+            } );
+            r.HasChanged.Should().BeTrue();
+            for( int idx = 0; idx < t.SubTypes.Count(); ++idx )
+            {
+                r.Result.SubTypes.ElementAt( idx ).ToString().Should().Be( "NullableTypeTests?" );
+            }
+
+            var noChange = t.WithUpdatedSubTypes( s => null );
+            noChange.HasChanged.Should().BeFalse();
+            noChange.Result.Should().Be( t );
+        }
 
         [Test]
         public void research_on_notnull_generic_constraint()
