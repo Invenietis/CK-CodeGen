@@ -152,18 +152,18 @@ namespace CK.CodeGen
         }
 
         /// <summary>
-        /// Returns a <see cref="NullableTypeTree"/> with a changed primary <see cref="Type"/> but
-        /// with exactly the same <see cref="Kind"/> and <see cref="RawSubTypes"/> as this one.
+        /// Returns a <see cref="NullableTypeTree"/> with a changed primary <see cref="Type"/> and/or <see cref="Kind"/> but
+        /// with exactly the same <see cref="RawSubTypes"/> as this one.
         /// This must be used with care (no check is done on the changed type): this is typically useful
         /// to change a <see cref="IList{T}"/> to a <see cref="List{T}"/> and preserve the nullability
         /// information.
         /// </summary>
-        /// <param name="t">The new type that must be coherent with this one otherwise the behavior is undefined.</param>
+        /// <param name="newType">The new type (when not null).</param>
+        /// <param name="newKind">The new kind  (when not null).</param>
         /// <returns>A new tree with the same nullability information.</returns>
-        public NullableTypeTree WithType( Type t )
+        public NullableTypeTree With( Type? newType = null, NullabilityTypeKind? newKind = null )
         {
-            if( t == null ) throw new ArgumentNullException( nameof( t ) );
-            return new NullableTypeTree( t, Kind, _rawSubTypes );
+            return new NullableTypeTree( newType ?? Type, newKind ?? Kind, _rawSubTypes );
         }
 
         /// <summary>
