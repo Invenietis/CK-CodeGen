@@ -137,7 +137,7 @@ namespace CK.CodeGen
         /// Mirror of <see cref="ToNormalNull"/> with the same limitation: this doesn't change the type tree in depth,
         /// only this top Type/Kind is concerned by this normalization.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>This or an "abnormal" tree.</returns>
         public NullableTypeTree ToAbnormalNull()
         {
             if( Kind.IsReferenceType() )
@@ -150,6 +150,18 @@ namespace CK.CodeGen
                     ? this
                     : new NullableTypeTree( Type, Kind | NullabilityTypeKind.IsNullable | NullabilityTypeKind.IsTechnicallyNullable, _rawSubTypes );
         }
+
+        /// <summary>
+        /// Returns a non nullable reference or value type.
+        /// </summary>
+        /// <returns>A non nullable tree.</returns>
+        public NullableTypeTree ToNonNullable() => Kind.IsReferenceType() ? ToAbnormalNull() : ToNormalNull();
+
+        /// <summary>
+        /// Returns a nullable reference or value type.
+        /// </summary>
+        /// <returns>A nullable tree.</returns>
+        public NullableTypeTree ToNullable() => Kind.IsReferenceType() ? ToNormalNull() : ToAbnormalNull();
 
         /// <summary>
         /// Returns a <see cref="NullableTypeTree"/> with a changed primary <see cref="Type"/> and/or <see cref="Kind"/> but
