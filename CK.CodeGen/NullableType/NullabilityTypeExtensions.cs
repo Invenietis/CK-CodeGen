@@ -161,19 +161,12 @@ namespace CK.CodeGen
         /// </summary>
         /// <param name="this">This type.</param>
         /// <returns>The detailed, recursive, <see cref="NullableTypeTree"/>.</returns>
-        //[DebuggerStepThrough]
+        [DebuggerStepThrough]
         public static NullableTypeTree GetNullableTypeTree( this Type @this, INullableTypeTreeBuilder? builder = null )
         {
-            var info = GetNullabilityInfo( @this, @this.DeclaringType, @this.CustomAttributes );
+            var info = new NullabilityTypeInfo( GetNullabilityKind( @this ), null, false );
             return GetNullableTypeTreeWithProfile( @this, info.GenerateAnnotations().GetEnumerator(), info.Kind, builder ?? NullableTypeTree.ObliviousDefaultBuilder );
         }
-
-        //public static NullableTypeTree GetNullableTypeTree2( this Type @this, INullableTypeTreeBuilder? builder = null )
-        //{
-        //    NullableTypeTree[] sub = Array.Empty<NullableTypeTree>();
-        //    var info = GetNullabilityInfo( @this, @this.DeclaringType, @this.CustomAttributes );
-
-        //}
 
         static NullableTypeTree GetNullableTypeTreeWithProfile( Type t, IEnumerator<byte> annotations, NullabilityTypeKind known, INullableTypeTreeBuilder? builder )
         {
