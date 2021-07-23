@@ -32,14 +32,23 @@ namespace CK.CodeGen
         public ReadOnlySpan<byte> NullableProfile => _profile ?? ReadOnlySpan<byte>.Empty;
 
         /// <summary>
+        /// Gets whether this profile has been obtained from the declaring type's NullableContextAttribute
+        /// rather than the NullableAttribute.
+        /// This does not participate in equality.
+        /// </summary>
+        public bool FromContext { get; }
+
+        /// <summary>
         /// Initializes a new <see cref="NullabilityTypeInfo"/>.
         /// </summary>
         /// <param name="kind">The <see cref="Kind"/>.</param>
         /// <param name="nullableProfile">The optional <see cref="NullableProfile"/>.</param>
-        public NullabilityTypeInfo( NullabilityTypeKind kind, byte[]? nullableProfile )
+        /// <param name="fromContext">See <see cref="FromContext"/>.</param>
+        public NullabilityTypeInfo( NullabilityTypeKind kind, byte[]? nullableProfile, bool fromContext )
         {
             Kind = kind;
             _profile = nullableProfile;
+            FromContext = fromContext;
         }
 
         /// <summary>

@@ -8,12 +8,12 @@ namespace CK.CodeGen
     /// Captures nullability information about a Type.
     /// See <see cref="NullabilityTypeExtensions.GetNullabilityKind(Type)"/>.
     /// </summary>
-    public enum NullabilityTypeKind : byte
+    public enum NullabilityTypeKind : int
     {
         /// <summary>
         /// Unknown type kind.
         /// </summary>
-        Unknown = 0,
+        None = 0,
 
         /// <summary>
         /// Expected nullability flag.
@@ -46,6 +46,11 @@ namespace CK.CodeGen
         IsTupleType = 32,
 
         /// <summary>
+        /// The type is a generic type parameter. 
+        /// </summary>
+        IsGenericParameter = 64,
+
+        /// <summary>
         /// Optional flag that describes a Nullable Reference Type marked with NullableAttribute(2): the type
         /// is necessarily <see cref="IsReferenceType"/> and <see cref="IsNullable"/> and if the type has generic arguments, then
         /// all its subordinated types that are reference types are also nullable.
@@ -55,7 +60,7 @@ namespace CK.CodeGen
         /// Use <see cref="NullablityTypeKindExtension.IsNRTFullNullable"/> to test if this type is really NRT full nullable.
         /// </para>
         /// </summary>
-        NRTFullNullable = 64,
+        NRTFullNullable = 128,
 
         /// <summary>
         /// Optional flag that describes a Nullable Reference Type marked with NullableAttribute(1): the type
@@ -67,7 +72,7 @@ namespace CK.CodeGen
         /// Use <see cref="NullablityTypeKindExtension.IsNRTFullNonNullable"/> to test if this type is really NRT nullable.
         /// </para>
         /// </summary>
-        NRTFullNonNullable = 128,
+        NRTFullNonNullable = 256,
 
         /// <summary>
         /// A nullable value type is <see cref="IsValueType"/>|<see cref="IsNullable"/>|<see cref="IsTechnicallyNullable"/>.

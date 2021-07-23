@@ -325,8 +325,8 @@ namespace CK.CodeGen
         /// <returns>A NullableTypeTree or null if the two types are different (regardless of nullability).</returns>
         public NullableTypeTree? TryMergeNullabilities( NullableTypeTree other )
         {
-            if( Kind == NullabilityTypeKind.Unknown ) throw new InvalidOperationException( "Unitialized NullableTypeTree." );
-            if( other.Kind == NullabilityTypeKind.Unknown ) throw new ArgumentException( "Unitialized NullableTypeTree.", nameof( other ) );
+            if( Kind == NullabilityTypeKind.None ) throw new InvalidOperationException( "Unitialized NullableTypeTree." );
+            if( other.Kind == NullabilityTypeKind.None ) throw new ArgumentException( "Unitialized NullableTypeTree.", nameof( other ) );
             if( RawSubTypes.Count != other.RawSubTypes.Count )
             {
                 // Not the same number of subtypes. Types are really different.
@@ -384,7 +384,7 @@ namespace CK.CodeGen
                     // One of the subtypes differ: types are really different.
                     return null;
                 }
-                Debug.Assert( m.Value.Kind != NullabilityTypeKind.Unknown );
+                Debug.Assert( m.Value.Kind != NullabilityTypeKind.None );
                 if( subTypes == null
                     && ((m.Value.Kind & ~(NullabilityTypeKind.NRTFullNonNullable | NullabilityTypeKind.NRTFullNullable)) != (t.Kind & ~(NullabilityTypeKind.NRTFullNonNullable | NullabilityTypeKind.NRTFullNullable))
                         || m.Value.RawSubTypes != t.RawSubTypes) )

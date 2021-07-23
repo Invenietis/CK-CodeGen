@@ -40,8 +40,7 @@ namespace CK.CodeGen
             }
             if( @this.IsClass )
             {
-                if( @this.IsGenericType ) return NullabilityTypeKind.NullableGenericReferenceType;
-                return NullabilityTypeKind.NullableReferenceType;
+                return @this.IsGenericType ? NullabilityTypeKind.NullableGenericReferenceType : NullabilityTypeKind.NullableReferenceType;
             }
             if( @this.IsValueType )
             {
@@ -54,7 +53,11 @@ namespace CK.CodeGen
                 if( !@this.IsGenericType ) return NullabilityTypeKind.NonNullableValueType;
                 return @this.IsValueTuple() ? NullabilityTypeKind.NonNullableTupleType : NullabilityTypeKind.NonNullableGenericValueType;
             }
-            throw new ArgumentException( $"What's this type that is not an interface, a class or a value type?: {@this.AssemblyQualifiedName}", nameof(@this) );
+            if( @this.IsGenericTypeParameter )
+            {
+                return NullabilityTypeKind.IsGenericParameter;
+            }
+            throw new ArgumentException( $"What's this type that is not an interface, a class, a value type or a generic type parameter?: {@this.AssemblyQualifiedName}", nameof(@this) );
         }
 
         /// <summary>
@@ -158,68 +161,26 @@ namespace CK.CodeGen
         /// </summary>
         /// <param name="this">This type.</param>
         /// <returns>The detailed, recursive, <see cref="NullableTypeTree"/>.</returns>
-        [DebuggerStepThrough]
+        //[DebuggerStepThrough]
         public static NullableTypeTree GetNullableTypeTree( this Type @this, INullableTypeTreeBuilder? builder = null )
         {
-            var info = new NullabilityTypeInfo( GetNullabilityKind( @this ), null );
+            var info = GetNullabilityInfo( @this, @this.DeclaringType, @this.CustomAttributes );
             return GetNullableTypeTreeWithProfile( @this, info.GenerateAnnotations().GetEnumerator(), info.Kind, builder ?? NullableTypeTree.ObliviousDefaultBuilder );
         }
 
-        static NullableTypeTree GetNullableTypeTree( Type t, IEnumerator<byte> annotations, NullabilityTypeKind known, INullableTypeTreeBuilder? builder )
-        {
-            if( t.DeclaringType != null && t.DeclaringType.IsGenericType ) throw new ArgumentException( $"Type '{t.Name}' is nested in a generic type ({t.DeclaringType.ToCSharpName()}). Only nested types in non generic types are supported.", nameof( t ) );
-            NullableTypeTree[] sub = Array.Empty<NullableTypeTree>();
-            bool isInside;
-            if( isInside = (known == NullabilityTypeKind.Unknown) )
-            {
-                known = t.GetNullabilityKind();
-            }
-            if( known.IsNullableValueType() )
-            {
-                // Lift the Nullable<T>.
-                t = Nullable.GetUnderlyingType( t )!;
-            }
-            if( isInside && !known.IsNonGenericValueType() )
-            {
-                // Consume our annotation.
-                if( !annotations.MoveNext() )
-                {
-                    throw new InvalidOperationException( $"Byte annotations too short." );
-                }
-                var thisOne = annotations.Current;
-                // Annotations only apply to reference types. Only 1 (not null!) is of interest.
-                if( thisOne == 1 && known.IsReferenceType() )
-                {
-                    Debug.Assert( known.IsNullable() );
-                    known &= ~NullabilityTypeKind.IsNullable;
-                }
-            }
-            Type[]? genArgs = null;
-            if( t.HasElementType )
-            {
-                Debug.Assert( known.IsReferenceType() );
-                sub = new[] { GetNullableTypeTreeWithProfile( t.GetElementType()!, annotations, default, builder ) };
-            }
-            else if( t.IsGenericType )
-            {
-                Debug.Assert( (known & NullabilityTypeKind.IsGenericType) != 0, "This has been already computed." );
-                genArgs = t.GetGenericArguments();
-                sub = new NullableTypeTree[genArgs.Length];
-                int idx = 0;
-                foreach( var g in genArgs )
-                {
-                    sub[idx++] = GetNullableTypeTreeWithProfile( g, annotations, default, builder );
-                }
-            }
-            return builder != null ? builder.Create( t, known, sub, genArgs ) : new NullableTypeTree( t, known, sub );
-        }
+        //public static NullableTypeTree GetNullableTypeTree2( this Type @this, INullableTypeTreeBuilder? builder = null )
+        //{
+        //    NullableTypeTree[] sub = Array.Empty<NullableTypeTree>();
+        //    var info = GetNullabilityInfo( @this, @this.DeclaringType, @this.CustomAttributes );
+
+        //}
 
         static NullableTypeTree GetNullableTypeTreeWithProfile( Type t, IEnumerator<byte> annotations, NullabilityTypeKind known, INullableTypeTreeBuilder? builder )
         {
             if( t.DeclaringType != null && t.DeclaringType.IsGenericType ) throw new ArgumentException( $"Type '{t.Name}' is nested in a generic type ({t.DeclaringType.ToCSharpName()}). Only nested types in non generic types are supported.", nameof( t ) );
             NullableTypeTree[] sub = Array.Empty<NullableTypeTree>();
             bool isInside;
-            if( isInside = (known == NullabilityTypeKind.Unknown) )
+            if( isInside = (known == NullabilityTypeKind.None) )
             {
                 known = t.GetNullabilityKind();
             }
@@ -267,6 +228,7 @@ namespace CK.CodeGen
         {
             byte[]? profile = null;
             var n = GetNullabilityKind( t );
+            bool fromContext = false;
             if( !n.IsNonGenericValueType() )
             {
                 var a = attributes.FirstOrDefault( a => a.AttributeType.Name == "NullableAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
@@ -274,6 +236,7 @@ namespace CK.CodeGen
                 {
                     while( parent != null )
                     {
+                        fromContext = true;
                         a = parent.CustomAttributes.FirstOrDefault( a => a.AttributeType.Name == "NullableContextAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
                         if( a != null )
                         {
@@ -307,11 +270,11 @@ namespace CK.CodeGen
                         {
                             profile[i] = (byte)arguments[i + 1].Value;
                         }
-                        Debug.Assert( profile.Length != 0, "Mono byte annotation array found." );
+                        Debug.Assert( profile.Length != 0, "Mono byte annotation is invalid." );
                     }
                 }
             }
-            return new NullabilityTypeInfo( n, profile );
+            return new NullabilityTypeInfo( n, profile, fromContext );
 
             static NullabilityTypeKind HandleByte( NullabilityTypeKind n, byte b )
             {
