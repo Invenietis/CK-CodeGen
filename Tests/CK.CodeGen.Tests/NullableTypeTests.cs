@@ -124,6 +124,18 @@ namespace CK.CodeGen.Tests
             n1.GetHashCode().Should().Be( n2.GetHashCode() );
         }
 
+        [Test]
+        public void typeof_void_NullableTypeTree_can_be_obtained_and_is_a_NonNullableValueType_that_cannot_be_transformed_to_nullable()
+        {
+            var tree = typeof( void ).GetNullableTypeTree();
+            tree.Kind.IsNullable().Should().BeFalse();
+            tree.Kind.IsNonGenericValueType().Should().BeTrue();
+            tree.ToString().Should().Be( "void" );
+            var abnormal = tree.ToAbnormalNull();
+            abnormal.Kind.IsNullable().Should().BeFalse();
+            abnormal.Kind.IsNonGenericValueType().Should().BeTrue();
+            abnormal.ToString().Should().Be( "void" );
+        }
 
         interface IDic<TKey, TValue> {}
 

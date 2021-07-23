@@ -146,7 +146,7 @@ namespace CK.CodeGen
                         ? new NullableTypeTree( Type, Kind & ~NullabilityTypeKind.IsNullable, _rawSubTypes )
                         : this;
             }
-            return Kind.IsNullable()
+            return Kind.IsNullable() || Type == typeof(void)
                     ? this
                     : new NullableTypeTree( Type, Kind | NullabilityTypeKind.IsNullable | NullabilityTypeKind.IsTechnicallyNullable, _rawSubTypes );
         }
