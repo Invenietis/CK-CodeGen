@@ -27,18 +27,14 @@ namespace CK.CodeGen
         /// <para>
         /// </para>
         /// However, <c>typeof(List&lt;string?&gt;)</c> could have been a <see cref="NullabilityTypeKind.NRTFullNullable"/>, but it is not, it is actually
-        /// oblivious to nullable: both <c>typeof(List&lt;string?&gt;)</c> and <c>typeof(List&lt;string&gt;)</c> are marked with with a single 0 byte.
+        /// oblivious to nullable: both <c>typeof(List&lt;string?&gt;)</c> and <c>typeof(List&lt;string&gt;)</c> are marked with a single 0 byte.
         /// </para>
         /// </remarks>
         /// <returns>The nullability kind.</returns>
         public static NullabilityTypeKind GetNullabilityKind( this Type @this )
         {
             if( @this == null ) throw new ArgumentNullException( nameof( @this ) );
-            if( @this.IsInterface )
-            {
-                return @this.IsGenericType ? NullabilityTypeKind.NullableGenericReferenceType : NullabilityTypeKind.NullableReferenceType;
-            }
-            if( @this.IsClass )
+            if( @this.IsInterface || @this.IsClass )
             {
                 return @this.IsGenericType ? NullabilityTypeKind.NullableGenericReferenceType : NullabilityTypeKind.NullableReferenceType;
             }
@@ -50,7 +46,7 @@ namespace CK.CodeGen
                     if( !inner.IsGenericType ) return NullabilityTypeKind.NullableValueType;
                     return inner.IsValueTuple() ? NullabilityTypeKind.NullableTupleType : NullabilityTypeKind.NullableGenericValueType;
                 }
-                if( !@this.IsGenericType ) return NullabilityTypeKind.NonNullableValueType;
+                if( !@this.IsGenericType ) return NullabilityTypeKind.IsValueType;
                 return @this.IsValueTuple() ? NullabilityTypeKind.NonNullableTupleType : NullabilityTypeKind.NonNullableGenericValueType;
             }
             if( @this.IsGenericTypeParameter )

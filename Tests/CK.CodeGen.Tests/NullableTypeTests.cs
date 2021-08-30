@@ -329,7 +329,7 @@ namespace CK.CodeGen.Tests
 
         int? NVT;
 
-        [TestCase( "VT", "int", "NonNullableValueType" )]
+        [TestCase( "VT", "int", "IsValueType" )]
         [TestCase( "NVT", "int?", "NullableValueType" )]
         public void NonNullable_at_all_types( string member, string result, string info )
         {

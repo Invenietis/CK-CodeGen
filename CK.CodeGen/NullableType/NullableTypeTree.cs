@@ -129,7 +129,7 @@ namespace CK.CodeGen
                         : new NullableTypeTree( Type, Kind | NullabilityTypeKind.IsNullable, _rawSubTypes );
             }
             return Kind.IsNullable()
-                    ? new NullableTypeTree( Type, Kind & ~(NullabilityTypeKind.IsNullable | NullabilityTypeKind.IsTechnicallyNullable), _rawSubTypes )
+                    ? new NullableTypeTree( Type, Kind & ~NullabilityTypeKind.IsNullable, _rawSubTypes )
                     : this;
         }
 
@@ -148,7 +148,7 @@ namespace CK.CodeGen
             }
             return Kind.IsNullable() || Type == typeof(void)
                     ? this
-                    : new NullableTypeTree( Type, Kind | NullabilityTypeKind.IsNullable | NullabilityTypeKind.IsTechnicallyNullable, _rawSubTypes );
+                    : new NullableTypeTree( Type, Kind | NullabilityTypeKind.IsNullable, _rawSubTypes );
         }
 
         /// <summary>

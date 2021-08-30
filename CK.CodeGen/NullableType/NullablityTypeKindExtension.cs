@@ -59,6 +59,14 @@ namespace CK.CodeGen
         public static bool IsNullable( this NullabilityTypeKind @this ) => (@this & NullabilityTypeKind.IsNullable) != 0;
 
         /// <summary>
+        /// Gets whether this is a value type.
+        /// This simply check the <see cref="NullabilityTypeKind.IsValueType"/> bit.
+        /// </summary>
+        /// <param name="this">This <see cref="NullabilityTypeKind"/>.</param>
+        /// <returns>True for value type.</returns>
+        public static bool IsValueType( this NullabilityTypeKind @this ) => (@this & NullabilityTypeKind.IsValueType) != 0;
+
+        /// <summary>
         /// Gets whether this is a nullable value type.
         /// Byte annotation is skipped and the inner type must be lifted: <see cref="NullabilityTypeKind.IsGenericType"/> and <see cref="NullabilityTypeKind.IsTupleType"/>
         /// apply to the inner type.
@@ -69,11 +77,12 @@ namespace CK.CodeGen
 
         /// <summary>
         /// Gets whether this is a technically nullable type.
-        /// See <see cref="NullabilityTypeKind.IsTechnicallyNullable"/>.
+        /// Challenging null on a variable of this type should be done either because it is a nullable value type
+        /// or a reference type (be it NRT nullable or not).
         /// </summary>
         /// <param name="this">This <see cref="NullabilityTypeKind"/>.</param>
         /// <returns>True for type that can be null (even if they shouldn't).</returns>
-        public static bool IsTechnicallyNullable( this NullabilityTypeKind @this ) => (@this & NullabilityTypeKind.IsTechnicallyNullable) != 0;
+        public static bool IsTechnicallyNullable( this NullabilityTypeKind @this ) => (@this & (NullabilityTypeKind.IsNullable | NullabilityTypeKind.IsReferenceType)) != 0;
 
         /// <summary>
         /// Gets a readable string.
