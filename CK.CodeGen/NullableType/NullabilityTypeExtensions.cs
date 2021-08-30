@@ -140,7 +140,11 @@ namespace CK.CodeGen
 
         /// <summary>
         /// Creates a <see cref="NullableTypeTree"/> for this type based on a root <see cref="NullabilityTypeInfo"/> that must
-        /// have been computed for this type otherwise behavior is undefined. 
+        /// have been computed for this type otherwise behavior is undefined.
+        /// <para>
+        /// This low-level method doesn't use by default the <see cref="NullableTypeTree.ObliviousDefaultBuilder"/>.
+        /// It has to be provided explicitly to dictionary keys to not be nullable.
+        /// </para>
         /// </summary>
         /// <param name="this">This type.</param>
         /// <param name="info">The nullability info.</param>
