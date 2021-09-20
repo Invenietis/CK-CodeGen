@@ -9,7 +9,7 @@ namespace CK.CodeGen
     {
         readonly Dictionary<string, FunctionScopeImpl> _funcs;
 
-        public FunctionDefiner( bool dummy )
+        public FunctionDefiner( bool _ )
         {
             _funcs = new Dictionary<string, FunctionScopeImpl>();
         }

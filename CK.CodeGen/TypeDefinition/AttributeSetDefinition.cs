@@ -10,7 +10,7 @@ namespace CK.CodeGen
 {
     /// <summary>
     /// An attribute set definition appears inside [] and contains one or more comma separated <see cref="AttributeDefinition"/>.
-    /// This set is charaterized by its <see cref="Target"/> that applies to all its <see cref="Attributes"/>.
+    /// This set is characterized by its <see cref="Target"/> that applies to all its <see cref="Attributes"/>.
     /// </summary>
     public class AttributeSetDefinition
     {
@@ -42,6 +42,7 @@ namespace CK.CodeGen
         /// <returns>The StringBuilder to enable fluent syntax.</returns>
         public StringBuilder Write( StringBuilder b )
         {
+            if( b == null ) throw new ArgumentNullException( nameof( b ) );
             if( Attributes.Count > 0 )
             {
                 b.Append( '[' );

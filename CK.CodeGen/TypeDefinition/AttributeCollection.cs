@@ -8,7 +8,7 @@ using System.Text;
 namespace CK.CodeGen.SimpleParser
 {
     /// <summary>
-    /// Handes <see cref="AttributeSetDefinition"/> grouped by their <see cref="AttributeSetDefinition.Target"/>.
+    /// Handles <see cref="AttributeSetDefinition"/> grouped by their <see cref="AttributeSetDefinition.Target"/>.
     /// </summary>
     public class AttributeCollection 
     {
@@ -93,6 +93,7 @@ namespace CK.CodeGen.SimpleParser
         /// <returns>The merged collection.</returns>
         public void MergeWith( AttributeCollection other )
         {
+            if( other == null ) throw new ArgumentNullException( nameof( other ) );
             for( int i = 0; i < _attrs.Length; ++i )
             {
                 var t = _attrs[i];

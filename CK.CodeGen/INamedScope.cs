@@ -38,7 +38,7 @@ namespace CK.CodeGen
         string FullName { get; }
 
         /// <summary>
-        /// Collects the whole code into a string collector, optionnaly closing the
+        /// Collects the whole code into a string collector, optionally closing the
         /// scope with a trailing '}' or leaving it opened.
         /// </summary>
         /// <param name="collector">The string collector to write to.</param>
@@ -46,7 +46,7 @@ namespace CK.CodeGen
         void Build( Action<string> collector, bool closeScope );
 
         /// <summary>
-        /// Collects the whole code into a <see cref="StringBuilder"/>, optionnaly closing the
+        /// Collects the whole code into a <see cref="StringBuilder"/>, optionally closing the
         /// scope with a trailing '}' or leaving it opened.
         /// </summary>
         /// <param name="b">The string builder to write to.</param>

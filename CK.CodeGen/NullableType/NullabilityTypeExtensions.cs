@@ -10,7 +10,7 @@ namespace CK.CodeGen
     /// <summary>
     /// Extends Type with helper methods.
     /// </summary>
-    public static class NullabilityTypeExtensions
+    public static partial class NullabilityTypeExtensions
     {
         /// <summary>
         /// Gets the <see cref="NullabilityTypeKind"/> for a type.
@@ -27,20 +27,16 @@ namespace CK.CodeGen
         /// <para>
         /// </para>
         /// However, <c>typeof(List&lt;string?&gt;)</c> could have been a <see cref="NullabilityTypeKind.NRTFullNullable"/>, but it is not, it is actually
-        /// oblivious to nullable: both <c>typeof(List&lt;string?&gt;)</c> and <c>typeof(List&lt;string&gt;)</c> are marked with with a single 0 byte.
+        /// oblivious to nullable: both <c>typeof(List&lt;string?&gt;)</c> and <c>typeof(List&lt;string&gt;)</c> are marked with a single 0 byte.
         /// </para>
         /// </remarks>
         /// <returns>The nullability kind.</returns>
         public static NullabilityTypeKind GetNullabilityKind( this Type @this )
         {
-            if( @this.IsInterface )
+            if( @this == null ) throw new ArgumentNullException( nameof( @this ) );
+            if( @this.IsInterface || @this.IsClass )
             {
                 return @this.IsGenericType ? NullabilityTypeKind.NullableGenericReferenceType : NullabilityTypeKind.NullableReferenceType;
-            }
-            if( @this.IsClass )
-            {
-                if( @this.IsGenericType ) return NullabilityTypeKind.NullableGenericReferenceType;
-                return NullabilityTypeKind.NullableReferenceType;
             }
             if( @this.IsValueType )
             {
@@ -50,10 +46,14 @@ namespace CK.CodeGen
                     if( !inner.IsGenericType ) return NullabilityTypeKind.NullableValueType;
                     return inner.IsValueTuple() ? NullabilityTypeKind.NullableTupleType : NullabilityTypeKind.NullableGenericValueType;
                 }
-                if( !@this.IsGenericType ) return NullabilityTypeKind.NonNullableValueType;
+                if( !@this.IsGenericType ) return NullabilityTypeKind.IsValueType;
                 return @this.IsValueTuple() ? NullabilityTypeKind.NonNullableTupleType : NullabilityTypeKind.NonNullableGenericValueType;
             }
-            throw new Exception( $"What's this type that is not an interface, a class or a value type?: {@this.AssemblyQualifiedName}" );
+            if( @this.IsGenericTypeParameter )
+            {
+                return NullabilityTypeKind.IsGenericParameter;
+            }
+            throw new ArgumentException( $"What's this type that is not an interface, a class, a value type or a generic type parameter?: {@this.AssemblyQualifiedName}", nameof(@this) );
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace CK.CodeGen
         [DebuggerStepThrough]
         public static NullabilityTypeInfo GetNullabilityInfo( this ParameterInfo @this )
         {
-            return GetNullabilityInfo( @this.ParameterType, @this.Member, @this.GetCustomAttributesData(), () => $" parameter '{@this.Name}' of {@this.Member.DeclaringType}.{@this.Member.Name}." );
+            return GetNullabilityInfo( @this.ParameterType, @this.Member, @this.CustomAttributes );
         }
 
         /// <summary>
@@ -73,12 +73,13 @@ namespace CK.CodeGen
         /// otherwise an <see cref="ArgumentException"/> is thrown.
         /// </summary>
         /// <param name="this">This parameter.</param>
+        /// <param name="builder">Optional builder.</param>
         /// <returns>The nullable tree for the parameter' type.</returns>
         [DebuggerStepThrough]
-        public static NullableTypeTree GetNullableTypeTree( this ParameterInfo @this )
+        public static NullableTypeTree GetNullableTypeTree( this ParameterInfo @this, INullableTypeTreeBuilder? builder = null )
         {
             var info = GetNullabilityInfo( @this );
-            return GetNullableTypeTree( @this.ParameterType, info );
+            return GetNullableTypeTree( @this.ParameterType, info, builder );
         }
 
         /// <summary>
@@ -89,7 +90,7 @@ namespace CK.CodeGen
         [DebuggerStepThrough]
         public static NullabilityTypeInfo GetNullabilityInfo( this PropertyInfo @this )
         {
-            return GetNullabilityInfo( @this.PropertyType, @this.DeclaringType, @this.GetCustomAttributesData(), () => $" property '{@this.Name}' of {@this.DeclaringType}." );
+            return GetNullabilityInfo( @this.PropertyType, @this.DeclaringType, @this.CustomAttributes );
         }
 
         /// <summary>
@@ -98,12 +99,13 @@ namespace CK.CodeGen
         /// otherwise an <see cref="ArgumentException"/> is thrown.
         /// </summary>
         /// <param name="this">This property.</param>
+        /// <param name="builder">Optional builder.</param>
         /// <returns>The nullable tree for the property's type.</returns>
         [DebuggerStepThrough]
-        public static NullableTypeTree GetNullableTypeTree( this PropertyInfo @this )
+        public static NullableTypeTree GetNullableTypeTree( this PropertyInfo @this, INullableTypeTreeBuilder? builder = null )
         {
             var info = GetNullabilityInfo( @this );
-            return GetNullableTypeTree( @this.PropertyType, info );
+            return GetNullableTypeTree( @this.PropertyType, info, builder );
         }
 
         /// <summary>
@@ -114,7 +116,7 @@ namespace CK.CodeGen
         [DebuggerStepThrough]
         public static NullabilityTypeInfo GetNullabilityInfo( this FieldInfo @this )
         {
-            return GetNullabilityInfo( @this.FieldType, @this.DeclaringType, @this.GetCustomAttributesData(), () => $" field '{@this.Name}' of {@this.DeclaringType}." );
+            return GetNullabilityInfo( @this.FieldType, @this.DeclaringType, @this.CustomAttributes );
         }
 
         /// <summary>
@@ -123,45 +125,55 @@ namespace CK.CodeGen
         /// otherwise an <see cref="ArgumentException"/> is thrown.
         /// </summary>
         /// <param name="this">This field.</param>
+        /// <param name="builder">Optional builder.</param>
         /// <returns>The nullable tree for the fields's type.</returns>
         [DebuggerStepThrough]
-        public static NullableTypeTree GetNullableTypeTree( this FieldInfo @this )
+        public static NullableTypeTree GetNullableTypeTree( this FieldInfo @this, INullableTypeTreeBuilder? builder = null )
         {
             var info = GetNullabilityInfo( @this );
-            return GetNullableTypeTree( @this.FieldType, info );
+            return GetNullableTypeTree( @this.FieldType, info, builder );
         }
 
         /// <summary>
         /// Creates a <see cref="NullableTypeTree"/> for this type based on a root <see cref="NullabilityTypeInfo"/> that must
-        /// have been computed for this type otherwise behavior is undefined. 
+        /// have been computed for this type otherwise behavior is undefined.
+        /// <para>
+        /// This low-level method doesn't use by default the <see cref="NullableTypeTree.ObliviousDefaultBuilder"/>.
+        /// It has to be provided explicitly to dictionary keys to not be nullable.
+        /// </para>
         /// </summary>
         /// <param name="this">This type.</param>
         /// <param name="info">The nullability info.</param>
+        /// <param name="builder">Optional builder.</param>
         /// <returns>The detailed, recursive, <see cref="NullableTypeTree"/>.</returns>
         [DebuggerStepThrough]
-        public static NullableTypeTree GetNullableTypeTree( this Type @this, NullabilityTypeInfo info )
+        public static NullableTypeTree GetNullableTypeTree( this Type @this, NullabilityTypeInfo info, INullableTypeTreeBuilder? builder = null )
         {
-            return GetNullableTypeTree( @this, info.GenerateAnnotations().GetEnumerator(), info.Kind );
+            return GetNullableTypeTreeWithProfile( @this, info.GenerateAnnotations().GetEnumerator(), info.Kind, builder );
         }
 
         /// <summary>
         /// Creates a <see cref="NullableTypeTree"/> for this type based on no specific NRT profile (oblivious context):
-        /// all reference types that appear in the tree are de facto nullable. 
+        /// all reference types that appear in the tree are de facto nullable.
+        /// The generic 'notnull' constraint is (currently and unfortunately) ignored (failed to handle it so far).
+        /// As a workaround, when the <paramref name="builder"/> is null, the <see cref="NullableTypeTree.ObliviousDefaultBuilder"/> is used
+        /// that corrects this.
         /// </summary>
         /// <param name="this">This type.</param>
         /// <returns>The detailed, recursive, <see cref="NullableTypeTree"/>.</returns>
         [DebuggerStepThrough]
-        public static NullableTypeTree GetNullableTypeTree( this Type @this )
+        public static NullableTypeTree GetNullableTypeTree( this Type @this, INullableTypeTreeBuilder? builder = null )
         {
-            return GetNullableTypeTree( @this, new NullabilityTypeInfo( GetNullabilityKind( @this ), null ) );
+            var info = new NullabilityTypeInfo( GetNullabilityKind( @this ), null, false );
+            return GetNullableTypeTreeWithProfile( @this, info.GenerateAnnotations().GetEnumerator(), info.Kind, builder ?? NullableTypeTree.ObliviousDefaultBuilder );
         }
 
-        static NullableTypeTree GetNullableTypeTree( Type t, IEnumerator<byte> annotations, NullabilityTypeKind known )
+        static NullableTypeTree GetNullableTypeTreeWithProfile( Type t, IEnumerator<byte> annotations, NullabilityTypeKind known, INullableTypeTreeBuilder? builder )
         {
             if( t.DeclaringType != null && t.DeclaringType.IsGenericType ) throw new ArgumentException( $"Type '{t.Name}' is nested in a generic type ({t.DeclaringType.ToCSharpName()}). Only nested types in non generic types are supported.", nameof( t ) );
             NullableTypeTree[] sub = Array.Empty<NullableTypeTree>();
             bool isInside;
-            if( isInside = (known == NullabilityTypeKind.Unknown) )
+            if( isInside = (known == NullabilityTypeKind.None) )
             {
                 known = t.GetNullabilityKind();
             }
@@ -185,30 +197,31 @@ namespace CK.CodeGen
                     known &= ~NullabilityTypeKind.IsNullable;
                 }
             }
+            Type[]? genArgs = null;
             if( t.HasElementType )
             {
                 Debug.Assert( known.IsReferenceType() );
-                sub = new[] { GetNullableTypeTree( t.GetElementType()!, annotations, default ) };
+                sub = new[] { GetNullableTypeTreeWithProfile( t.GetElementType()!, annotations, default, builder ) };
             }
             else if( t.IsGenericType )
             {
                 Debug.Assert( (known & NullabilityTypeKind.IsGenericType) != 0, "This has been already computed." );
-                var genArgs = t.GetGenericArguments();
+                genArgs = t.GetGenericArguments();
                 sub = new NullableTypeTree[genArgs.Length];
                 int idx = 0;
                 foreach( var g in genArgs )
                 {
-                    sub[idx] = GetNullableTypeTree( g, annotations, default );
-                    ++idx;
+                    sub[idx++] = GetNullableTypeTreeWithProfile( g, annotations, default, builder );
                 }
             }
-            return new NullableTypeTree( t, known, sub );
+            return builder != null ? builder.Create( t, known, sub, genArgs ) : new NullableTypeTree( t, known, sub );
         }
 
-        static NullabilityTypeInfo GetNullabilityInfo( Type t, MemberInfo? parent, IEnumerable<CustomAttributeData> attributes, Func<string> locationForError )
+        static NullabilityTypeInfo GetNullabilityInfo( Type t, MemberInfo? parent, IEnumerable<CustomAttributeData> attributes )
         {
             byte[]? profile = null;
             var n = GetNullabilityKind( t );
+            bool fromContext = false;
             if( !n.IsNonGenericValueType() )
             {
                 var a = attributes.FirstOrDefault( a => a.AttributeType.Name == "NullableAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
@@ -216,10 +229,11 @@ namespace CK.CodeGen
                 {
                     while( parent != null )
                     {
-                        a = parent.GetCustomAttributesData().FirstOrDefault( a => a.AttributeType.Name == "NullableContextAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
+                        fromContext = true;
+                        a = parent.CustomAttributes.FirstOrDefault( a => a.AttributeType.Name == "NullableContextAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
                         if( a != null )
                         {
-                            n = HandleByte( locationForError, n, (byte)a.ConstructorArguments[0].Value! );
+                            n = HandleByte( n, (byte)a.ConstructorArguments[0].Value! );
                             break;
                         }
                         parent = parent.DeclaringType;
@@ -231,18 +245,16 @@ namespace CK.CodeGen
                     // A single value means "apply to everything in the type", e.g. 1 for Dictionary<string, string>, 2 for Dictionary<string?, string?>?
                     if( data is byte b )
                     {
-                        n = HandleByte( locationForError, n, b );
+                        n = HandleByte( n, b );
                     }
-                    else if( data is System.Collections.ObjectModel.ReadOnlyCollection<CustomAttributeTypedArgument> arguments )
+                    else
                     {
+                        var arguments = (System.Collections.ObjectModel.ReadOnlyCollection<CustomAttributeTypedArgument>)data;
                         var firstByte = (byte)arguments[0].Value;
                         // Complex nullability marker.
                         n |= NullabilityTypeKind.NRTFullNullable | NullabilityTypeKind.NRTFullNonNullable;
                         // Quick check.
-                        if( firstByte != 0 && (n & NullabilityTypeKind.IsValueType) != 0 )
-                        {
-                            throw new Exception( $"First byte annotation is {firstByte} but the type is a ValueType." );
-                        }
+                        Debug.Assert( firstByte == 0 || (n & NullabilityTypeKind.IsValueType) == 0 );
                         // Apply the first byte for this information.
                         if( firstByte == 1 ) n &= ~NullabilityTypeKind.IsNullable;
 
@@ -251,20 +263,13 @@ namespace CK.CodeGen
                         {
                             profile[i] = (byte)arguments[i + 1].Value;
                         }
-                        if( profile.Length == 0 )
-                        {
-                            throw new Exception( $"Mono byte annotation array found." );
-                        }
-                    }
-                    else
-                    {
-                        throw new Exception( $"Invalid data type '{data?.GetType()}' in NullableAttribute for {locationForError()}." );
+                        Debug.Assert( profile.Length != 0, "Mono byte annotation is invalid." );
                     }
                 }
             }
-            return new NullabilityTypeInfo( n, profile );
+            return new NullabilityTypeInfo( n, profile, fromContext );
 
-            static NullabilityTypeKind HandleByte( Func<string> locationForError, NullabilityTypeKind n, byte b )
+            static NullabilityTypeKind HandleByte( NullabilityTypeKind n, byte b )
             {
                 if( b == 1 )
                 {
@@ -274,14 +279,6 @@ namespace CK.CodeGen
                 else if( b == 2 )
                 {
                     n |= NullabilityTypeKind.NRTFullNullable;
-                }
-                else
-                {
-                    return n;
-                }
-                if( (n & NullabilityTypeKind.IsValueType) != 0 )
-                {
-                    throw new Exception( $"Single byte annotation is {b} but the type is a ValueType." );
                 }
                 return n;
             }

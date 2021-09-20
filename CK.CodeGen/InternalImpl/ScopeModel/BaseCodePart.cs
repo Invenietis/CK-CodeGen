@@ -27,7 +27,7 @@ namespace CK.CodeGen
                 if( o is string s )
                 {
                     s = s.TrimStart();
-                    if( s.Length > 0 ) return s.StartsWith( prefix );
+                    if( s.Length > 0 ) return s.StartsWith( prefix, StringComparison.Ordinal );
                 }
                 else
                 {
@@ -61,7 +61,7 @@ namespace CK.CodeGen
             }
         }
 
-        public IDictionary<object, object?> Memory => _memory ?? (_memory = new Dictionary<object, object?>());
+        public IDictionary<object, object?> Memory => _memory ??= new Dictionary<object, object?>();
 
         public override string ToString() => Build( new SmarterStringBuilder( new StringBuilder() ) ).ToString();
     }

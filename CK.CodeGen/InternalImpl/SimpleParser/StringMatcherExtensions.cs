@@ -243,15 +243,18 @@ namespace CK.CodeGen
                 {
                     @this.SkipWhiteSpacesAndJSComments();
                     if( !@this.MatchPotentialAttributes( out var pAttr ) ) return false;
-                    if( !@this.TryMatchCSharpIdentifier( out var pTypeStart ) ) return @this.SetError( "Expected identifier." );
+
                     FunctionDefinition.ParameterModifier mod = FunctionDefinition.ParameterModifier.None;
-                    switch( pTypeStart )
+                    if( @this.TryMatchCSharpIdentifier( out var pTypeStart ) )
                     {
-                        case "this": mod = FunctionDefinition.ParameterModifier.This; pTypeStart = null; break;
-                        case "params": mod = FunctionDefinition.ParameterModifier.Params; pTypeStart = null; break;
-                        case "out": mod = FunctionDefinition.ParameterModifier.Out; pTypeStart = null; break;
-                        case "ref": mod = FunctionDefinition.ParameterModifier.Ref; pTypeStart = null; break;
-                        case "in": mod = FunctionDefinition.ParameterModifier.In; pTypeStart = null; break;
+                        switch( pTypeStart )
+                        {
+                            case "this": mod = FunctionDefinition.ParameterModifier.This; pTypeStart = null; break;
+                            case "params": mod = FunctionDefinition.ParameterModifier.Params; pTypeStart = null; break;
+                            case "out": mod = FunctionDefinition.ParameterModifier.Out; pTypeStart = null; break;
+                            case "ref": mod = FunctionDefinition.ParameterModifier.Ref; pTypeStart = null; break;
+                            case "in": mod = FunctionDefinition.ParameterModifier.In; pTypeStart = null; break;
+                        }
                     }
                     @this.SkipWhiteSpacesAndJSComments();
                     if( !@this.MatchExtendedTypeName( out var pType, pTypeStart ) ) return false;
@@ -473,11 +476,7 @@ namespace CK.CodeGen
                 fields.Add( new TupleTypeName.Field( fType, fName ) );
                 if( @this.TryMatchChar( ',' ) ) @this.SkipWhiteSpacesAndJSComments();
             }
-            bool isNullable = @this.TryMatchChar( '?' );
-            if( isNullable )
-            {
-                @this.SkipWhiteSpacesAndJSComments();
-            }
+            @this.SkipWhiteSpacesAndJSComments();
             type = new TupleTypeName( fields );
             return true;
         }

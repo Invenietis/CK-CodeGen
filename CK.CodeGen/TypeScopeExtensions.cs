@@ -14,17 +14,19 @@ namespace CK.CodeGen
     {
         /// <summary>
         /// Creates all (or filtered set) constructors from a type (that should be the base type)
-        /// to this type wich simply relay the call to the base class.
+        /// to this type which simply relay the call to the base class.
         /// </summary>
         /// <param name="this">This type scope.</param>
         /// <param name="baseType">The base type.</param>
         /// <param name="accessBuilder">
         /// Optional filter (returning null skips the constructor) and
-        /// access protection builder. The default acces protection is "public ".
+        /// access protection builder. The default access protection is "public ".
         /// </param>
         /// <returns>This function scopes created.</returns>
         public static List<IFunctionScope> CreatePassThroughConstructors( this ITypeScope @this, Type baseType, Func<ConstructorInfo, string?>? accessBuilder = null )
         {
+            if( @this == null ) throw new ArgumentNullException( nameof( @this ) );
+            if( baseType == null ) throw new ArgumentNullException( nameof( baseType ) );
             List<IFunctionScope> result = new List<IFunctionScope>();
             foreach( var c in baseType.GetConstructors( BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic )
                                       .Where( c => c.IsPublic || c.IsFamily || c.IsFamilyOrAssembly ) )
@@ -70,6 +72,7 @@ namespace CK.CodeGen
         /// <returns>The newly created function scope.</returns>
         public static IFunctionScope CreateOverride( this ITypeScope @this, MethodInfo method )
         {
+            if( @this == null ) throw new ArgumentNullException( nameof( @this ) );
             Helper.CheckIsOverridable( method );
             return @this.CreateFunction( h => h.DoAppendSignature( AccessProtectionOption.ThrowOnPureInternal, "override ", method ) );
         }
@@ -83,6 +86,7 @@ namespace CK.CodeGen
         /// <returns>The newly created function scope.</returns>
         public static IFunctionScope CreateSealedOverride( this ITypeScope @this, MethodInfo method )
         {
+            if( @this == null ) throw new ArgumentNullException( nameof( @this ) );
             Helper.CheckIsOverridable( method );
             return @this.CreateFunction( h => h.DoAppendSignature( AccessProtectionOption.ThrowOnPureInternal, "sealed override ", method ) );
         }

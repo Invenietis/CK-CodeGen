@@ -19,7 +19,7 @@ namespace CK.CodeGen
         internal NamespaceScopeImpl( CodeWorkspaceImpl ws, INamespaceScope? parent, string name )
             : base( ws, parent )
         {
-            Debug.Assert( (parent == null) == (name == "") );
+            Debug.Assert( (parent == null) == (name.Length == 0) );
             Debug.Assert( parent == null || parent is NamespaceScopeImpl );
             _usings = new Dictionary<string, KeyValuePair<string?, string?>>();
             _subNamespaces = new List<NamespaceScopeImpl>();
@@ -59,7 +59,7 @@ namespace CK.CodeGen
         {
             if( !String.IsNullOrWhiteSpace( ns ) )
             {
-                int assignIdx = ns.IndexOf( '=' );
+                int assignIdx = ns.IndexOf( '=', StringComparison.Ordinal );
                 if( assignIdx != 0 )
                 {
                     if( assignIdx > 0 )
@@ -82,10 +82,8 @@ namespace CK.CodeGen
 
         INamespaceScope DoEnsureUsing( string alias, string? definition )
         {
-            Debug.Assert(
-                    (definition == null && CheckAndNormalizeNamespace( alias ) == alias)
-                    || (definition != null && CheckAndNormalizeOneName( alias ) == alias)
-                );
+            Debug.Assert( (definition == null && CheckAndNormalizeNamespace( alias ) == alias)
+                          || (definition != null && CheckAndNormalizeOneName( alias ) == alias) );
             var keyDef = definition;
             if( keyDef != null )
             {

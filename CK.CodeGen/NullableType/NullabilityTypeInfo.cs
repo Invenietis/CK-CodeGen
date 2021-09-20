@@ -23,23 +23,32 @@ namespace CK.CodeGen
         /// <summary>
         /// Gets the root <see cref="NullabilityTypeKind"/>.
         /// </summary>
-        public readonly NullabilityTypeKind Kind;
+        public NullabilityTypeKind Kind { get; }
 
         /// <summary>
         /// Gets the full nullable profile or an empty span if there is no complex NRT marker.
         /// When not empty, it starts with the nullable indicator of the root type. 
         /// </summary>
-        public ReadOnlySpan<byte> NullableProfile => _profile == null ? ReadOnlySpan<byte>.Empty : _profile;
+        public ReadOnlySpan<byte> NullableProfile => _profile ?? ReadOnlySpan<byte>.Empty;
+
+        /// <summary>
+        /// Gets whether this profile has been obtained from the declaring type's NullableContextAttribute
+        /// rather than the NullableAttribute.
+        /// This does not participate in equality.
+        /// </summary>
+        public bool FromContext { get; }
 
         /// <summary>
         /// Initializes a new <see cref="NullabilityTypeInfo"/>.
         /// </summary>
         /// <param name="kind">The <see cref="Kind"/>.</param>
         /// <param name="nullableProfile">The optional <see cref="NullableProfile"/>.</param>
-        public NullabilityTypeInfo( NullabilityTypeKind kind, byte[]? nullableProfile )
+        /// <param name="fromContext">See <see cref="FromContext"/>.</param>
+        public NullabilityTypeInfo( NullabilityTypeKind kind, byte[]? nullableProfile, bool fromContext )
         {
             Kind = kind;
             _profile = nullableProfile;
+            FromContext = fromContext;
         }
 
         /// <summary>
@@ -109,7 +118,7 @@ namespace CK.CodeGen
         }
 
         /// <summary>
-        /// Gets a readeable string.
+        /// Gets a readable string.
         /// </summary>
         /// <returns>A readable string.</returns>
         public override string ToString()
@@ -122,5 +131,11 @@ namespace CK.CodeGen
             }
             return s;
         }
+
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+        public static bool operator ==( NullabilityTypeInfo left, NullabilityTypeInfo right ) => left.Equals( right );
+
+        public static bool operator !=( NullabilityTypeInfo left, NullabilityTypeInfo right ) => !(left == right);
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }

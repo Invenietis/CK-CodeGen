@@ -41,11 +41,11 @@ namespace CK.CodeGen
         }
 
 
-        public event Action<INamespaceScope> NamespaceCreated;
+        public event Action<INamespaceScope>? NamespaceCreated;
 
-        public event Action<ITypeScope> TypeCreated;
+        public event Action<ITypeScope>? TypeCreated;
 
-        public event Action<IFunctionScope> FunctionCreated;
+        public event Action<IFunctionScope>? FunctionCreated;
 
         internal void OnNamespaceCreated( NamespaceScopeImpl n ) => NamespaceCreated?.Invoke( n );
 

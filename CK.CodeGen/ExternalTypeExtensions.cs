@@ -22,7 +22,7 @@ namespace CK.CodeGen
         /// <returns>True if this is a value tuple. False otherwise.</returns>
         public static bool IsValueTuple( this Type @this )
         {
-            return @this.Namespace == "System" && @this.Name.StartsWith( "ValueTuple`" );
+            return @this.Namespace == "System" && @this.Name.StartsWith( "ValueTuple`", StringComparison.Ordinal );
         }
 
         /// <summary>
@@ -50,18 +50,19 @@ namespace CK.CodeGen
         {
             return @this == null
                         ? "null"
-                        : $"@\"{@this.Replace( "\"", "\"\"" )}\"";
+                        : $"@\"{@this.Replace( "\"", "\"\"", StringComparison.Ordinal )}\"";
         }
 
         /// <summary>
-        /// See <see cref="CodeWriterExtensions.AppendCSharpName{T}(T, Type, bool)"/>.
+        /// See <see cref="CodeWriterExtensions.AppendCSharpName{T}(T, Type, bool, bool)"/>.
         /// </summary>
         /// <param name="this">This type.</param>
         /// <param name="typeDeclaration">True to include generic parameter names in the output.</param>
+        /// <param name="useValueTupleParentheses">False to use the (safer) "System.ValueTuple&lt;&gt;" instead of the (tuple, with, parentheses, syntax).</param>
         /// <returns>The C# type name.</returns>
-        public static string ToCSharpName( this Type? @this, bool typeDeclaration = true )
+        public static string ToCSharpName( this Type? @this, bool typeDeclaration = true, bool useValueTupleParentheses = true )
         {
-            return new StringCodeWriter().AppendCSharpName( @this, typeDeclaration ).ToString();
+            return new StringCodeWriter().AppendCSharpName( @this, typeDeclaration, useValueTupleParentheses ).ToString();
         }
     }
 }
