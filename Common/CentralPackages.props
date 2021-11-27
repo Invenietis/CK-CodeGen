@@ -6,7 +6,7 @@
     <PackageReference Update="CK.ActivityMonitor.SimpleSender" Version="14.2.1" />
     <PackageReference Update="CK.WeakAssemblyNameResolver" Version="0.5.2" />
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
-    <PackageReference Update="Microsoft.VisualStudio.Threading.Analyzers" Version="16.9.60" />
+    <PackageReference Update="Microsoft.VisualStudio.Threading.Analyzers" Version="17.0.64" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="CK.Testing.Monitoring" Version="2.2.1" />
