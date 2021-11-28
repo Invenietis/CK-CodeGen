@@ -1,24 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.52" />
   <Import Project="..\..\Common\Shared.props" />
-
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <IsPackable>False</IsPackable>
     <Nullable>enable</Nullable>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
-  
   <ItemGroup>
     <Compile Remove="TestCodeProject\**" />
     <EmbeddedResource Remove="TestCodeProject\**" />
     <None Remove="TestCodeProject\**" />
   </ItemGroup>
-  
   <ItemGroup>
     <ProjectReference Include="..\..\CK.CodeGen\CK.CodeGen.csproj" />
   </ItemGroup>
-  
   <ItemGroup>
     <PackageReference Include="CK.Testing.Monitoring" />
     <PackageReference Include="FluentAssertions" />

@@ -30,10 +30,8 @@ namespace CK.CodeGen
         public static bool MemorizeOnce( this INamedScope @this, string key )
         {
             if( String.IsNullOrEmpty( key ) ) throw new ArgumentException( "Key must not be null or white space.", nameof( key ) );
-            if( @this.Memory.ContainsKey( key ) ) return false;
-            @this.Memory.Add( key, null );
-            return true;
-     }
+            return @this.Memory.TryAdd( key, null );
+        }
 
     }
 }

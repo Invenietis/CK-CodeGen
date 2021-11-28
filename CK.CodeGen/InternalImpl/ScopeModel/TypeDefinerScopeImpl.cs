@@ -12,7 +12,7 @@ namespace CK.CodeGen
 {
     abstract class TypeDefinerScopeImpl : NamedScopeImpl, ITypeDefinerScope
     {
-        readonly static Regex _variantOutIn = new Regex( @"(out|in)\s", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture );
+        readonly static Regex _variantOutIn = new Regex( @"\b(out|in)\s", RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture );
 
         readonly Dictionary<string, TypeScopeImpl> _types;
 
@@ -29,6 +29,7 @@ namespace CK.CodeGen
             header( typeScope );
             typeScope.Initialize();
             _types.Add( typeScope.TypeKey, typeScope );
+            Workspace.OnTypeCreated( typeScope );
             return typeScope;
         }
 

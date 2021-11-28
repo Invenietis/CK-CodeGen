@@ -77,23 +77,24 @@ namespace CK.CodeGen.Tests
             Assert.AreEqual( expected, writer.ToString() );
         }
 
-        // Cannot use TestCase parameters: parentheses trigger an error that prevents the test to run.
+        // Cannot use TestCase parameters with tuple strings: parentheses trigger an error that prevents the test to run.
         //
         // An exception occurred while invoking executor 'executor://nunit3testexecutor/': Incorrect format for TestCaseFilter Error:
         // Missing '('. Specify the correct format and try again. Note that the incorrect format can lead to no test getting executed.
         //
-        [Test]
-        public void ToCSharpName_tests_value_types()
+        [TestCase( true )]
+        [TestCase( false )]
+        public void ToCSharpName_tests_Value_Tuples( bool useValueTupleParentheses )
         {
             {
                 var writer = new StringCodeWriter( new StringBuilder() );
-                writer.AppendCSharpName( typeof( (int, string) ) );
-                writer.ToString().Should().Be( "(int,string)" );
+                writer.AppendCSharpName( typeof( (int, string) ), useValueTupleParentheses: useValueTupleParentheses );
+                writer.ToString().Should().Be( useValueTupleParentheses ? "(int,string)" : "System.ValueTuple<int,string>" );
             }
             {
                 var writer = new StringCodeWriter( new StringBuilder() );
-                writer.AppendCSharpName( typeof( (int, (string,float)) ) );
-                writer.ToString().Should().Be( "(int,(string,float))" );
+                writer.AppendCSharpName( typeof( (int, (string, float)) ), useValueTupleParentheses: useValueTupleParentheses );
+                writer.ToString().Should().Be( useValueTupleParentheses ? "(int,(string,float))" : "System.ValueTuple<int,System.ValueTuple<string,float>>" );
             }
         }
 
@@ -117,7 +118,32 @@ namespace CK.CodeGen.Tests
             public class I<T3> { }
         }
 
+        [Test]
+        public void AppendVariable_use_At_sign_for_reserved_keywords()
+        {
+            var writer = new StringCodeWriter( new StringBuilder() );
+            foreach( var n in ReservedKeyword.ReservedKeywords )
+            {
+                writer.AppendVariable( n ).Append( "|" );
+            }
+            var c = writer.ToString();
+            foreach( var n in ReservedKeyword.ReservedKeywords )
+            {
+                c.Should().Contain( "@" + n + "|" );
+            }
+        }
+
+        [Test]
+        public void And_combiner_works()
+        {
+            var w1 = new StringCodeWriter( new StringBuilder() );
+            var w2 = new StringCodeWriter( new StringBuilder() );
+
+            w1.And( w2 ).AppendSourceString( "Hello!" );
+
+            w1.ToString().Should().Be( "@\"Hello!\"" );
+            w2.ToString().Should().Be( "@\"Hello!\"" );
+        }
 
     }
-
 }

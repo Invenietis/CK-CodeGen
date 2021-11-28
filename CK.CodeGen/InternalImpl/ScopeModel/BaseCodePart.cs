@@ -15,7 +15,7 @@ namespace CK.CodeGen
             Parts = new List<object>();
         }
 
-        public void DoAdd( string code )
+        public void DoAdd( string? code )
         {
             if( !String.IsNullOrEmpty( code ) ) Parts.Add( code );
         }
@@ -27,7 +27,7 @@ namespace CK.CodeGen
                 if( o is string s )
                 {
                     s = s.TrimStart();
-                    if( s.Length > 0 ) return s.StartsWith( prefix );
+                    if( s.Length > 0 ) return s.StartsWith( prefix, StringComparison.Ordinal );
                 }
                 else
                 {
@@ -50,8 +50,6 @@ namespace CK.CodeGen
             return b;
         }
 
-        public void BuildPart( Action<string> collector ) => Build( new SmarterStringBuilder( collector ) );
-
         public StringBuilder Build( StringBuilder b, bool closeScope ) => Build( new SmarterStringBuilder( b ) ).Builder!;
 
         internal void MergeWith( BaseCodePart other )
@@ -63,7 +61,7 @@ namespace CK.CodeGen
             }
         }
 
-        public IDictionary<object, object?> Memory => _memory ?? (_memory = new Dictionary<object, object?>());
+        public IDictionary<object, object?> Memory => _memory ??= new Dictionary<object, object?>();
 
         public override string ToString() => Build( new SmarterStringBuilder( new StringBuilder() ) ).ToString();
     }

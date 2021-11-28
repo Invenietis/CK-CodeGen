@@ -1,13 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.52" />
   <Import Project="..\..\Common\Shared.props" />
-
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <IsPackable>False</IsPackable>
   </PropertyGroup>
-  
   <ItemGroup>
     <ProjectReference Include="..\..\CK.CodeGen.Roslyn\CK.CodeGen.Roslyn.csproj" />
     <ProjectReference Include="..\..\CK.CodeGen\CK.CodeGen.csproj" />

@@ -81,7 +81,7 @@ namespace CK.CodeGen
         public TupleTypeName? TupleTypeName { get; }
 
         /// <summary>
-        /// Gets wether this is a tuple.
+        /// Gets whether this is a tuple.
         /// </summary>
         [MemberNotNullWhen( true, nameof( TupleTypeName ) )]
         public bool IsTuple => TupleTypeName != null;
@@ -125,6 +125,7 @@ namespace CK.CodeGen
         /// <returns>The StringBuilder to enable fluent syntax.</returns>
         public StringBuilder Write( StringBuilder b, Func<string, string>? nameReplacer = null )
         {
+            if( b == null ) throw new ArgumentNullException( nameof( b ) );
             if( IsTuple )
             {
                 Debug.Assert( TupleTypeName != null );

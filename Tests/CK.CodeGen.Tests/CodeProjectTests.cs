@@ -26,7 +26,8 @@ namespace CK.CodeGen.Tests
 
             project.Code.Global.EnsureUsing( "System" );
             ITypeScope program = project.Code.Global.CreateType( "public static class Program" );
-            IFunctionScope main = program.CreateFunction( "public static int Main()" );
+            IFunctionScope main = program.GeneratedByComment()
+                                         .CreateFunction( "public static int Main()" );
             main.Append( "Console.WriteLine(" ).AppendSourceString( "Hop!" ).Append( " );" ).NewLine();
             main.Append( "return 0;" );
 

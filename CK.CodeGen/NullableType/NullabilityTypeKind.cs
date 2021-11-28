@@ -6,13 +6,14 @@ namespace CK.CodeGen
 {
     /// <summary>
     /// Captures nullability information about a Type.
+    /// See <see cref="NullabilityTypeExtensions.GetNullabilityKind(Type)"/>.
     /// </summary>
-    public enum NullabilityTypeKind : byte
+    public enum NullabilityTypeKind : int
     {
         /// <summary>
         /// Unknown type kind.
         /// </summary>
-        Unknown = 0,
+        None = 0,
 
         /// <summary>
         /// Expected nullability flag.
@@ -20,46 +21,47 @@ namespace CK.CodeGen
         IsNullable = 1,
 
         /// <summary>
-        /// Actual nullability flag: challenging null on a variable of this type should be done.
-        /// </summary>
-        IsTechnicallyNullable = 2,
-
-        /// <summary>
         /// Value type that may be enclosed in a <see cref="Nullable{T}"/>.
         /// </summary>
-        IsValueType = 4,
+        IsValueType = 2,
 
         /// <summary>
-        /// Reference types are <see cref="Type.IsClass"/> or <see cref="Type.IsInterface"/> but NOT <see cref="Type.IsArray"/>.
+        /// Reference types are <see cref="Type.IsClass"/> or <see cref="Type.IsInterface"/>.
         /// </summary>
-        IsReferenceType = 8,
+        IsReferenceType = 4,
 
         /// <summary>
         /// The type is a generic type. For <see cref="Nullable{T}"/>, this applies to the inner T type. 
         /// </summary>
-        IsGenericType = 16,
+        IsGenericType = 8,
 
         /// <summary>
         /// The type is a ValueTuple. For <see cref="Nullable{T}"/>, this applies to the inner T type. 
         /// </summary>
-        IsTupleType = 32,
+        IsTupleType = 16,
 
         /// <summary>
-        /// Optional flag thar describes a Nullable Reference Type marked with NullableAttribute(2): the type
+        /// The type is a generic type parameter. 
+        /// </summary>
+        IsGenericParameter = 32,
+
+        /// <summary>
+        /// Optional flag that describes a Nullable Reference Type marked with NullableAttribute(2): the type
         /// is necessarily <see cref="IsReferenceType"/> and <see cref="IsNullable"/> and if the type has generic arguments, then
-        /// all its subordinated types that are reference types are also nullables.
+        /// all its subordinated types that are reference types are also nullable.
         /// <para>
         /// This flag can also be set simultaneously with the <see cref="NRTFullNonNullable"/>: when both are set it means that
         /// the type is marked with a complex NRT NullableAttribute.
-        /// Use <see cref="NullablityTypeKindExtension.IsNRTFullNullable"/> to test if this type is really NRT nullable.
+        /// Use <see cref="NullablityTypeKindExtension.IsNRTFullNullable"/> to test if this type is really NRT full nullable.
         /// </para>
         /// </summary>
         NRTFullNullable = 64,
 
         /// <summary>
         /// Optional flag that describes a Nullable Reference Type marked with NullableAttribute(1): the type
-        /// is necessarily <see cref="IsReferenceType"/> and only <see cref="IsTechnicallyNullable"/> and
-        /// if it is a generic type, then all its subordinated types that are reference types are also non nullables reference types.
+        /// is necessarily <see cref="IsReferenceType"/> and if it is a generic type, then all its subordinated types
+        /// that are reference types are also non nullable reference types (without considering the notnull generic constraint
+        /// that I failed to handle).
         /// <para>
         /// This flag can also be set simultaneously with the <see cref="NRTFullNullable"/>: when both are set it means that
         /// the type is marked with a complex NRT NullableAttribute.
@@ -69,25 +71,20 @@ namespace CK.CodeGen
         NRTFullNonNullable = 128,
 
         /// <summary>
-        /// A nullable value type is <see cref="IsValueType"/>|<see cref="IsNullable"/>|<see cref="IsTechnicallyNullable"/>.
+        /// A nullable value type is <see cref="IsValueType"/>|<see cref="IsNullable"/>.
         /// It is wrapped in a <see cref="Nullable{T}"/>.
         /// </summary>
-        NullableValueType = IsValueType | IsNullable | IsTechnicallyNullable,
+        NullableValueType = IsValueType | IsNullable,
 
         /// <summary>
         /// A generic value type wrapped in a <see cref="Nullable{T}"/>.
         /// </summary>
-        NullableGenericValueType = IsValueType | IsNullable | IsTechnicallyNullable | IsGenericType,
+        NullableGenericValueType = IsValueType | IsNullable | IsGenericType,
 
         /// <summary>
         /// A nullable ValueTuple: like <see cref="NullableGenericValueType"/> plus the <see cref="IsTupleType"/>.
         /// </summary>
-        NullableTupleType = IsValueType | IsNullable | IsTechnicallyNullable | IsGenericType | IsTupleType,
-
-        /// <summary>
-        /// A non nullable value type is only <see cref="IsValueType"/>.
-        /// </summary>
-        NonNullableValueType = IsValueType,
+        NullableTupleType = IsValueType | IsNullable | IsGenericType | IsTupleType,
 
         /// <summary>
         /// A non nullable generic value type is <see cref="IsValueType"/>|<see cref="IsGenericType"/>.
@@ -100,24 +97,24 @@ namespace CK.CodeGen
         NonNullableTupleType = IsValueType | IsGenericType | IsTupleType,
 
         /// <summary>
-        /// A nullable reference type is <see cref="IsReferenceType"/>|<see cref="IsNullable"/>|<see cref="IsTechnicallyNullable"/>.
+        /// A nullable reference type is <see cref="IsReferenceType"/>|<see cref="IsNullable"/>.
         /// </summary>
-        NullableReferenceType = IsReferenceType | IsNullable | IsTechnicallyNullable,
+        NullableReferenceType = IsReferenceType | IsNullable,
 
         /// <summary>
-        /// A nullable generic reference type is <see cref="IsReferenceType"/>|<see cref="IsNullable"/>|<see cref="IsTechnicallyNullable"/>|<see cref="IsGenericType"/>.
+        /// A nullable generic reference type is <see cref="IsReferenceType"/>|<see cref="IsNullable"/>|<see cref="IsGenericType"/>.
         /// </summary>
-        NullableGenericReferenceType = IsReferenceType | IsNullable | IsTechnicallyNullable | IsGenericType,
+        NullableGenericReferenceType = IsReferenceType | IsNullable | IsGenericType,
 
         /// <summary>
-        /// A non nullable reference type is <see cref="IsReferenceType"/>|<see cref="IsTechnicallyNullable"/>.
+        /// A non nullable reference type is <see cref="IsReferenceType"/>.
         /// </summary>
-        NonNullableReferenceType = IsReferenceType | IsTechnicallyNullable,
+        NonNullableReferenceType = IsReferenceType,
 
         /// <summary>
-        /// A non nullable generic reference type is <see cref="IsReferenceType"/>|<see cref="IsTechnicallyNullable"/>>|<see cref="IsGenericType"/>.
+        /// A non nullable generic reference type is <see cref="IsReferenceType"/>|<see cref="IsGenericType"/>.
         /// </summary>
-        NonNullableGenericReferenceType = IsReferenceType | IsTechnicallyNullable | IsGenericType,
+        NonNullableGenericReferenceType = IsReferenceType | IsGenericType,
 
     }
 }

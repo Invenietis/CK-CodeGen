@@ -11,7 +11,7 @@ namespace CK.CodeGen
     public static class CodeWorkspace 
     {
         /// <summary>
-        /// Gets an empty workspace factory.
+        /// Gets a factory of empty workspaces.
         /// </summary>
         public static readonly Func<ICodeWorkspace> Factory = () => Create();
 
@@ -20,7 +20,7 @@ namespace CK.CodeGen
         /// </summary>
         /// <param name="initialSource">Optional initial <see cref="ICodeWorkspace.Global"/> source code.</param>
         /// <param name="assembly">Optional initial <see cref="ICodeWorkspace.AssemblyReferences"/>.</param>
-        /// <returns>A new worspace.</returns>
+        /// <returns>A new workspace.</returns>
         public static ICodeWorkspace Create( string? initialSource = null, params Assembly[] assembly )
         {
             var w = new CodeWorkspaceImpl();

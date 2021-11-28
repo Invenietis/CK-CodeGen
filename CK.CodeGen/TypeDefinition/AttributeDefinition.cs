@@ -28,6 +28,16 @@ namespace CK.CodeGen
         }
 
         /// <summary>
+        /// Initializes a new <see cref="AttributeDefinition"/>.
+        /// </summary>
+        /// <param name="name">The attribute type name.</param>
+        /// <param name="constructorArguments">Initial <see cref="ConstructorArguments"/> list (constructor arguments and/or properties initialization).</param>
+        public AttributeDefinition( string name, params string[] constructorArguments )
+            : this( new TypeName(name), constructorArguments.ToList() )
+        {
+        }
+
+        /// <summary>
         /// Gets the type of this attributes.
         /// </summary>
         public TypeName TypeName { get; }

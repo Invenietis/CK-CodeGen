@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -25,6 +26,21 @@ namespace CK.CodeGen
         /// Gets the assemblies that this workspace references.
         /// </summary>
         IReadOnlyCollection<Assembly> AssemblyReferences { get; }
+
+        /// <summary>
+        /// Event raised whenever a new namespace is created.
+        /// </summary>
+        event Action<INamespaceScope> NamespaceCreated;
+
+        /// <summary>
+        /// Event raised whenever a new type is created.
+        /// </summary>
+        event Action<ITypeScope> TypeCreated;
+
+        /// <summary>
+        /// Event raised whenever a new function or method is created.
+        /// </summary>
+        event Action<IFunctionScope> FunctionCreated;
 
         /// <summary>
         /// Merges the other workspace into this one.

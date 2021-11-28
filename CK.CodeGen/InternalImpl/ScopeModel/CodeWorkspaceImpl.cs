@@ -28,7 +28,7 @@ namespace CK.CodeGen
         {
             if( assembly == null ) throw new ArgumentNullException( nameof( assembly ) );
             _assemblies.Add( assembly );
-        } 
+        }
 
         public void MergeWith( ICodeWorkspace other )
         {
@@ -39,5 +39,19 @@ namespace CK.CodeGen
                 Global.MergeWith( (NamespaceScopeImpl)other.Global );
             }
         }
+
+
+        public event Action<INamespaceScope>? NamespaceCreated;
+
+        public event Action<ITypeScope>? TypeCreated;
+
+        public event Action<IFunctionScope>? FunctionCreated;
+
+        internal void OnNamespaceCreated( NamespaceScopeImpl n ) => NamespaceCreated?.Invoke( n );
+
+        internal void OnTypeCreated( TypeScopeImpl t ) => TypeCreated?.Invoke( t );
+
+        internal void OnFunctionCreated( FunctionScopeImpl f ) => FunctionCreated?.Invoke( f );
+
     }
 }

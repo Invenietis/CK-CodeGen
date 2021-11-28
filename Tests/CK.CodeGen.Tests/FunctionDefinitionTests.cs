@@ -37,6 +37,8 @@ namespace CK.CodeGen.Tests
         [TestCase( "public override System.Data.SqlClient.SqlCommand Do( out System.Nullable<int> i )", "Do(&int?)" )]
         [TestCase( "R M < X , K > ( [ A ( 1 ) ] [ A ] ref System . Nullable < K > i = \"\",params K[,,] p = new(){ nimp, 0x9876UL })", "M`2(&§1?,§1[,,])" )]
         [TestCase( "void Write( ref Reader r, ref (int, string) v )", "Write(&Reader,&(int,string))" )]
+        [TestCase( "static internal void F( ICollection<(int,string)?> c )", "F(ICollection<(int,string)?>)" )]
+        [TestCase( "C( (int?,string?)?[]? c )", "C((int?,string?)?[]?)" )]
         public void CreateFunction_normalizes_its_key( string header, string key )
         {
             FunctionDefinition.TryParse( header, out var f );
@@ -47,6 +49,7 @@ namespace CK.CodeGen.Tests
         [TestCase( "void M(int? i)", "M(int?)" )]
         [TestCase( "void M(int? i, Truc? t)", "M(int?,Truc?)" )]
         [TestCase( "void M<T>( ISet<ISet<T?>?>? t)", "M`1(ISet<ISet<§0?>?>?)" )]
+        [TestCase( "C( Nullable<(Nullable<int>,System.Nullable<string>)>[]? c )", "C((int?,string?)?[]?)" )]
         public void Function_Keys_are_nullable_sensitive( string header, string key )
         {
             FunctionDefinition.TryParse( header, out var f );

@@ -9,7 +9,7 @@ namespace CK.CodeGen
     {
         readonly Dictionary<string, FunctionScopeImpl> _funcs;
 
-        public FunctionDefiner( bool dummy )
+        public FunctionDefiner( bool _ )
         {
             _funcs = new Dictionary<string, FunctionScopeImpl>();
         }
@@ -21,6 +21,7 @@ namespace CK.CodeGen
             header( f );
             f.Initialize();
             _funcs.Add( f.Name, f );
+            ws.OnFunctionCreated( f );
             return f;
         }
 

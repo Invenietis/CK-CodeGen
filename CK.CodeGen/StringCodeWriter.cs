@@ -7,7 +7,7 @@ namespace CK.CodeGen
     /// <summary>
     /// A simple <see cref="ICodeWriter"/> wrapped around a <see cref="StringBuilder"/>.
     /// </summary>
-    public class StringCodeWriter : ICodeWriter
+    public sealed class StringCodeWriter : ICodeWriter
     {
         /// <summary>
         /// Initializes a new <see cref="StringCodeWriter"/>.
@@ -23,7 +23,10 @@ namespace CK.CodeGen
         /// </summary>
         public StringBuilder StringBuilder { get; }
 
-        void ICodeWriter.DoAdd( string code ) => StringBuilder.Append( code );
+        void ICodeWriter.DoAdd( string? code )
+        {
+            if( !String.IsNullOrEmpty( code ) ) StringBuilder.Append( code );
+        }
 
         /// <summary>
         /// Overridden to return the <see cref="StringBuilder"/> content.

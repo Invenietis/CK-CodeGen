@@ -106,6 +106,7 @@ namespace CK.CodeGen
         /// <returns>The StringBuilder to enable fluent syntax.</returns>
         public StringBuilder Write( StringBuilder b )
         {
+            if( b == null ) throw new ArgumentNullException( nameof( b ) );
             Attributes.Write( b );
             Modifiers.Write( b );
             switch(Kind)
@@ -149,6 +150,7 @@ namespace CK.CodeGen
         /// <returns>The merged definition.</returns>
         public void MergeWith( TypeDefinition other )
         {
+            if( other == null ) throw new ArgumentNullException( nameof( other ) );
             if( Kind != other.Kind )
             {
                 throw new InvalidOperationException( $"Unable to merge type '{ToString()}' with '{other}': Kind differ {Kind} vs. {other.Kind}." );
