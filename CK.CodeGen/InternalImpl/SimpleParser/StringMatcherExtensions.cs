@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using CK.Text;
+using CK.Core;
 using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Linq;
@@ -14,6 +14,51 @@ namespace CK.CodeGen
 {
     static class StringMatcherExtensions
     {
+        /// <summary>
+        /// Tries to match a //.... or /* ... */ comment.
+        /// Proper termination of comment (by a new line or the closing */) is not required: 
+        /// a ending /*... is considered valid.
+        /// </summary>
+        /// <param name="this">This <see cref="IStringMatcher"/>.</param>
+        /// <returns>True on success, false if the <see cref="IStringMatcher.Head"/> is not on a /.</returns>
+        internal static bool TryMatchComment( this StringMatcher @this )
+        {
+            if( !@this.TryMatchChar( '/' ) ) return false;
+            if( @this.TryMatchChar( '/' ) )
+            {
+                while( !@this.IsEnd && @this.Head != '\n' ) @this.UncheckedMove( 1 );
+                if( !@this.IsEnd ) @this.UncheckedMove( 1 );
+                return true;
+            }
+            else if( @this.TryMatchChar( '*' ) )
+            {
+                while( !@this.IsEnd )
+                {
+                    if( @this.Head == '*' )
+                    {
+                        @this.UncheckedMove( 1 );
+                        if( @this.IsEnd || @this.TryMatchChar( '/' ) ) return true;
+                    }
+                    @this.UncheckedMove( 1 );
+                }
+                return true;
+            }
+            @this.UncheckedMove( -1 );
+            return false;
+        }
+
+        /// <summary>
+        /// Skips any white spaces or JS comments (//... or /* ... */) and always returns true.
+        /// </summary>
+        /// <param name="this">This <see cref="IStringMatcher"/>.</param>
+        /// <returns>Always true to ease composition.</returns>
+        internal static bool SkipWhiteSpacesAndJSComments( this StringMatcher @this )
+        {
+            @this.MatchWhiteSpaces( 0 );
+            while( @this.TryMatchComment() ) @this.MatchWhiteSpaces( 0 );
+            return true;
+        }
+
         internal static bool TryMatchCSharpIdentifier( this StringMatcher @this, [NotNullWhen( true )]out string? identifier, bool skipAtSign = false )
         {
             identifier = null;

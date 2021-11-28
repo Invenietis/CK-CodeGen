@@ -15,7 +15,7 @@ namespace CK.CodeGen.Tests
         {
             INamespaceScope global = CodeWorkspace.Create().Global;
             var t = global.CreateType( "public class Derived : Base" );
-            t.Definition.BaseTypes.Should().BeEquivalentTo( new ExtendedTypeName( "Base" ) );
+            t.Definition.BaseTypes.Should().BeEquivalentTo( new[] { new ExtendedTypeName( "Base" ) } );
             t.Definition.BaseTypes.Add( new ExtendedTypeName( "Name.Space.IOther" ) );
             global.ToString().Should().Contain( "Name.Space.IOther" );
         }

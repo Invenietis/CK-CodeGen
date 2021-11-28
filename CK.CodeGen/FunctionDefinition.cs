@@ -1,6 +1,6 @@
 using CK.CodeGen;
 using CK.CodeGen.SimpleParser;
-using CK.Text;
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -315,7 +315,7 @@ namespace CK.CodeGen
         /// </summary>
         /// <param name="declaration">The string to parse.</param>
         /// <param name="m">The non null method definition on success.</param>
-        /// <returns>True on success, false if this cannt be parsed.</returns>
+        /// <returns>True on success, false if this cannot be parsed.</returns>
         public static bool TryParse( string declaration, [NotNullWhen(true)]out FunctionDefinition? m )
         {
             if( declaration == null ) throw new ArgumentNullException( nameof( declaration ) );
