@@ -1,8 +1,8 @@
 <Project>
   <ItemGroup>
-    <PackageReference Update="CK.Core" Version="0.0.0--03lvkz3-local+v15.0.0-a01" />
-    <PackageReference Update="CK.ActivityMonitor.SimpleSender" Version="0.0.0--03lvnn5-local+v15.0.0-a01" />
-    <PackageReference Update="CK.WeakAssemblyNameResolver" Version="0.0.0--03lt15n-local" />
+    <PackageReference Update="CK.Core" Version="15.0.0-a01-00-0006-develop" />
+    <PackageReference Update="CK.ActivityMonitor.SimpleSender" Version="15.0.0-a01-00-0005-develop" />
+    <PackageReference Update="CK.WeakAssemblyNameResolver" Version="0.0.0--03lx5cm-develop" />
     <PackageReference Update="CSemVer" Version="10.0.0" />
     <PackageReference Update="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
     <PackageReference Update="Microsoft.SourceLink.GitHub" Version="1.0.0" />
@@ -10,7 +10,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="FluentAssertions" Version="6.2.0" />
-    <PackageReference Update="CK.Testing.Monitoring" Version="0.0.0--03lvnn5-local" />
+    <PackageReference Update="CK.Testing.Monitoring" Version="0.0.0--03lx5p5-develop" />
     <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.0.0" />
     <PackageReference Update="NUnit" Version="3.13.2" />
     <PackageReference Update="NUnit3TestAdapter" Version="4.1.0" />
