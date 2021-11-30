@@ -4,7 +4,7 @@
   <Import Project="..\Common\Shared.props" />
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Description></Description>
     <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
@@ -18,7 +18,7 @@
 
 
   <ItemGroup>
-    <PackageReference Include="CK.Text" />
     <PackageReference Include="CSemVer" />
+    <PackageReference Include="CK.Core" />
   </ItemGroup>
 </Project>

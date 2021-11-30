@@ -58,7 +58,7 @@ namespace CK.CodeGen.Tests
             INamespaceScope sut = global.FindOrCreateNamespace( "X.Y" );
             INamespaceScope nested = sut.FindOrCreateNamespace( "Z" );
 
-            sut.Namespaces.Should().BeEquivalentTo( nested );
+            sut.Namespaces.Should().BeEquivalentTo( new[] { nested } );
             nested.Parent.Should().BeSameAs( sut );
             nested.FullName.Should().Be( "X.Y.Z" );
             nested.Name.Should().Be( "Z" );

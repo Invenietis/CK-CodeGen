@@ -1,5 +1,4 @@
 using CK.Core;
-using CK.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Emit;
 using System;

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CK.CodeGen;
-using CK.Text;
+using CK.Core;
 
 namespace CK.CodeGen.Tests
 {
@@ -35,7 +35,14 @@ namespace CK.CodeGen.Tests
 
             c1.MergeWith( c2 );
 
-            c1.AssemblyReferences.Should().BeEquivalentTo( typeof( object ).Assembly, typeof( Enumerable ).Assembly, typeof( TestFixtureAttribute ).Assembly, typeof( MergeTests ).Assembly );
+            c1.AssemblyReferences.Should().BeEquivalentTo( new[]
+            {
+                typeof( object ).Assembly,
+                typeof( Enumerable ).Assembly,
+                typeof( TestFixtureAttribute ).Assembly,
+                typeof( MergeTests ).Assembly
+            } );
+
             string code = c1.GetGlobalSource();
             code.Should().Be(
                 "namespace Sub" + Environment.NewLine +

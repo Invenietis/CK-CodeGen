@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using CK.CodeGen;
 using System.Diagnostics;
-using CK.Text;
+using CK.Core;
 
 namespace CK.CodeGen
 {

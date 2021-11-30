@@ -13,7 +13,7 @@ namespace CK.CodeGen.Tests
         [TestCase( "List<T,Dictionary<A,B>> M<L<T>,H<K>>( N<H> i, List<T> a )", "List<T,Dictionary<A,B>>" )]
         [TestCase( "ACONSTRuctor( N<H> i, List<T> a )", null )]
         [TestCase( "System.Int32 MMM()", "System.Int32")]
-        [TestCase( "public override System.Data.SqlClient.SqlCommand Do( ref System.Nullable<int> i )", "System.Data.SqlClient.SqlCommand" )]
+        [TestCase( "public override Microsoft.Data.SqlClient.SqlCommand Do( ref System.Nullable<int> i )", "Microsoft.Data.SqlClient.SqlCommand" )]
         public void CreateFunction_extracts_return_type( string header, string returnType )
         {
             var t = CreateTypeScope();

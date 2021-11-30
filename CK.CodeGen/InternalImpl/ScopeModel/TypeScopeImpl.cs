@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using CK.CodeGen;
-using CK.Text;
+using CK.Core;
 
 namespace CK.CodeGen
 {
