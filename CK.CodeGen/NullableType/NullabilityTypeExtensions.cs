@@ -1,3 +1,4 @@
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -40,7 +41,7 @@ namespace CK.CodeGen
             }
             if( @this.IsValueType )
             {
-                Type inner;
+                Type? inner;
                 if( @this.IsGenericType && (inner = Nullable.GetUnderlyingType( @this )) != null )
                 {
                     if( !inner.IsGenericType ) return NullabilityTypeKind.NullableValueType;
@@ -242,6 +243,7 @@ namespace CK.CodeGen
                 else
                 {
                     object? data = a.ConstructorArguments[0].Value;
+                    Debug.Assert( data != null );
                     // A single value means "apply to everything in the type", e.g. 1 for Dictionary<string, string>, 2 for Dictionary<string?, string?>?
                     if( data is byte b )
                     {
@@ -250,7 +252,8 @@ namespace CK.CodeGen
                     else
                     {
                         var arguments = (System.Collections.ObjectModel.ReadOnlyCollection<CustomAttributeTypedArgument>)data;
-                        var firstByte = (byte)arguments[0].Value;
+                        Debug.Assert( arguments.Count > 0 );
+                        var firstByte = (byte)arguments[0].Value!;
                         // Complex nullability marker.
                         n |= NullabilityTypeKind.NRTFullNullable | NullabilityTypeKind.NRTFullNonNullable;
                         // Quick check.
@@ -261,7 +264,7 @@ namespace CK.CodeGen
                         profile = new byte[arguments.Count - 1];
                         for( int i = 0; i < profile.Length; ++i )
                         {
-                            profile[i] = (byte)arguments[i + 1].Value;
+                            profile[i] = (byte)arguments[i + 1].Value!;
                         }
                         Debug.Assert( profile.Length != 0, "Mono byte annotation is invalid." );
                     }

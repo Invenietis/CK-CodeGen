@@ -200,7 +200,7 @@ namespace CK.CodeGen.Roslyn.Tests
             var ValS = typeof( Nested<Comparer<List<KeyValuePair<int, byte>>>> ).GetMethod( "Val", new[] { typeof( string ) } );
             var Prop = typeof( Nested<Test> ).GetProperty( "Prop" );
             var Event = typeof( Nested<string> ).GetEvent( nameof(Nested<string>.Event) );
-            var Ctor = typeof( Nested<List> ).GetConstructor( Type.EmptyTypes );
+            var Ctor = typeof( Nested<ICodePart> ).GetConstructor( Type.EmptyTypes );
 
             t.Append( "public readonly static MethodInfo ThisTestMethod = " ).Append( thisTestMethod ).Append( ";" );
 

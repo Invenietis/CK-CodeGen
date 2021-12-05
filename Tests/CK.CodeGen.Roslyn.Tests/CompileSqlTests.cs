@@ -34,7 +34,7 @@ namespace CK.CodeGen.Roslyn.Tests
              .EnsureUsing( "System.Collections.Generic" )
              .EnsureUsing( "Microsoft.Data.SqlClient" );
 
-            var type = b.CreateType( w => w.Append( "public class GGGG : " ).AppendCSharpName( typeof( SimpleBase ) ) );
+            var type = b.CreateType( w => w.Append( "public class GGGG : " ).AppendCSharpName( typeof( SimpleBase ), true, true, true ) );
             type.CreateOverride( typeof( SimpleBase ).GetMethod( "Do" ) )
                 .Append(
                 @"if( i.HasValue )
