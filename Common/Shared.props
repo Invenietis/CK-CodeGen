@@ -81,7 +81,7 @@
   </Target>
   <!--</SourceLinkDebuggingWorkaround>-->
 
-  <!--<Analyzers>-->
+  <!--<Analyzers>: This analyzer provides very welcome guidelines about async and threading issues.-->
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" PrivateAssets="All" IncludeAssets="runtime;build;native;contentfiles;analyzers" />
   </ItemGroup>
