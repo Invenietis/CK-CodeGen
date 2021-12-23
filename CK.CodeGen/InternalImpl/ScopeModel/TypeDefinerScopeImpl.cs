@@ -33,14 +33,13 @@ namespace CK.CodeGen
             return typeScope;
         }
 
-        public ITypeScope FindType( string name )
+        public ITypeScope? FindType( string name )
         {
-            if( String.IsNullOrEmpty( name ) ) throw new ArgumentException( "Invalid null or empty type name.", nameof( name ) );
-            var m = new StringMatcher( name );
+            Throw.CheckNotNullOrEmptyArgument( name );
+            var m = name.AsSpan();
             m.SkipWhiteSpacesAndJSComments();
-            if( !m.MatchTypeKey( out string? key ) ) throw new ArgumentException( $"Invalid type name: {name}", nameof( name ) );
-            TypeScopeImpl result;
-            _types.TryGetValue( key, out result );
+            if( !m.MatchTypeKey( out string? key ) ) Throw.ArgumentException( nameof( name ), $"Invalid type name: {name}" );
+            _types.TryGetValue( key, out TypeScopeImpl? result );
             return result;
         }
 

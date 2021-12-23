@@ -33,7 +33,7 @@ namespace CK.CodeGen
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T AppendOnce<T>( this T @this, string code ) where T : ICodeWriter, INamedScope
         {
-            Throw.OnNullOrWhiteSpaceArgument( code );
+            Throw.CheckNotNullOrWhiteSpaceArgument( code );
             if( !@this.Memory.ContainsKey( code ) )
             {
                 @this.Append( code );
@@ -51,7 +51,7 @@ namespace CK.CodeGen
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T AppendVariable<T>( this T @this, string name ) where T : ICodeWriter
         {
-            Throw.OnNullOrWhiteSpaceArgument( name );
+            Throw.CheckNotNullOrWhiteSpaceArgument( name );
             if( ReservedKeyword.IsReservedKeyword( name ) )
             {
                 @this.Append( "@" );
@@ -666,7 +666,7 @@ namespace CK.CodeGen
         /// <returns>This code writer to enable fluent syntax.</returns>
         public static T Append<T>( this T @this, Func<T, T> f ) where T : ICodeWriter
         {
-            Throw.OnNullArgument( f );
+            Throw.CheckNotNullArgument( f );
             return f( @this );
         }
 
@@ -679,7 +679,7 @@ namespace CK.CodeGen
         /// <returns>This code writer to enable fluent syntax.</returns>
         public static T Append<T>( this T @this, Action<T> f ) where T : ICodeWriter
         {
-            Throw.OnNullArgument( f );
+            Throw.CheckNotNullArgument( f );
             f( @this );
             return @this;
         }

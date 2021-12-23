@@ -64,16 +64,16 @@ namespace CK.CodeGen
             // We store the declaration and clears the code buffer.
             var declaration = CodePart.Build( b ).ToString();
             CodePart.Parts.Clear();
-            var m = new StringMatcher( declaration );
+            var m = declaration.AsSpan();
             m.SkipWhiteSpacesAndJSComments();
             if( !m.MatchTypeDefinition( out var typeDef, IsNestedType, out bool hasCodeOpener ) )
             {
-                throw new InvalidOperationException( $"Error: {m.ErrorMessage} Unable to parse type declaration {declaration}" );
+                Throw.InvalidOperationException( $"Error: Unable to parse type declaration '{declaration}'." );
             }
             _typeDef = typeDef;
             if( hasCodeOpener )
             {
-                CodePart.Parts.Add( declaration.Substring( m.StartIndex ) );
+                CodePart.Parts.Add( declaration.Substring( declaration.Length - m.Length ) );
             }
             SetName( _typeDef.Name.ToString() );
         }

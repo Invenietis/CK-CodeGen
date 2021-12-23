@@ -316,10 +316,9 @@ namespace CK.CodeGen
         /// <param name="declaration">The string to parse.</param>
         /// <param name="m">The non null method definition on success.</param>
         /// <returns>True on success, false if this cannot be parsed.</returns>
-        public static bool TryParse( string declaration, [NotNullWhen(true)]out FunctionDefinition? m )
+        public static bool TryParse( ReadOnlySpan<char> declaration, [NotNullWhen(true)]out FunctionDefinition? m )
         {
-            if( declaration == null ) throw new ArgumentNullException( nameof( declaration ) );
-            return new StringMatcher( declaration ).MatchMethodDefinition( out m, out bool _ );
+            return declaration.MatchMethodDefinition( out m, out bool _ );
         }
 
         /// <summary>
@@ -331,7 +330,7 @@ namespace CK.CodeGen
         /// On output, contains the start of the function
         /// body (without opening '{' or with a "=>" lambda token).
         /// </param>
-        /// <returns>True on success, false if this cannt be parsed.</returns>
+        /// <returns>True on success, false if this cannot be parsed.</returns>
         public static bool TryParse( string declaration, [NotNullWhen(true)]out FunctionDefinition? fDef, out string? bodyStart )
         {
             return DoParse( declaration, out fDef, out bodyStart, false );
@@ -364,21 +363,20 @@ namespace CK.CodeGen
             return fDef!;
         }
 
-        static bool DoParse( string declaration, [NotNullWhen(true)]out FunctionDefinition? fDef, out string? bodyStart, bool throwOnError )
+        static bool DoParse( ReadOnlySpan<char> declaration, [NotNullWhen(true)]out FunctionDefinition? fDef, out string? bodyStart, bool throwOnError )
         {
-            if( declaration == null ) throw new ArgumentNullException( nameof( declaration ) );
             bodyStart = null;
-            var m = new StringMatcher( declaration );
+            var m = declaration;
             m.SkipWhiteSpacesAndJSComments();
             if( !m.MatchMethodDefinition( out fDef, out bool hasCodeOpener ) )
             {
-                if( throwOnError ) throw new InvalidOperationException( $"Error: {m.ErrorMessage} Unable to parse function or constructor declaration {declaration}" );
+                if( throwOnError ) throw new InvalidOperationException( $"Error: Unable to parse function or constructor declaration '{declaration}'." );
                 return false;
             }
             Debug.Assert( fDef != null );
             if( hasCodeOpener )
             {
-                bodyStart = declaration.Substring( m.StartIndex ).TrimEnd();
+                bodyStart = new string( declaration.Slice( declaration.Length - m.Length ).TrimEnd() );
             }
             return true;
         }
