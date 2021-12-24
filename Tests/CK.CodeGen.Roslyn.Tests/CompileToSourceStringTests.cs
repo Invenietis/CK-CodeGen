@@ -153,7 +153,7 @@ namespace CK.CodeGen.Roslyn.Tests
 
             workspace.EnsureAssemblyReference(
                 typeof(object),
-                typeof(StringMatcher),
+                typeof(ROSpanCharMatcher),
                 typeof(System.Diagnostics.Debug),
                 typeof(System.Linq.Enumerable),
                 typeof(TestFixtureAttribute)
