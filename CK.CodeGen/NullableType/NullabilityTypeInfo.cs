@@ -62,7 +62,7 @@ namespace CK.CodeGen
             Debug.Assert( Kind != other.Kind || ((_profile == null) == (other._profile == null)), "If Kind are equals then both have a profile or not." );
             // Strict equality.
             if( Kind == other.Kind
-                && (_profile == null || _profile.SequenceEqual( other._profile )) )
+                && (_profile == null || _profile.SequenceEqual( other._profile! )) )
             {
                 return true;
             }

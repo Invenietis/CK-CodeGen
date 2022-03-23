@@ -460,6 +460,7 @@ namespace CK.CodeGen
         /// <returns>The string builder.</returns>
         public StringBuilder ToString( StringBuilder b, bool withNamespace = false )
         {
+            Throw.CheckNotNullArgument( b );
             if( Type.IsArray )
             {
                 RawSubTypes[0].ToString( b, withNamespace );
