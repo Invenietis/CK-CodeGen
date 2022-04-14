@@ -100,7 +100,7 @@ gSub2Type1Part2F1:
 class GSub2Type2
 {
 gSub2Type2:
-}".Trim().NormalizeEOL() );
+}".Trim().ReplaceLineEndings() );
         }
 
     }
