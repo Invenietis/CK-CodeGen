@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.52" />
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <Description></Description>
@@ -12,7 +11,7 @@
     <WarningsAsErrors>$(WarningsAsErrors);CA1307;CA1309;CA1310</WarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CSemVer" />
-    <PackageReference Include="CK.Core" />
+    <PackageReference Include="CSemVer" Version="10.1.0" />
+    <PackageReference Include="CK.Core" Version="15.0.0-r06" />
   </ItemGroup>
 </Project>

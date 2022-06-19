@@ -13,8 +13,6 @@
     <ContinuousIntegrationBuild Condition=" '$(CakeBuild)' == 'true' ">true</ContinuousIntegrationBuild>
     <!-- InformationalVersion is either the Zero version or provided by the CodeCakeBuilder when in CI build). -->
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
-    <!-- Using Microsoft.Build.CentralPackageVersions: this avoids the Packages.props at the root of the repository. -->
-    <CentralPackagesFile>$(MSBuildThisFileDirectory)Common/CentralPackages.props</CentralPackagesFile>
   </PropertyGroup>
   <ItemGroup>
     <SourceRoot Include="$(SolutionDir)" />
@@ -63,7 +61,7 @@
   <!--</SourceLinkDebuggingWorkaround>-->
   <!--<Analyzers>: This analyzer provides very welcome guidelines about async and threading issues.-->
   <ItemGroup Condition=" '$(MSBuildProjectName)' != 'CodeCakeBuilder' ">
-    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" PrivateAssets="All" IncludeAssets="runtime;build;native;contentfiles;analyzers" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.2.32" PrivateAssets="All" IncludeAssets="runtime;build;native;contentfiles;analyzers" />
   </ItemGroup>
   <!--</Analyzers>-->
   <!--<ReproducibleBuilds>-->
