@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.52" />
-  <Import Project="..\..\Common\Shared.props" />
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <IsPackable>False</IsPackable>

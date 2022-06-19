@@ -1,22 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  
   <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.52" />
-  <Import Project="..\Common\Shared.props" />
-
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <Description></Description>
     <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
-
   <!-- See https://docs.microsoft.com/en-us/dotnet/standard/base-types/string-comparison-net-5-plus -->
   <PropertyGroup>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
     <WarningsAsErrors>$(WarningsAsErrors);CA1307;CA1309;CA1310</WarningsAsErrors>
   </PropertyGroup>
-
-
   <ItemGroup>
     <PackageReference Include="CSemVer" />
     <PackageReference Include="CK.Core" />
