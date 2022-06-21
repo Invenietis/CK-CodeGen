@@ -1,31 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <Sdk Name="Microsoft.Build.CentralPackageVersions" Version="2.0.52" />
-  <Import Project="..\..\Common\Shared.props" />
-
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <IsPackable>False</IsPackable>
     <Nullable>enable</Nullable>
     <LangVersion>9</LangVersion>
   </PropertyGroup>
-  
   <ItemGroup>
     <Compile Remove="TestCodeProject\**" />
     <EmbeddedResource Remove="TestCodeProject\**" />
     <None Remove="TestCodeProject\**" />
   </ItemGroup>
-  
   <ItemGroup>
     <ProjectReference Include="..\..\CK.CodeGen\CK.CodeGen.csproj" />
   </ItemGroup>
-  
   <ItemGroup>
-    <PackageReference Include="CK.Testing.Monitoring" />
-    <PackageReference Include="FluentAssertions" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="NUnit" />
-    <PackageReference Include="NUnit3TestAdapter" />
-    <PackageReference Include="CK.ActivityMonitor.SimpleSender" />
+    <PackageReference Include="CK.Testing.Monitoring" Version="3.0.0" />
+    <PackageReference Include="FluentAssertions" Version="6.7.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
+    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
+    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="15.0.0" />
   </ItemGroup>
 </Project>

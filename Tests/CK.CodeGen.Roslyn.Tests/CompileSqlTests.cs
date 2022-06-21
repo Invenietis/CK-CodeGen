@@ -2,7 +2,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Reflection;
 using System.Linq;
 using FluentAssertions;
@@ -32,9 +32,9 @@ namespace CK.CodeGen.Roslyn.Tests
             
             b.EnsureUsing( "System" )
              .EnsureUsing( "System.Collections.Generic" )
-             .EnsureUsing( "System.Data.SqlClient" );
+             .EnsureUsing( "Microsoft.Data.SqlClient" );
 
-            var type = b.CreateType( w => w.Append( "public class GGGG : " ).AppendCSharpName( typeof( SimpleBase ) ) );
+            var type = b.CreateType( w => w.Append( "public class GGGG : " ).AppendCSharpName( typeof( SimpleBase ), true, true, true ) );
             type.CreateOverride( typeof( SimpleBase ).GetMethod( "Do" ) )
                 .Append(
                 @"if( i.HasValue )

@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Text;
 using FluentAssertions;
 using System.Threading.Tasks;
-using CK.Text;
+using CK.Core;
 using CK.CodeGen;
 
 namespace CK.CodeGen.Roslyn.Tests

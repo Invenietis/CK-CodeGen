@@ -86,7 +86,7 @@ namespace CK.CodeGen.Tests
             ITypeScope t1 = scope.CreateType( s => s.Append( "public class C1" ) );
             ITypeScope t2 = scope.CreateType( s => s.Append( "public class C2" ) );
 
-            scope.Types.Should().BeEquivalentTo( t1, t2 );
+            scope.Types.Should().BeEquivalentTo( new[] { t1, t2 } );
         }
 
         [TestCase( "public class C", "[A(1,2,P=\"A\"),B]internal class C" )]

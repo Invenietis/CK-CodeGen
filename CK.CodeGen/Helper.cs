@@ -25,7 +25,7 @@ namespace CK.CodeGen
             }
             if( protection != AccessProtectionOption.None ) @this.AppendAccessProtection( method, protection );
             @this.Append( frontModifier )
-                 .AppendCSharpName( method.ReturnType, useValueTupleParentheses: true )
+                 .AppendCSharpName( method.ReturnType, true, true, useValueTupleParentheses: true )
                  .Space()
                  .Append( name )
                  .AppendParameters( method.GetParameters() );
@@ -87,10 +87,10 @@ namespace CK.CodeGen
             if( p.IsIn ) @this.Append( "in " );
             else if( p.IsOut ) @this.Append( "out " );
             else if( p.ParameterType.IsByRef ) @this.Append( "ref " );
-            Type parameterType = p.ParameterType.IsByRef ? p.ParameterType.GetElementType() : p.ParameterType;
-            return @this.AppendCSharpName( parameterType, useValueTupleParentheses: true )
+            Type? parameterType = p.ParameterType.IsByRef ? p.ParameterType.GetElementType() : p.ParameterType;
+            return @this.AppendCSharpName( parameterType, true, true, useValueTupleParentheses: true )
                         .Space()
-                        .AppendVariable( p.Name );
+                        .AppendVariable( p.Name! );
         }
 
         internal static void CheckIsOverridable( MethodInfo method )

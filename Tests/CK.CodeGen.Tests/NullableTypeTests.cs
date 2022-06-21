@@ -1,3 +1,4 @@
+using CK.Core;
 using FluentAssertions;
 using NUnit.Framework;
 using System;
@@ -482,8 +483,8 @@ namespace CK.CodeGen.Tests
             t.ToString().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,BigInteger,IEnumerable<int>,string?,List<string?>?,sbyte?,byte?,short?,ushort?,int?,uint?,long?,ulong?,decimal?)" );
 
             var rawType = s.Type;
-            rawType.ToCSharpName().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,System.Numerics.BigInteger,System.Collections.Generic.IEnumerable<int>,string,System.Collections.Generic.List<string>,sbyte?,byte?,short?,ushort?,int?,uint?,long?,ulong?,decimal?)" );
-            rawType.ToCSharpName( useValueTupleParentheses: false ).Should().Be( "System.ValueTuple<sbyte,byte,short,ushort,int,uint,long,System.ValueTuple<ulong,decimal,System.Numerics.BigInteger,System.Collections.Generic.IEnumerable<int>,string,System.Collections.Generic.List<string>,sbyte?,System.ValueTuple<byte?,short?,ushort?,int?,uint?,long?,ulong?,System.ValueTuple<decimal?>>>>" );
+            rawType.ToCSharpName( true, true, true ).Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,System.Numerics.BigInteger,System.Collections.Generic.IEnumerable<int>,string,System.Collections.Generic.List<string>,sbyte?,byte?,short?,ushort?,int?,uint?,long?,ulong?,decimal?)" );
+            rawType.ToCSharpName( true, true, useValueTupleParentheses: false ).Should().Be( "System.ValueTuple<sbyte,byte,short,ushort,int,uint,long,System.ValueTuple<ulong,decimal,System.Numerics.BigInteger,System.Collections.Generic.IEnumerable<int>,string,System.Collections.Generic.List<string>,sbyte?,System.ValueTuple<byte?,short?,ushort?,int?,uint?,long?,ulong?,System.ValueTuple<decimal?>>>>" );
         }
 
         [Test]

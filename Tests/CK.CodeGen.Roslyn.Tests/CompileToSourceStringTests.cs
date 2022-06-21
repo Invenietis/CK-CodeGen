@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Text;
 using FluentAssertions;
 using System.Threading.Tasks;
-using CK.Text;
+using CK.Core;
 using CK.CodeGen;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NUnit.Framework.Internal;
@@ -97,7 +97,7 @@ namespace CK.CodeGen.Roslyn.Tests
 
             global.EnsureUsing( "System" )
                   .EnsureUsing( "NUnit.Framework" )
-                  .EnsureUsing( "CK.Text" )
+                  .EnsureUsing( "CK.Core" )
                   .EnsureUsing( "System.Collections.Generic" )
                   .EnsureUsing( "System.Linq" );
 
@@ -153,7 +153,7 @@ namespace CK.CodeGen.Roslyn.Tests
 
             workspace.EnsureAssemblyReference(
                 typeof(object),
-                typeof(StringMatcher),
+                typeof(ROSpanCharMatcher),
                 typeof(System.Diagnostics.Debug),
                 typeof(System.Linq.Enumerable),
                 typeof(TestFixtureAttribute)
@@ -200,7 +200,7 @@ namespace CK.CodeGen.Roslyn.Tests
             var ValS = typeof( Nested<Comparer<List<KeyValuePair<int, byte>>>> ).GetMethod( "Val", new[] { typeof( string ) } );
             var Prop = typeof( Nested<Test> ).GetProperty( "Prop" );
             var Event = typeof( Nested<string> ).GetEvent( nameof(Nested<string>.Event) );
-            var Ctor = typeof( Nested<List> ).GetConstructor( Type.EmptyTypes );
+            var Ctor = typeof( Nested<ICodePart> ).GetConstructor( Type.EmptyTypes );
 
             t.Append( "public readonly static MethodInfo ThisTestMethod = " ).Append( thisTestMethod ).Append( ";" );
 

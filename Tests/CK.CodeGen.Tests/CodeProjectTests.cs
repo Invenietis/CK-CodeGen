@@ -3,7 +3,6 @@ using CK.CodeGen;
 using NUnit.Framework;
 using FluentAssertions;
 using static CK.Testing.MonitorTestHelper;
-using CK.Text;
 using System.IO;
 using CK.Core;
 using System.Collections.Generic;

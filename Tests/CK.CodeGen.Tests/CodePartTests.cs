@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CK.CodeGen;
-using CK.Text;
+using CK.Core;
 
 namespace CK.CodeGen.Tests
 {
@@ -100,7 +100,7 @@ gSub2Type1Part2F1:
 class GSub2Type2
 {
 gSub2Type2:
-}".Trim().NormalizeEOL() );
+}".Trim().ReplaceLineEndings() );
         }
 
     }

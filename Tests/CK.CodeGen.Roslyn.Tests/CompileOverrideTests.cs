@@ -2,7 +2,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Reflection;
 using System.Linq;
 using FluentAssertions;
@@ -59,7 +59,7 @@ namespace CK.CodeGen.Roslyn.Tests
              .EnsureUsing( "System.Collections.Generic" )
              .EnsureUsing( t.Namespace );
 
-            var c = b.CreateType( h => h.Append( "class Specialized : " ).AppendCSharpName( t ) );
+            var c = b.CreateType( h => h.Append( "class Specialized : " ).AppendCSharpName( t, true, true, true ) );
             c.CreatePassThroughConstructors( t );
 
             c.CreateOverride( t.GetMethod( "Simple1" ) )
@@ -102,7 +102,7 @@ namespace CK.CodeGen.Roslyn.Tests
             workspace.EnsureAssemblyReference( t );
 
             b.EnsureUsing( t.Namespace );
-            var c = b.CreateType( header => header.Append( "class Specialized<T> : " ).AppendCSharpName( t ).NewLine() );
+            var c = b.CreateType( header => header.Append( "class Specialized<T> : " ).AppendCSharpName( t, true, true, true ).NewLine() );
             c.CreateOverride( t.GetMethod( "Simple1" ) )
                 .Append( "if (arg.Equals(default(T))) throw new System.ArgumentException();" ).NewLine()
                 .Append( "return default(TResult);" );

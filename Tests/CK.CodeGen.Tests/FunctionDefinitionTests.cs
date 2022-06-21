@@ -34,7 +34,7 @@ namespace CK.CodeGen.Tests
         [TestCase( "L < T1, T2 > M < T > ( int i , List < T >a )", "M`1(int,List<§0>)" )]
         [TestCase( "ACONSTRuctor( N<H> i, List<T> a )", "ACONSTRuctor(N<H>,List<T>)" )]
         [TestCase( "System.Int32 MMM()", "MMM()" )]
-        [TestCase( "public override System.Data.SqlClient.SqlCommand Do( out System.Nullable<int> i )", "Do(&int?)" )]
+        [TestCase( "public override Microsoft.Data.SqlClient.SqlCommand Do( out System.Nullable<int> i )", "Do(&int?)" )]
         [TestCase( "R M < X , K > ( [ A ( 1 ) ] [ A ] ref System . Nullable < K > i = \"\",params K[,,] p = new(){ nimp, 0x9876UL })", "M`2(&§1?,§1[,,])" )]
         [TestCase( "void Write( ref Reader r, ref (int, string) v )", "Write(&Reader,&(int,string))" )]
         [TestCase( "static internal void F( ICollection<(int,string)?> c )", "F(ICollection<(int,string)?>)" )]

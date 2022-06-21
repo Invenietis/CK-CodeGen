@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Diagnostics;
 using CK.CodeGen;
 using System.Runtime.CompilerServices;
+using CK.Core;
 
 namespace CK.CodeGen
 {
@@ -15,45 +16,12 @@ namespace CK.CodeGen
     /// </summary>
     public static class CodeWriterExtensions
     {
-        static readonly Dictionary<Type, string> _typeAliases;
-
-        static CodeWriterExtensions()
-        {
-            _typeAliases = new Dictionary<Type, string>();
-            _typeAliases.Add( typeof( void ), "void" );
-            _typeAliases.Add( typeof( bool ), "bool" );
-            _typeAliases.Add( typeof( int ), "int" );
-            _typeAliases.Add( typeof( long ), "long" );
-            _typeAliases.Add( typeof( short ), "short" );
-            _typeAliases.Add( typeof( ushort ), "ushort" );
-            _typeAliases.Add( typeof( sbyte ), "sbyte" );
-            _typeAliases.Add( typeof( uint ), "uint" );
-            _typeAliases.Add( typeof( ulong ), "ulong" );
-            _typeAliases.Add( typeof( byte ), "byte" );
-            _typeAliases.Add( typeof( char ), "char" );
-            _typeAliases.Add( typeof( double ), "double" );
-            _typeAliases.Add( typeof( float ), "float" );
-            _typeAliases.Add( typeof( decimal ), "decimal" );
-            _typeAliases.Add( typeof( string ), "string" );
-            _typeAliases.Add( typeof( object ), "object" );
-        }
-
-        static internal bool AppendTypeAlias( ICodeWriter w, Type t )
-        {
-            if( _typeAliases.TryGetValue( t, out var alias ) )
-            {
-                w.Append( alias );
-                return true;
-            }
-            return false;
-        }
-
         /// <summary>
         /// Gets a type alias for basic types or null if no alias exists.
         /// </summary>
         /// <param name="t">The type.</param>
         /// <returns>The alias or null.</returns>
-        static public string? GetTypeAlias( Type t ) => _typeAliases.GetValueOrDefault( t );
+        static public string? GetTypeAlias( Type t ) => Core.TypeExtensions.TypeAliases.GetValueOrDefault( t );
 
         /// <summary>
         /// Appends raw C# code only once: the code itself is used as a key in <see cref="INamedScope.Memory"/> to
@@ -65,7 +33,7 @@ namespace CK.CodeGen
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T AppendOnce<T>( this T @this, string code ) where T : ICodeWriter, INamedScope
         {
-            if( String.IsNullOrWhiteSpace( code ) ) throw new ArgumentException( "To guaranty AppendOnce semantics, code must not be null or white space.", nameof( code ) );
+            Throw.CheckNotNullOrWhiteSpaceArgument( code );
             if( !@this.Memory.ContainsKey( code ) )
             {
                 @this.Append( code );
@@ -83,7 +51,7 @@ namespace CK.CodeGen
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T AppendVariable<T>( this T @this, string name ) where T : ICodeWriter
         {
-            if( String.IsNullOrWhiteSpace( name ) ) throw new ArgumentNullException( nameof( name ) );
+            Throw.CheckNotNullOrWhiteSpaceArgument( name );
             if( ReservedKeyword.IsReservedKeyword( name ) )
             {
                 @this.Append( "@" );
@@ -155,7 +123,7 @@ namespace CK.CodeGen
         static public T CloseBlock<T>( this T @this ) where T : ICodeWriter => @this.Append( Environment.NewLine ).Append( '}' ).NewLine();
 
         /// <summary>
-        /// Appends the C# type name. Handles generic definition (either opened or closed).
+        /// Appends the C# type name. Handles generic definition (either opened or closed, ByRef and pointers).
         /// The <paramref name="typeDeclaration"/> parameters applies to open generics:
         /// When true (the default), typeof( Dictionary&lt;,&gt;.KeyCollection )
         /// will append "System.Collections.Generic.Dictionary&lt;TKey,TValue&gt;.KeyCollection".
@@ -171,85 +139,9 @@ namespace CK.CodeGen
         /// <param name="typeDeclaration">True to include generic parameter names in the output.</param>
         /// <param name="useValueTupleParentheses">False to use the (safer) "System.ValueTuple&lt;&gt;" instead of the (tuple, with, parentheses, syntax).</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        public static T AppendCSharpName<T>( this T @this, Type? t, bool typeDeclaration = true, bool useValueTupleParentheses = true ) where T : ICodeWriter
+        public static T AppendCSharpName<T>( this T @this, Type? t, bool withNamespaces, bool typeDeclaration, bool useValueTupleParentheses ) where T : ICodeWriter
         {
-            if( t == null ) return @this.Append( "null" );
-            if( t.IsGenericParameter ) return typeDeclaration ? @this.Append( t.Name ) : @this;
-            if( AppendTypeAlias( @this, t ) )
-            {
-                return @this;
-            }
-            if( t.IsArray )
-            {
-                AppendCSharpName( @this, t.GetElementType()!, typeDeclaration, useValueTupleParentheses );
-                return @this.Append( "[" ).Append( new string( ',', t.GetArrayRank() - 1 ) ).Append( "]" );
-            }
-            var pathTypes = new Stack<Type>();
-            pathTypes.Push( t );
-            Type? decl = t.DeclaringType;
-            while( decl != null )
-            {
-                pathTypes.Push( decl );
-                decl = decl.DeclaringType;
-            }
-            var allGenArgs = new Queue<Type>( t.GetGenericArguments() );
-            for( int iType = 0; pathTypes.Count > 0; iType++ )
-            {
-                Type theT = pathTypes.Pop();
-                string n;
-                if( iType == 0 ) n = theT.FullName;
-                else
-                {
-                    n = theT.Name;
-                    @this.Append( "." );
-                }
-                int idxTick = n.IndexOf( '`', StringComparison.Ordinal ) + 1;
-                if( idxTick > 0 )
-                {
-                    int endNbParam = idxTick;
-                    while( endNbParam < n.Length && Char.IsDigit( n, endNbParam ) ) endNbParam++;
-                    int nbParams = int.Parse( n.AsSpan( idxTick, endNbParam - idxTick ), NumberStyles.Integer, NumberFormatInfo.InvariantInfo );
-                    Debug.Assert( nbParams > 0 );
-                    var tName = n.Substring( 0, idxTick - 1 );
-                    bool isValueTuple = tName == "System.ValueTuple";
-                    Type subType = allGenArgs.Dequeue();
-                    bool isNullableValue = !isValueTuple && tName == "System.Nullable" && !subType.IsGenericTypeParameter;
-                    if( isValueTuple && useValueTupleParentheses )
-                    {
-                        @this.Append( "(" );
-                    }
-                    else if( !isNullableValue )
-                    {
-                        @this.Append( tName );
-                        @this.Append( "<" );
-                    }
-                    --nbParams;
-                    int iGen = 0;
-                    for(; ; )
-                    {
-                        if( iGen > 0 ) @this.Append( "," );
-                        AppendCSharpName( @this, subType, typeDeclaration, useValueTupleParentheses );
-                        if( iGen++ == nbParams ) break;
-                        subType = allGenArgs.Dequeue();
-                        // Long Value Tuple handling here only if useValueTupleParentheses is true.
-                        // This lift the rest content, skipping the rest 8th slot itself.
-                        if( iGen == 7 && isValueTuple && useValueTupleParentheses )
-                        {
-                            Debug.Assert( subType.Name.StartsWith( "ValueTuple", StringComparison.Ordinal ) );
-                            Debug.Assert( allGenArgs.Count == 0 );
-                            var rest = subType.GetGenericArguments();
-                            subType = rest[0];
-                            nbParams = rest.Length - 1;
-                            for( int i = 1; i < rest.Length; ++i ) allGenArgs.Enqueue( rest[i] );
-                            iGen = 0;
-                            @this.Append( "," );
-                        }
-                    }
-                    @this.Append( isNullableValue ? "?" : (isValueTuple && useValueTupleParentheses ? ")" : ">") );
-                }
-                else @this.Append( n );
-            }
-            return @this;
+            return @this.Append( t.ToCSharpName( withNamespaces, typeDeclaration, useValueTupleParentheses ) );
         }
 
         /// <summary>
@@ -266,7 +158,7 @@ namespace CK.CodeGen
             // typeof handles the (tuple, with, parentheses, syntax).
             return t == null
                     ? @this.Append( "null" )
-                    : @this.Append( "typeof(" ).AppendCSharpName( t, false, useValueTupleParentheses: true ).Append( ")" );
+                    : @this.Append( "typeof(" ).AppendCSharpName( t, true, typeDeclaration: false, useValueTupleParentheses: true ).Append( ")" );
         }
 
         /// <summary>
@@ -306,9 +198,9 @@ namespace CK.CodeGen
                 case EventInfo ev: @this.Append( "(System.Reflection.EventInfo)" ); break;
                 case ConstructorInfo c: @this.Append( "(System.Reflection.ConstructorInfo)" ); break;
             }
-            return @this.AppendTypeOf( m.DeclaringType )
+            return @this.AppendTypeOf( m.DeclaringType! )
                         .Append( ".GetMembers( System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.DeclaredOnly )[" )
-                        .Append( Array.IndexOf( m.DeclaringType.GetMembers( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly ), m ) )
+                        .Append( Array.IndexOf( m.DeclaringType!.GetMembers( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly ), m ) )
                         .Append( "]" );
         }
 
@@ -589,8 +481,8 @@ namespace CK.CodeGen
         static public T AppendArray<T,TItem>( this T @this, IEnumerable<TItem>? e, bool useValueTupleParentheses = true ) where T : ICodeWriter
         {
             if( e == null ) return @this.Append( "null" );
-            if( !e.Any() ) return @this.Append( "Array.Empty<" ).AppendCSharpName( typeof( TItem ), false, useValueTupleParentheses ).Append( ">()" );
-            @this.Append( "new " ).AppendCSharpName( typeof( TItem ), false, useValueTupleParentheses ).Append( "[]{" );
+            if( !e.Any() ) return @this.Append( "Array.Empty<" ).AppendCSharpName( typeof( TItem ), true, false, useValueTupleParentheses ).Append( ">()" );
+            @this.Append( "new " ).AppendCSharpName( typeof( TItem ), true, false, useValueTupleParentheses ).Append( "[]{" );
             bool already = false;
             foreach( TItem x in e )
             {
@@ -630,7 +522,7 @@ namespace CK.CodeGen
             (i as IDisposable)?.Dispose();
             if( any )
             {
-                @this.Append( "new " ).AppendCSharpName( type, false, useValueTupleParentheses ).Append( "[]{" );
+                @this.Append( "new " ).AppendCSharpName( type, true, false, useValueTupleParentheses ).Append( "[]{" );
                 bool existing = false;
                 foreach( var x in e )
                 {
@@ -640,7 +532,7 @@ namespace CK.CodeGen
                 }
                 return @this.Append( "}" );
             }
-            return @this.Append( "Array.Empty<" ).AppendCSharpName( type, false, useValueTupleParentheses ).Append( ">()" );
+            return @this.Append( "Array.Empty<" ).AppendCSharpName( type, true, false, useValueTupleParentheses ).Append( ">()" );
         }
 
         /// <summary>
@@ -656,7 +548,7 @@ namespace CK.CodeGen
 
         static T AppendEnumValue<T>( T @this, Type t, object o ) where T : ICodeWriter
         {
-            @this.Append( "((" ).Append( t.FullName ).Append( ')' );
+            @this.Append( "((" ).Append( t.FullName! ).Append( ')' );
             char tU = Enum.GetUnderlyingType( t ).Name[0];
             if( tU == 'U' || tU == 'B' )
             {
@@ -692,8 +584,8 @@ namespace CK.CodeGen
             switch( o )
             {
                 case null: return @this.Append( "null" );
-                case Type x: return @this.Append( "typeof(" ).AppendCSharpName( x, false, true ).Append( ")" );
-                case MemberInfo m: return @this.Append( "typeof(" ).AppendCSharpName( m.DeclaringType, false, true ).Append( ")" );
+                case Type x: return @this.AppendTypeOf( x );
+                case MemberInfo m: return @this.Append( m );
                 case string x: return Append( @this, x.ToSourceString() );
                 case bool x: return Append( @this, x );
                 case int x: return Append( @this, x );
@@ -772,7 +664,11 @@ namespace CK.CodeGen
         /// <param name="this">This code writer.</param>
         /// <param name="f">Fluent function to apply.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        public static T Append<T>( this T @this, Func<T, T> f ) where T : ICodeWriter => f( @this );
+        public static T Append<T>( this T @this, Func<T, T> f ) where T : ICodeWriter
+        {
+            Throw.CheckNotNullArgument( f );
+            return f( @this );
+        }
 
         /// <summary>
         /// Fluent action application: this enables a procedural fragment to be inlined in a fluent code.
@@ -783,6 +679,7 @@ namespace CK.CodeGen
         /// <returns>This code writer to enable fluent syntax.</returns>
         public static T Append<T>( this T @this, Action<T> f ) where T : ICodeWriter
         {
+            Throw.CheckNotNullArgument( f );
             f( @this );
             return @this;
         }
