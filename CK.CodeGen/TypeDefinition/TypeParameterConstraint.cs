@@ -1,4 +1,5 @@
 using CK.CodeGen;
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace CK.CodeGen
         /// <param name="constraints">Optional list of constraints.</param>
         public TypeParameterConstraint( string name, List<ExtendedTypeName>? constraints = null )
         {
-            if( String.IsNullOrWhiteSpace( name ) ) throw new ArgumentOutOfRangeException( nameof( name ) );
+            Throw.CheckNotNullOrWhiteSpaceArgument( name );
             ParameterName = name;
             Constraints = constraints ?? new List<ExtendedTypeName>();
         }
@@ -41,6 +42,7 @@ namespace CK.CodeGen
         /// <returns>The StringBuilder to enable fluent syntax.</returns>
         public StringBuilder Write( StringBuilder b )
         {
+            Throw.CheckNotNullArgument( b );
             if( Constraints.Count > 0 )
             {
                 b.Append( "where " ).Append( ParameterName ).Append( " : " );

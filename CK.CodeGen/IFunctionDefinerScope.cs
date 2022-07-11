@@ -32,7 +32,8 @@ namespace CK.CodeGen
 
         /// <summary>
         /// Finds an existing <see cref="IFunctionScope"/> previously created with <see cref="CreateFunction(FunctionDefinition)"/>
-        /// from its <see cref="FunctionDefinition.Key"/> and if not found, optionally 
+        /// from its <see cref="FunctionDefinition.Key"/> and if not found and <paramref name="analyzeHeader"/> is true, considers
+        /// that the key is a signature and parses it with <see cref="FunctionDefinition.Parse(string)"/> and tries to find again. 
         /// </summary>
         /// <param name="key">The key of the function to find. See <see cref="FunctionDefinition.Key"/>.</param>
         /// <param name="analyzeHeader">True to parse the <paramref name="key"/> as a header function if key lookup failed.</param>

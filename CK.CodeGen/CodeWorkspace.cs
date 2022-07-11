@@ -2,6 +2,7 @@ using System.Reflection;
 using CK.CodeGen;
 using System.Collections.Generic;
 using System;
+using CK.Core;
 
 namespace CK.CodeGen
 {
@@ -23,6 +24,7 @@ namespace CK.CodeGen
         /// <returns>A new workspace.</returns>
         public static ICodeWorkspace Create( string? initialSource = null, params Assembly[] assembly )
         {
+            Throw.CheckNotNullArgument( assembly );
             var w = new CodeWorkspaceImpl();
             if( !String.IsNullOrWhiteSpace( initialSource ) ) w.Global.Append( initialSource );
             foreach( var a in assembly ) w.DoEnsureAssemblyReference( a );

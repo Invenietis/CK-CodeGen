@@ -1,4 +1,5 @@
 using CK.CodeGen;
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -42,7 +43,7 @@ namespace CK.CodeGen
         /// <returns>The StringBuilder to enable fluent syntax.</returns>
         public StringBuilder Write( StringBuilder b )
         {
-            if( b == null ) throw new ArgumentNullException( nameof( b ) );
+            Throw.CheckNotNullArgument( b );
             if( Attributes.Count > 0 )
             {
                 b.Append( '[' );

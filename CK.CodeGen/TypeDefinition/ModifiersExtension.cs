@@ -1,7 +1,11 @@
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
+// We want to use lower case here.
+#pragma warning disable CA1308 // Normalize strings to uppercase
 
 namespace CK.CodeGen
 {
@@ -12,7 +16,7 @@ namespace CK.CodeGen
     {
         static readonly Dictionary<string, int> _map = ((int[])Enum.GetValues( typeof( Modifiers ) ))
                                                         .Where( v => v != 0 )
-                                                        .ToDictionary( v => Enum.GetName( typeof( Modifiers ), v ).ToLowerInvariant() );
+                                                        .ToDictionary( v => Enum.GetName( typeof( Modifiers ), v )!.ToLowerInvariant() );
         static readonly string[] _names = _map.OrderBy( kv => kv.Value ).Select( kv => kv.Key ).ToArray();
 
         /// <summary>
@@ -80,6 +84,7 @@ namespace CK.CodeGen
         /// <returns>The StringBuilder to enable fluent syntax.</returns>
         public static StringBuilder Write( this Modifiers @this, StringBuilder b )
         {
+            Throw.CheckNotNullArgument( b );
             for( int i = 0; i <_names.Length; ++i )
             {
                 if( ((int)@this & (1 << i)) != 0 ) b.Append( _names[i] ).Append( ' ' ); 

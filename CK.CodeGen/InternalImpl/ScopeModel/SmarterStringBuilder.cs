@@ -32,10 +32,13 @@ namespace CK.CodeGen
             HasNewLine = true;
         }
 
-        public SmarterStringBuilder Append( string s )
+        public SmarterStringBuilder Append( string? s )
         {
-            _collector( s );
-            HasNewLine = s.EndsWith( Environment.NewLine, StringComparison.Ordinal );
+            if( !String.IsNullOrEmpty( s ) )
+            {
+                _collector( s );
+                HasNewLine = s.EndsWith( Environment.NewLine, StringComparison.Ordinal );
+            }
             return this;
         }
 

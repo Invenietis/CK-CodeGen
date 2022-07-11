@@ -4,13 +4,14 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using CK.Core;
 
 namespace CK.CodeGen.SimpleParser
 {
     /// <summary>
     /// Handles <see cref="AttributeSetDefinition"/> grouped by their <see cref="AttributeSetDefinition.Target"/>.
     /// </summary>
-    public class AttributeCollection 
+    public sealed class AttributeCollection 
     {
         static CodeAttributeTarget[] _targets = (CodeAttributeTarget[])Enum.GetValues(typeof(CodeAttributeTarget));
         readonly AttributeSetDefinition?[] _attrs;
@@ -59,7 +60,7 @@ namespace CK.CodeGen.SimpleParser
         /// <returns>The set of attributes for the <see cref="AttributeSetDefinition.Target"/>.</returns>
         public AttributeSetDefinition Ensure( AttributeSetDefinition other )
         {
-            if( other == null ) throw new ArgumentNullException( nameof( other ) );
+            Throw.CheckNotNullArgument( other );
             var t = _attrs[(int)other.Target];
             if( t == null ) t = _attrs[(int)other.Target] = other;
             else
@@ -76,6 +77,7 @@ namespace CK.CodeGen.SimpleParser
         /// <returns>The StringBuilder to enable fluent syntax.</returns>
         public StringBuilder Write( StringBuilder b )
         {
+            Throw.CheckNotNullArgument( b );
             foreach( var s in _attrs )
             {
                 if( s != null && s.Attributes.Count > 0 )
@@ -93,7 +95,7 @@ namespace CK.CodeGen.SimpleParser
         /// <returns>The merged collection.</returns>
         public void MergeWith( AttributeCollection other )
         {
-            if( other == null ) throw new ArgumentNullException( nameof( other ) );
+            Throw.CheckNotNullArgument( other );
             for( int i = 0; i < _attrs.Length; ++i )
             {
                 var t = _attrs[i];

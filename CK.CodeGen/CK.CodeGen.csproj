@@ -3,7 +3,6 @@
     <TargetFramework>net6.0</TargetFramework>
     <Description></Description>
     <Nullable>enable</Nullable>
-    <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <!-- See https://docs.microsoft.com/en-us/dotnet/standard/base-types/string-comparison-net-5-plus -->
   <PropertyGroup>

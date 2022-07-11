@@ -1,3 +1,4 @@
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -82,7 +83,7 @@ namespace CK.CodeGen
             };
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
-            public override bool Equals( object obj ) => obj is GenParam o ? Equals( o ) : false;
+            public override bool Equals( object? obj ) => obj is GenParam o ? Equals( o ) : false;
 
             public override int GetHashCode() => Type.GetHashCode();
 
@@ -144,6 +145,7 @@ namespace CK.CodeGen
         /// <returns>The StringBuilder to enable fluent syntax.</returns>
         public StringBuilder Write( StringBuilder b, Func<string,string>? typeNameReplacer = null )
         {
+            Throw.CheckNotNullArgument( b );
             b.Append( typeNameReplacer != null ? typeNameReplacer( _name ) : _name );
             WriteGenericParameters( b, typeNameReplacer );
             return b;
@@ -157,6 +159,7 @@ namespace CK.CodeGen
         /// <returns>The StringBuilder to enable fluent syntax.</returns>
         public StringBuilder WriteGenericParameters( StringBuilder b, Func<string, string>? typeNameReplacer = null )
         {
+            Throw.CheckNotNullArgument( b );
             if( _genArgs.Count > 0 )
             {
                 b.Append( '<' );

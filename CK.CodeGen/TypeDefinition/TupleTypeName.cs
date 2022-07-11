@@ -1,3 +1,4 @@
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -58,13 +59,13 @@ namespace CK.CodeGen
         /// <summary>
         /// Gets the mutable list of fields.
         /// </summary>
-        public List<Field> Fields { get; }
+        public IList<Field> Fields { get; }
 
         /// <summary>
         /// Initializes a new <see cref="TupleTypeName"/> with an optional initial <see cref="Fields"/> list.
         /// </summary>
         /// <param name="fields">Optional initial <see cref="Fields"/> list.</param>
-        public TupleTypeName( List<Field>? fields = null )
+        public TupleTypeName( IList<Field>? fields = null )
         {
             Fields = fields ?? new List<Field>();
         }
@@ -77,7 +78,7 @@ namespace CK.CodeGen
         /// <returns>The StringBuilder to enable fluent syntax.</returns>
         public StringBuilder Write( StringBuilder b, Func<string, string>? typeNameReplacer = null )
         {
-            if( b == null ) throw new ArgumentNullException( nameof( b ) );
+            Throw.CheckNotNullArgument( b );
             b.Append( '(' );
             bool atLeastOne = false;
             foreach( var f in Fields )
