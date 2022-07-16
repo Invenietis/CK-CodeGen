@@ -1,3 +1,4 @@
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -19,7 +20,8 @@ namespace CK.CodeGen
         /// <returns>The new type scope.</returns>
         public static ITypeScope CreateType( this ITypeDefinerScope @this, string header )
         {
-            if( header == null ) throw new ArgumentNullException( nameof( header ) );
+            Throw.CheckNotNullArgument( header );
+            Throw.CheckNotNullArgument( @this );
             return @this.CreateType( t => t.Append( header ) );
         }
 

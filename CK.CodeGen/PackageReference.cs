@@ -1,3 +1,4 @@
+using CK.Core;
 using CSemVer;
 using System;
 using System.Collections.Generic;
@@ -56,7 +57,7 @@ namespace CK.CodeGen
         }
 
         /// <summary>
-        /// Gets a package reference from an assembly. The package may have been explicitely registered via <see cref="SetAssemblyPackage"/>
+        /// Gets a package reference from an assembly. The package may have been explicitly registered via <see cref="SetAssemblyPackage"/>
         /// or built from the <see cref="AssemblyName.Name"/> and <see cref="InformationalVersion.Version"/> or <see cref="AssemblyName.Version"/>.
         /// This method is thread safe.
         /// </summary>
@@ -64,18 +65,18 @@ namespace CK.CodeGen
         /// <returns>A package reference to use.</returns>
         public static PackageReference FromAssembly( Assembly assembly )
         {
-            if( assembly == null ) throw new ArgumentNullException( nameof( assembly ) );
+            Throw.CheckNotNullArgument( assembly );
             var name = assembly.GetName();
             lock( _mappings )
             {
-                PackageReference result;
+                PackageReference? result;
                 if( _mappings.TryGetValue( name.FullName, out result )
-                    || _mappings.TryGetValue( name.Name, out result ) )
+                    || _mappings.TryGetValue( name.Name!, out result ) )
                 {
                     return result;
                 }
             }
-            return new PackageReference( name.Name, GetPackageVersion( assembly, name ) );
+            return new PackageReference( name.Name!, GetPackageVersion( assembly, name ) );
         }
 
         static SVersion GetPackageVersion( Assembly a, AssemblyName n )
@@ -83,7 +84,7 @@ namespace CK.CodeGen
             var info = InformationalVersion.ReadFromAssembly( a );
             if( info.IsValidSyntax && info.Version!.IsValid ) return info.Version;
             var v = n.Version;
-            return SVersion.Create( v.Major, v.Minor, v.Build );
+            return v != null ? SVersion.Create( v.Major, v.Minor, v.Build ) : SVersion.Create( 0, 0, 0 );
         }
 
     }

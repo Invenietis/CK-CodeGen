@@ -1,3 +1,4 @@
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,16 +15,17 @@ namespace CK.CodeGen
     /// A "Properties" list of (PropertyNames,Value) should be defined if needed.
     /// </para>
     /// </summary>
-    public class AttributeDefinition
+    public sealed class AttributeDefinition
     {
         /// <summary>
         /// Initializes a new <see cref="AttributeDefinition"/>.
         /// </summary>
         /// <param name="name">The attribute type name.</param>
         /// <param name="constructorArguments">Optional initial <see cref="ConstructorArguments"/> list.</param>
-        public AttributeDefinition( TypeName name, List<string>? constructorArguments = null )
+        public AttributeDefinition( TypeName name, IList<string>? constructorArguments = null )
         {
-            TypeName = name ?? throw new ArgumentNullException( nameof( name ) );
+            Throw.CheckNotNullArgument( name );
+            TypeName = name;
             ConstructorArguments = constructorArguments ?? new List<string>();
         }
 

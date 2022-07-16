@@ -69,7 +69,7 @@ namespace CK.CodeGen
         /// <param name="this">This code writer.</param>
         /// <param name="code">Raw code to append.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T Append<T>( this T @this, string code ) where T : ICodeWriter
+        static public T Append<T>( this T @this, string? code ) where T : ICodeWriter
         {
             @this.DoAdd( code );
             return @this;

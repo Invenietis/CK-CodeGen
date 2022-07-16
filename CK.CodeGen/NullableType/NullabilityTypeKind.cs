@@ -8,6 +8,7 @@ namespace CK.CodeGen
     /// Captures nullability information about a Type.
     /// See <see cref="NullabilityTypeExtensions.GetNullabilityKind(Type)"/>.
     /// </summary>
+    [Flags]
     public enum NullabilityTypeKind : int
     {
         /// <summary>

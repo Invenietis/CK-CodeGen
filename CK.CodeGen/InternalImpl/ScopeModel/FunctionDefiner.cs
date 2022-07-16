@@ -34,7 +34,7 @@ namespace CK.CodeGen
             return f;
         }
 
-        public FunctionScopeImpl FindFunction( string key, bool analyzeHeader )
+        public FunctionScopeImpl? FindFunction( string key, bool analyzeHeader )
         {
             if( !_funcs.TryGetValue( key, out var f ) && analyzeHeader )
             {

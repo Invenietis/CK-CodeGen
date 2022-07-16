@@ -1,5 +1,6 @@
 using CK.CodeGen;
 using CK.CodeGen.SimpleParser;
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -67,12 +68,12 @@ namespace CK.CodeGen
         /// <summary>
         /// Gets a mutable list of base types.
         /// </summary>
-        public List<ExtendedTypeName> BaseTypes { get; }
+        public IList<ExtendedTypeName> BaseTypes { get; }
 
         /// <summary>
         /// Gets a mutable list of generic constraints.
         /// </summary>
-        public List<TypeParameterConstraint> Constraints { get; }
+        public IList<TypeParameterConstraint> Constraints { get; }
 
         /// <summary>
         /// Initializes a new <see cref="TypeDefinition"/>.
@@ -83,18 +84,18 @@ namespace CK.CodeGen
         /// <param name="name">Naked type name.</param>
         /// <param name="bases">Optional list of base types.</param>
         /// <param name="constraints">Optional list of constraints.</param>
-        public TypeDefinition(
-            AttributeCollection? attributes,
-            Modifiers modifiers,
-            TypeKind kind,
-            TypeName name,
-            List<ExtendedTypeName>? bases,
-            List<TypeParameterConstraint>? constraints )
+        public TypeDefinition( AttributeCollection? attributes,
+                               Modifiers modifiers,
+                               TypeKind kind,
+                               TypeName name,
+                               IList<ExtendedTypeName>? bases,
+                               IList<TypeParameterConstraint>? constraints )
         {
+            Throw.CheckNotNullArgument( name );
             Attributes = attributes ?? new AttributeCollection();
             Modifiers = modifiers;
             Kind = kind;
-            Name = name ?? throw new ArgumentNullException( nameof( name ) );
+            Name = name;
             BaseTypes = bases ?? new List<ExtendedTypeName>();
             Constraints = constraints ?? new List<TypeParameterConstraint>();
         }
@@ -106,7 +107,7 @@ namespace CK.CodeGen
         /// <returns>The StringBuilder to enable fluent syntax.</returns>
         public StringBuilder Write( StringBuilder b )
         {
-            if( b == null ) throw new ArgumentNullException( nameof( b ) );
+            Throw.CheckNotNullArgument( b );
             Attributes.Write( b );
             Modifiers.Write( b );
             switch(Kind)
@@ -150,14 +151,14 @@ namespace CK.CodeGen
         /// <returns>The merged definition.</returns>
         public void MergeWith( TypeDefinition other )
         {
-            if( other == null ) throw new ArgumentNullException( nameof( other ) );
+            Throw.CheckNotNullArgument( other );
             if( Kind != other.Kind )
             {
-                throw new InvalidOperationException( $"Unable to merge type '{ToString()}' with '{other}': Kind differ {Kind} vs. {other.Kind}." );
+                Throw.InvalidOperationException( $"Unable to merge type '{ToString()}' with '{other}': Kind differ {Kind} vs. {other.Kind}." );
             }
             if( Name.Key != other.Name.Key )
             {
-                throw new InvalidOperationException( $"Unable to merge type '{ToString()}' with '{other}': TypeDefinitionKey differ {Name.Key} vs. {other.Name.Key}." );
+                Throw.InvalidOperationException( $"Unable to merge type '{ToString()}' with '{other}': TypeDefinitionKey differ {Name.Key} vs. {other.Name.Key}." );
             }
 
             Attributes.MergeWith( other.Attributes );

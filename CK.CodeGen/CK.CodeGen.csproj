@@ -3,7 +3,6 @@
     <TargetFramework>net6.0</TargetFramework>
     <Description></Description>
     <Nullable>enable</Nullable>
-    <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <!-- See https://docs.microsoft.com/en-us/dotnet/standard/base-types/string-comparison-net-5-plus -->
   <PropertyGroup>
@@ -12,6 +11,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CSemVer" Version="11.0.0" />
-    <PackageReference Include="CK.Core" Version="15.0.0" />
+    <PackageReference Include="CK.Core" Version="15.1.0" />
   </ItemGroup>
 </Project>
