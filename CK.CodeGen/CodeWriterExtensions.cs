@@ -153,7 +153,7 @@ namespace CK.CodeGen
         /// <param name="this">This code writer.</param>
         /// <param name="t">The type to append with typeof operator. When null, "null" will be appended.</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        public static T AppendTypeOf<T>( this T @this, Type t ) where T : ICodeWriter
+        public static T AppendTypeOf<T>( this T @this, Type? t ) where T : ICodeWriter
         {
             // typeof handles the (tuple, with, parentheses, syntax).
             return t == null
