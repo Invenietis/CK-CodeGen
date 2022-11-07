@@ -1,3 +1,4 @@
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,7 +16,7 @@ namespace CK.CodeGen
             string frontModifier,
             MethodInfo method )
         {
-            if( method == null ) throw new ArgumentNullException( nameof( method ) );
+            Throw.CheckNotNullArgument( method );
             string name = method.Name;
             if( method.ContainsGenericParameters )
             {
