@@ -6,8 +6,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" />
-    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="16.0.1--0013-develop" />
-    <PackageReference Include="CK.WeakAssemblyNameResolver" Version="0.5.3--0031-develop" />
+    <PackageReference Include="CK.ActivityMonitor.SimpleSender" Version="16.0.1--0021-develop" />
+    <PackageReference Include="CK.WeakAssemblyNameResolver" Version="0.5.3--0032-develop" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CK.CodeGen\CK.CodeGen.csproj" />
