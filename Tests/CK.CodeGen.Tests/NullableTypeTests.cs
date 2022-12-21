@@ -1,4 +1,5 @@
 using CK.Core;
+using CK.Testing;
 using FluentAssertions;
 using NUnit.Framework;
 using System;
@@ -8,11 +9,12 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using static CK.Testing.MonitorTestHelper;
 
 namespace CK.CodeGen.Tests
 {
     [TestFixture]
-    partial class NullableTypeTests
+    public partial class NullableTypeTests
     {
         [TestCase( "NonNullableRef" )]
         [TestCase( "Ref" )]
@@ -210,7 +212,6 @@ namespace CK.CodeGen.Tests
             noChange.Result.Should().Be( t );
         }
 
-#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 #pragma warning disable IDE0044 // Add readonly modifier
 #pragma warning disable 0649 // Field 'is never assigned to, and will always have its default value null
 #pragma warning disable IDE1006 // Naming Styles
@@ -572,6 +573,8 @@ namespace CK.CodeGen.Tests
             var n = GetTypeAndNullability( member );
             n.Nullability.ToString().Should().Be( info );
 
+            TestHelper.Monitor.Info( $"Type {n.Type}." );
+
             var t = n.Type.GetNullableTypeTree( n.Nullability );
             t.ToString().Should().Be( result );
         }
@@ -596,7 +599,6 @@ namespace CK.CodeGen.Tests
             var s = GetTypeAndNullability( name );
             return s.Type.GetNullableTypeTree( s.Nullability );
         }
-
 
     }
 }

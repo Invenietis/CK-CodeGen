@@ -8,7 +8,7 @@ using System.Linq;
 namespace CK.CodeGen.Tests
 {
     [TestFixture]
-    partial class NullableTypeTests
+    public partial class NullableTypeTests
     {
 
 #pragma warning disable CS0414 //  The field 'NullableTypeTests.Vd' is assigned but its value is never used.
