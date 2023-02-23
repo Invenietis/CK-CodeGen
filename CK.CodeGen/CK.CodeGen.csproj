@@ -10,7 +10,7 @@
     <WarningsAsErrors>$(WarningsAsErrors);CA1307;CA1309;CA1310</WarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CSemVer" Version="11.0.0" />
+    <PackageReference Include="CSemVer" Version="11.0.1" />
     <PackageReference Include="CK.Core" Version="16.1.2--0010-develop" />
   </ItemGroup>
 </Project>
