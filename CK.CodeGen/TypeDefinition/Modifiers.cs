@@ -29,12 +29,13 @@ namespace CK.CodeGen
         Volatile = 1 << 15,
         Async = 1 << 16,
         Ref = 1 << 17,
+        Scoped = 1 << 18,
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         /// <summary>
         /// Applies only to class to define C# 9 data record.
         /// </summary>
-        Data = 1 << 18
+        Data = 1 << 19
     }
 
 }
