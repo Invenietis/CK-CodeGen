@@ -1,3 +1,4 @@
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -17,6 +18,7 @@ namespace CK.CodeGen
         /// <returns>The source code of this named scope.</returns>
         public static string ToString( this INamedScope @this, bool closeScope )
         {
+            Throw.CheckNotNullArgument( @this );
             return @this.Build( new StringBuilder(), closeScope ).ToString();
         }
 
@@ -29,7 +31,8 @@ namespace CK.CodeGen
         /// <returns>True if the key is new to the memory (and has been added), false if the key is already known.</returns>
         public static bool MemorizeOnce( this INamedScope @this, string key )
         {
-            if( String.IsNullOrEmpty( key ) ) throw new ArgumentException( "Key must not be null or white space.", nameof( key ) );
+            Throw.CheckNotNullArgument( @this );
+            Throw.CheckNotNullOrEmptyArgument( key );
             return @this.Memory.TryAdd( key, null );
         }
 

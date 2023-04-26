@@ -11,7 +11,7 @@ namespace CK.CodeGen
     /// It generalizes <see cref="ITypeScope"/> that defines a Type (class, struct, enum, etc.)
     /// a <see cref="INamespaceScope"/> that defines a namespace or a <see cref="IFunctionScope"/>
     /// for functions or methods.
-    /// It is itself a <see cref="ICodeWriter"/>: raw code can be appendend to it as needed
+    /// It is itself a <see cref="ICodeWriter"/>: raw code can be appended to it as needed
     /// that will appear at the top of the final type, namespace or function source code.
     /// </summary>
     public interface ITypeDefinerScope : INamedScope, ICodeWriter

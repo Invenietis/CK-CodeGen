@@ -1,11 +1,9 @@
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using System.Text.RegularExpressions;
-using CK.CodeGen;
-using CK.Core;
 
 namespace CK.CodeGen
 {
@@ -13,6 +11,7 @@ namespace CK.CodeGen
     {
         readonly FunctionDefiner _funcs;
 
+        [AllowNull]
         TypeDefinition _typeDef;
 
         internal TypeScopeImpl( CodeWorkspaceImpl ws, INamedScope parent )
@@ -112,7 +111,7 @@ namespace CK.CodeGen
 
         public IFunctionScope? FindFunction( string key, bool analyzeHeader ) => _funcs.FindFunction( key, analyzeHeader );
 
-        class Part : TypeDefinerPart, ITypeScopePart
+        sealed class Part : TypeDefinerPart, ITypeScopePart
         {
             public Part( ITypeScope owner )
                 : base( owner )
@@ -135,6 +134,8 @@ namespace CK.CodeGen
 
             public IFunctionScope CreateFunction( FunctionDefinition def ) => PartOwner.CreateFunction( def );
 
+            ICodePart ICodePartFactory.CreatePart( bool top ) => CreatePart( top );
+
             public ITypeScopePart CreatePart( bool top )
             {
                 var p = new Part( this );
@@ -144,6 +145,7 @@ namespace CK.CodeGen
             }
 
             public IFunctionScope? FindFunction( string key, bool analyzeHeader ) => PartOwner.FindFunction( key, analyzeHeader );
+
         }
 
     }
