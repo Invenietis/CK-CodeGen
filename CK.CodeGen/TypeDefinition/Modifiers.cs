@@ -5,6 +5,7 @@ namespace CK.CodeGen
     /// <summary>
     /// Simple flags that defines almost all "modifiers" that may be applied to
     /// type, methods or other language items.
+    /// For function parameters, see <see cref="FunctionDefinition.ParameterModifier"/>.
     /// </summary>
     [Flags]
     public enum Modifiers
@@ -29,7 +30,7 @@ namespace CK.CodeGen
         Volatile = 1 << 15,
         Async = 1 << 16,
         Ref = 1 << 17,
-        Scoped = 1 << 18,
+        Partial = 1 << 18,
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 
         /// <summary>
