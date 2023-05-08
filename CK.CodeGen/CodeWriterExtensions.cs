@@ -316,7 +316,7 @@ namespace CK.CodeGen
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, Guid g ) where T : ICodeWriter
         {
-            return @this.Append( "new Guid(\"" ).Append( g.ToString() ).Append( "\")" );
+            return @this.Append( "new System.Guid(\"" ).Append( g.ToString() ).Append( "\")" );
         }
 
         /// <summary>
@@ -364,7 +364,7 @@ namespace CK.CodeGen
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, DateTime d ) where T : ICodeWriter
         {
-            return @this.Append( "new DateTime(" ).Append( d.Ticks ).Append( ", DateTimeKind." ).Append( d.Kind.ToString() ).Append( ")" );
+            return @this.Append( "new System.DateTime(" ).Append( d.Ticks ).Append( ", System.DateTimeKind." ).Append( d.Kind.ToString() ).Append( ")" );
         }
 
         /// <summary>
@@ -376,7 +376,7 @@ namespace CK.CodeGen
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, TimeSpan ts ) where T : ICodeWriter
         {
-            return @this.Append( "new TimeSpan(" ).Append( ts.Ticks.ToString( CultureInfo.InvariantCulture ) ).Append( ")" );
+            return @this.Append( "new System.TimeSpan(" ).Append( ts.Ticks.ToString( CultureInfo.InvariantCulture ) ).Append( ")" );
         }
 
         /// <summary>
@@ -388,9 +388,9 @@ namespace CK.CodeGen
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, DateTimeOffset to ) where T : ICodeWriter
         {
-            return @this.Append( "new DateTimeOffset(" )
+            return @this.Append( "new System.DateTimeOffset(" )
                         .Append( to.Ticks )
-                        .Append( ", new TimeSpan(" )
+                        .Append( ", new System.TimeSpan(" )
                         .Append( to.Offset.Ticks )
                         .Append( "))" );
         }
@@ -481,7 +481,7 @@ namespace CK.CodeGen
         static public T AppendArray<T,TItem>( this T @this, IEnumerable<TItem>? e, bool useValueTupleParentheses = true ) where T : ICodeWriter
         {
             if( e == null ) return @this.Append( "null" );
-            if( !e.Any() ) return @this.Append( "Array.Empty<" ).AppendCSharpName( typeof( TItem ), true, false, useValueTupleParentheses ).Append( ">()" );
+            if( !e.Any() ) return @this.Append( "System.Array.Empty<" ).AppendCSharpName( typeof( TItem ), true, false, useValueTupleParentheses ).Append( ">()" );
             @this.Append( "new " ).AppendCSharpName( typeof( TItem ), true, false, useValueTupleParentheses ).Append( "[]{" );
             bool already = false;
             foreach( TItem x in e )
@@ -609,7 +609,7 @@ namespace CK.CodeGen
             }
             Type t = o.GetType();
             if( t.IsEnum ) return AppendEnumValue( @this, t, o );
-            throw new ArgumentException( "Unknown type: " + o.GetType().AssemblyQualifiedName );
+            return Throw.ArgumentException<T>( "Unknown type: " + o.GetType().AssemblyQualifiedName );
         }
 
         /// <summary>
@@ -708,7 +708,7 @@ namespace CK.CodeGen
                 @this.AppendTypeOf( t );
             }
             if( atLeastOne ) @this.Append( "}" );
-            else @this.Append( "Type.EmptyTypes" );
+            else @this.Append( "System.Type.EmptyTypes" );
             return @this;
         }
 
