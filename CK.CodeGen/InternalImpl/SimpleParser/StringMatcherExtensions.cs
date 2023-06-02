@@ -544,6 +544,12 @@ namespace CK.CodeGen
             if( knownName != null
                 || head.TryMatchCSharpIdentifier( out knownName ) )
             {
+                if( knownName == "global" )
+                {
+                    if( !head.TryMatch("::") ) return false;
+                    if( !head.TryMatchCSharpIdentifier( out var sub ) ) return false;
+                    knownName += "::" + sub;
+                }
                 List<TypeName.GenParam>? genArgs = null;
                 head.SkipWhiteSpacesAndJSComments();
                 while( head.TryMatch('.') )

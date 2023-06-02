@@ -134,7 +134,7 @@ namespace CK.CodeGen.Roslyn.Tests
              .Append( ";" ).NewLine();
 
             string source = workspace.GetGlobalSource();
-            Assembly a = TestHelper.CreateAssembly( source, workspace.AssemblyReferences );
+            Assembly a = LocalTestHelper.CreateAssembly( source, workspace.AssemblyReferences );
             a.Should().NotBeNull();
 
             object tester = Activator.CreateInstance( a.ExportedTypes.Single( t => t.Name == "Tester" ) );

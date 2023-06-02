@@ -1,15 +1,9 @@
+using FluentAssertions;
+using Microsoft.Data.SqlClient;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Data.SqlClient;
-using System.Reflection;
 using System.Linq;
-using FluentAssertions;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using CK.CodeGen;
+using System.Reflection;
 
 namespace CK.CodeGen.Roslyn.Tests
 {
@@ -48,7 +42,7 @@ namespace CK.CodeGen.Roslyn.Tests
             var source = workspace.GetGlobalSource();
             var references = workspace.AssemblyReferences;
 
-            Assembly a = TestHelper.CreateAssembly( source, references );
+            Assembly a = LocalTestHelper.CreateAssembly( source, references );
             Type t = a.GetTypes().Single( n => n.Name == "GGGG" );
             SimpleBase gotIt = (SimpleBase)Activator.CreateInstance( t );
             int? k = 67;

@@ -25,7 +25,7 @@ namespace CK.CodeGen.Roslyn.Tests
             global.CreateType( "public class Tester" )
                      .Append( "public bool OK => true;" ).NewLine();
 
-            Assembly a = TestHelper.CreateAssembly( workspace.GetGlobalSource(), workspace.AssemblyReferences );
+            Assembly a = LocalTestHelper.CreateAssembly( workspace.GetGlobalSource(), workspace.AssemblyReferences );
             a.Should().NotBeNull();
 
             var g = new CodeGenerator( CodeWorkspace.Factory );
@@ -161,7 +161,7 @@ namespace CK.CodeGen.Roslyn.Tests
 
             var source = workspace.GetGlobalSource();
             var references = workspace.AssemblyReferences;
-            Assembly a = TestHelper.CreateAssembly( source, references );
+            Assembly a = LocalTestHelper.CreateAssembly( source, references );
             object tester = Activator.CreateInstance( a.ExportedTypes.Single( t => t.Name == "Tester" ) );
             string diff = (string)tester.GetType().GetMethod( "Run" ).Invoke( tester, Array.Empty<object>() );
             diff.Should().BeEmpty();
@@ -216,7 +216,7 @@ namespace CK.CodeGen.Roslyn.Tests
             t.Append( "public readonly static EventInfo Event = " ).Append( Event ).Append( ";" );
             t.Append( "public readonly static ConstructorInfo Ctor = " ).Append( Ctor ).Append( ";" );
 
-            Assembly a = TestHelper.CreateAssembly( workspace.GetGlobalSource(), workspace.AssemblyReferences );
+            Assembly a = LocalTestHelper.CreateAssembly( workspace.GetGlobalSource(), workspace.AssemblyReferences );
             Type memberFinder = a.ExportedTypes.Single( t => t.Name == "MemberFinder" );
 
             var eThisTestMethod = (MethodInfo)memberFinder.GetField( "ThisTestMethod" ).GetValue( null );

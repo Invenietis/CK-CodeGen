@@ -1,13 +1,11 @@
+using CK.Core;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Collections;
-using System.Globalization;
-using System.Diagnostics;
-using CK.CodeGen;
 using System.Runtime.CompilerServices;
-using CK.Core;
 
 namespace CK.CodeGen
 {
@@ -123,6 +121,20 @@ namespace CK.CodeGen
         static public T CloseBlock<T>( this T @this ) where T : ICodeWriter => @this.Append( Environment.NewLine ).Append( '}' ).NewLine();
 
         /// <summary>
+        /// Appends the C# type full name prefixed by <c>global::</c>.
+        /// See <see cref="TypeExtensions.ToGlobalTypeName(Type?, bool)"/>.
+        /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
+        /// <param name="this">This code writer.</param>
+        /// <param name="t">The type to append.</param>
+        /// <param name="typeDeclaration">True to include generic parameter names in the output.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
+        public static T AppendGlobalTypeName<T>( this T @this, Type? t, bool typeDeclaration = true ) where T : ICodeWriter
+        {
+            return @this.Append( t.ToGlobalTypeName( typeDeclaration ) );
+        }
+
+        /// <summary>
         /// Appends the C# type name. Handles generic definition (either opened or closed, ByRef and pointers).
         /// The <paramref name="typeDeclaration"/> parameters applies to open generics:
         /// When true (the default), typeof( Dictionary&lt;,&gt;.KeyCollection )
@@ -147,7 +159,7 @@ namespace CK.CodeGen
         /// <summary>
         /// Appends "typeof(<see cref="AppendCSharpName"/>)" with the type name in is non declaration form:
         /// for the open generic dictionary this is "typeof(System.Collections.Generic.Dictionary&lt;,&gt;)".
-        /// When <paramref name="t"/> is null, null is appended.
+        /// When <paramref name="t"/> is null, <c>null</c> is appended.
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
@@ -158,7 +170,7 @@ namespace CK.CodeGen
             // typeof handles the (tuple, with, parentheses, syntax).
             return t == null
                     ? @this.Append( "null" )
-                    : @this.Append( "typeof(" ).AppendCSharpName( t, true, typeDeclaration: false, useValueTupleParentheses: true ).Append( ")" );
+                    : @this.Append( "typeof(" ).AppendGlobalTypeName( t, typeDeclaration: false ).Append( ")" );
         }
 
         /// <summary>
@@ -476,13 +488,12 @@ namespace CK.CodeGen
         /// <typeparam name="TItem">The items type.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="e">Set of items for which code must be generated. Can be null.</param>
-        /// <param name="useValueTupleParentheses">False to use the (safer) "System.ValueTuple&lt;&gt;" instead of the (tuple, with, parentheses, syntax).</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T AppendArray<T,TItem>( this T @this, IEnumerable<TItem>? e, bool useValueTupleParentheses = true ) where T : ICodeWriter
+        static public T AppendArray<T,TItem>( this T @this, IEnumerable<TItem>? e ) where T : ICodeWriter
         {
             if( e == null ) return @this.Append( "null" );
-            if( !e.Any() ) return @this.Append( "System.Array.Empty<" ).AppendCSharpName( typeof( TItem ), true, false, useValueTupleParentheses ).Append( ">()" );
-            @this.Append( "new " ).AppendCSharpName( typeof( TItem ), true, false, useValueTupleParentheses ).Append( "[]{" );
+            if( !e.Any() ) return @this.Append( "System.Array.Empty<" ).AppendGlobalTypeName( typeof( TItem ), false ).Append( ">()" );
+            @this.Append( "new " ).AppendGlobalTypeName( typeof( TItem ), false ).Append( "[]{" );
             bool already = false;
             foreach( TItem x in e )
             {
@@ -522,7 +533,7 @@ namespace CK.CodeGen
             (i as IDisposable)?.Dispose();
             if( any )
             {
-                @this.Append( "new " ).AppendCSharpName( type, true, false, useValueTupleParentheses ).Append( "[]{" );
+                @this.Append( "new " ).AppendGlobalTypeName( type, false ).Append( "[]{" );
                 bool existing = false;
                 foreach( var x in e )
                 {
