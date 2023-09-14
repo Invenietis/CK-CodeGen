@@ -13,6 +13,6 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
-    <PackageReference Include="CK.Testing.Monitoring" Version="7.1.2--0041-develop" />
+    <PackageReference Include="CK.Testing.Monitoring" Version="7.1.2--0042-develop" />
   </ItemGroup>
 </Project>
