@@ -255,8 +255,15 @@ namespace CK.CodeGen
                         {
                             case "this": mod = FunctionDefinition.ParameterModifier.This; pTypeStart = null; break;
                             case "params": mod = FunctionDefinition.ParameterModifier.Params; pTypeStart = null; break;
-                            case "out": mod = FunctionDefinition.ParameterModifier.Out; pTypeStart = null; break;
+                            case "scoped":
+                                mod = FunctionDefinition.ParameterModifier.Scoped;
+                                head.SkipWhiteSpacesAndJSComments();
+                                // scoped must be followed by ref, but we simply allow it here.
+                                if( head.TryMatch( "ref" ) ) mod |= FunctionDefinition.ParameterModifier.Ref;
+                                pTypeStart = null;
+                                break;
                             case "ref": mod = FunctionDefinition.ParameterModifier.Ref; pTypeStart = null; break;
+                            case "out": mod = FunctionDefinition.ParameterModifier.Out; pTypeStart = null; break;
                             case "in": mod = FunctionDefinition.ParameterModifier.In; pTypeStart = null; break;
                         }
                     }
@@ -537,6 +544,12 @@ namespace CK.CodeGen
             if( knownName != null
                 || head.TryMatchCSharpIdentifier( out knownName ) )
             {
+                if( knownName == "global" )
+                {
+                    if( !head.TryMatch("::") ) return false;
+                    if( !head.TryMatchCSharpIdentifier( out var sub ) ) return false;
+                    knownName += "::" + sub;
+                }
                 List<TypeName.GenParam>? genArgs = null;
                 head.SkipWhiteSpacesAndJSComments();
                 while( head.TryMatch('.') )

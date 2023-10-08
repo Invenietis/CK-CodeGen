@@ -1,13 +1,11 @@
+using CK.Core;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Collections;
-using System.Globalization;
-using System.Diagnostics;
-using CK.CodeGen;
 using System.Runtime.CompilerServices;
-using CK.Core;
 
 namespace CK.CodeGen
 {
@@ -123,6 +121,20 @@ namespace CK.CodeGen
         static public T CloseBlock<T>( this T @this ) where T : ICodeWriter => @this.Append( Environment.NewLine ).Append( '}' ).NewLine();
 
         /// <summary>
+        /// Appends the C# type full name prefixed by <c>global::</c>.
+        /// See <see cref="TypeExtensions.ToGlobalTypeName(Type?, bool)"/>.
+        /// </summary>
+        /// <typeparam name="T">Actual type of the code writer.</typeparam>
+        /// <param name="this">This code writer.</param>
+        /// <param name="t">The type to append.</param>
+        /// <param name="typeDeclaration">True to include generic parameter names in the output.</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
+        public static T AppendGlobalTypeName<T>( this T @this, Type? t, bool typeDeclaration = true ) where T : ICodeWriter
+        {
+            return @this.Append( t.ToGlobalTypeName( typeDeclaration ) );
+        }
+
+        /// <summary>
         /// Appends the C# type name. Handles generic definition (either opened or closed, ByRef and pointers).
         /// The <paramref name="typeDeclaration"/> parameters applies to open generics:
         /// When true (the default), typeof( Dictionary&lt;,&gt;.KeyCollection )
@@ -147,7 +159,7 @@ namespace CK.CodeGen
         /// <summary>
         /// Appends "typeof(<see cref="AppendCSharpName"/>)" with the type name in is non declaration form:
         /// for the open generic dictionary this is "typeof(System.Collections.Generic.Dictionary&lt;,&gt;)".
-        /// When <paramref name="t"/> is null, null is appended.
+        /// When <paramref name="t"/> is null, <c>null</c> is appended.
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
@@ -158,7 +170,7 @@ namespace CK.CodeGen
             // typeof handles the (tuple, with, parentheses, syntax).
             return t == null
                     ? @this.Append( "null" )
-                    : @this.Append( "typeof(" ).AppendCSharpName( t, true, typeDeclaration: false, useValueTupleParentheses: true ).Append( ")" );
+                    : @this.Append( "typeof(" ).AppendGlobalTypeName( t, typeDeclaration: false ).Append( ")" );
         }
 
         /// <summary>
@@ -316,7 +328,7 @@ namespace CK.CodeGen
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, Guid g ) where T : ICodeWriter
         {
-            return @this.Append( "new Guid(\"" ).Append( g.ToString() ).Append( "\")" );
+            return @this.Append( "new System.Guid(\"" ).Append( g.ToString() ).Append( "\")" );
         }
 
         /// <summary>
@@ -364,7 +376,7 @@ namespace CK.CodeGen
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, DateTime d ) where T : ICodeWriter
         {
-            return @this.Append( "new DateTime(" ).Append( d.Ticks ).Append( ", DateTimeKind." ).Append( d.Kind.ToString() ).Append( ")" );
+            return @this.Append( "new System.DateTime(" ).Append( d.Ticks ).Append( ", System.DateTimeKind." ).Append( d.Kind.ToString() ).Append( ")" );
         }
 
         /// <summary>
@@ -376,7 +388,7 @@ namespace CK.CodeGen
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, TimeSpan ts ) where T : ICodeWriter
         {
-            return @this.Append( "new TimeSpan(" ).Append( ts.Ticks.ToString( CultureInfo.InvariantCulture ) ).Append( ")" );
+            return @this.Append( "new System.TimeSpan(" ).Append( ts.Ticks.ToString( CultureInfo.InvariantCulture ) ).Append( ")" );
         }
 
         /// <summary>
@@ -388,9 +400,9 @@ namespace CK.CodeGen
         /// <returns>This code writer to enable fluent syntax.</returns>
         static public T Append<T>( this T @this, DateTimeOffset to ) where T : ICodeWriter
         {
-            return @this.Append( "new DateTimeOffset(" )
+            return @this.Append( "new System.DateTimeOffset(" )
                         .Append( to.Ticks )
-                        .Append( ", new TimeSpan(" )
+                        .Append( ", new System.TimeSpan(" )
                         .Append( to.Offset.Ticks )
                         .Append( "))" );
         }
@@ -476,13 +488,12 @@ namespace CK.CodeGen
         /// <typeparam name="TItem">The items type.</typeparam>
         /// <param name="this">This code writer.</param>
         /// <param name="e">Set of items for which code must be generated. Can be null.</param>
-        /// <param name="useValueTupleParentheses">False to use the (safer) "System.ValueTuple&lt;&gt;" instead of the (tuple, with, parentheses, syntax).</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        static public T AppendArray<T,TItem>( this T @this, IEnumerable<TItem>? e, bool useValueTupleParentheses = true ) where T : ICodeWriter
+        static public T AppendArray<T,TItem>( this T @this, IEnumerable<TItem>? e ) where T : ICodeWriter
         {
             if( e == null ) return @this.Append( "null" );
-            if( !e.Any() ) return @this.Append( "Array.Empty<" ).AppendCSharpName( typeof( TItem ), true, false, useValueTupleParentheses ).Append( ">()" );
-            @this.Append( "new " ).AppendCSharpName( typeof( TItem ), true, false, useValueTupleParentheses ).Append( "[]{" );
+            if( !e.Any() ) return @this.Append( "System.Array.Empty<" ).AppendGlobalTypeName( typeof( TItem ), false ).Append( ">()" );
+            @this.Append( "new " ).AppendGlobalTypeName( typeof( TItem ), false ).Append( "[]{" );
             bool already = false;
             foreach( TItem x in e )
             {
@@ -522,7 +533,7 @@ namespace CK.CodeGen
             (i as IDisposable)?.Dispose();
             if( any )
             {
-                @this.Append( "new " ).AppendCSharpName( type, true, false, useValueTupleParentheses ).Append( "[]{" );
+                @this.Append( "new " ).AppendGlobalTypeName( type, false ).Append( "[]{" );
                 bool existing = false;
                 foreach( var x in e )
                 {
@@ -609,7 +620,7 @@ namespace CK.CodeGen
             }
             Type t = o.GetType();
             if( t.IsEnum ) return AppendEnumValue( @this, t, o );
-            throw new ArgumentException( "Unknown type: " + o.GetType().AssemblyQualifiedName );
+            return Throw.ArgumentException<T>( "Unknown type: " + o.GetType().AssemblyQualifiedName );
         }
 
         /// <summary>
@@ -708,7 +719,7 @@ namespace CK.CodeGen
                 @this.AppendTypeOf( t );
             }
             if( atLeastOne ) @this.Append( "}" );
-            else @this.Append( "Type.EmptyTypes" );
+            else @this.Append( "System.Type.EmptyTypes" );
             return @this;
         }
 
@@ -717,17 +728,52 @@ namespace CK.CodeGen
         /// </summary>
         /// <typeparam name="T">Actual type of the code writer.</typeparam>
         /// <param name="this">This code writer.</param>
+        /// <param name="comment">Optional comment that start the star comment.</param>
         /// <param name="format">Full comment format.</param>
+        /// <param name="appendNewLine">False to not append a new line after the comment.</param>
         /// <param name="source">Generator file name (should not be set explicitly).</param>
         /// <param name="lineNumber">Line number in the generator file (should not be set explicitly).</param>
         /// <param name="methodName">The name of the caller (should not be set explicitly).</param>
         /// <returns>This code writer to enable fluent syntax.</returns>
-        public static T GeneratedByComment<T>( this T @this, string format = "/* Generated by {0}, line: {1} (method {2}). */", [CallerFilePath]string? source = null, [CallerLineNumber] int lineNumber = 0, [CallerMemberName] string? methodName = null ) where T : ICodeWriter
+        public static T GeneratedByComment<T>( this T @this,
+                                               string? comment = null,
+                                               string format = "Generated by {0}, line: {1} (method {2}).",
+                                               bool appendNewLine = true,
+                                               [CallerFilePath] string? source = null,
+                                               [CallerLineNumber] int lineNumber = 0,
+                                               [CallerMemberName] string? methodName = null ) where T : ICodeWriter
         {
-            return @this.Append( String.Format( CultureInfo.InvariantCulture, format, source, lineNumber, methodName ) );
+            @this.Append( "/* " );
+            if( !string.IsNullOrEmpty( comment ) ) @this.Append( comment ).Append( " - " );
+            @this.Append( String.Format( CultureInfo.InvariantCulture, format, source, lineNumber, methodName ) );
+            @this.Append( " */" );
+            return appendNewLine ? @this.NewLine() : @this;
         }
 
-        class Combiner : ICodeWriter
+        /// <summary>
+        /// Appends a #region with an optional comment with the current method name an source origin.
+        /// </summary>
+        /// <param name="this">This code writer.</param>
+        /// <param name="comment">Optional comment that start the region name.</param>
+        /// <param name="format">Source generation info format.</param>
+        /// <param name="source">Generator file name (should not be set explicitly).</param>
+        /// <param name="lineNumber">Line number in the generator file (should not be set explicitly).</param>
+        /// <param name="methodName">The name of the caller (should not be set explicitly).</param>
+        /// <returns>This code writer to enable fluent syntax.</returns>
+        public static IDisposable Region( this ICodeWriter @this, string? comment = null, string format = "Generated by '{2}' in {0}, line: {1}.", [CallerFilePath] string? source = null, [CallerLineNumber] int lineNumber = 0, [CallerMemberName] string? methodName = null )
+        {
+            @this.NewLine().Append( "#region " );
+            if( !string.IsNullOrEmpty( comment ) ) @this.Append( comment ).Append( " - " );
+            @this.Append( String.Format( CultureInfo.InvariantCulture, format, source, lineNumber, methodName ) ).NewLine();
+            return Util.CreateDisposableAction( () =>
+            {
+                @this.NewLine().Append( "#endregion " );
+                if( !string.IsNullOrEmpty( comment ) ) @this.Append( comment ).Append( " - " );
+                @this.Append( "'" ).Append( methodName ).Append( "'." ).NewLine();
+            } );
+        }
+
+        sealed class Combiner : ICodeWriter
         {
             readonly ICodeWriter _w1;
             readonly ICodeWriter _w2;

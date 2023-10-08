@@ -39,6 +39,8 @@ namespace CK.CodeGen.Tests
         [TestCase( "void Write( ref Reader r, ref (int, string) v )", "Write(&Reader,&(int,string))" )]
         [TestCase( "static internal void F( ICollection<(int,string)?> c )", "F(ICollection<(int,string)?>)" )]
         [TestCase( "C( (int?,string?)?[]? c )", "C((int?,string?)?[]?)" )]
+        [TestCase( "InOutRef( in int a, out int b, ref int c )", "InOutRef(&int,&int,&int)" )]
+        [TestCase( "ScopedParam( X a, scoped ref int b )", "ScopedParam(X,scoped&int)" )]
         public void CreateFunction_normalizes_its_key( string header, string key )
         {
             FunctionDefinition.TryParse( header, out var f );

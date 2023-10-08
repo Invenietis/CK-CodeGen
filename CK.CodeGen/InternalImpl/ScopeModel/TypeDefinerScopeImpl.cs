@@ -24,7 +24,7 @@ namespace CK.CodeGen
 
         public ITypeScope CreateType( Action<ITypeScope> header )
         {
-            if( header == null ) throw new ArgumentNullException( nameof( header ) );
+            Throw.CheckNotNullArgument( header );
             TypeScopeImpl typeScope = new TypeScopeImpl( Workspace, this );
             header( typeScope );
             typeScope.Initialize();
@@ -75,6 +75,7 @@ namespace CK.CodeGen
                 : base( owner )
             {
             }
+
             ITypeDefinerScope O => (INamespaceScope)base.PartOwner;
 
             public IReadOnlyCollection<ITypeScope> Types => O.Types;

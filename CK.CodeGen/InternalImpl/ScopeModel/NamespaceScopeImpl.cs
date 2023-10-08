@@ -208,6 +208,8 @@ namespace CK.CodeGen
             }
         }
 
+        ICodePart ICodePartFactory.CreatePart( bool top ) => CreatePart( top );
+
         public INamespaceScopePart CreatePart( bool top )
         {
             var p = new Part( this );
@@ -216,7 +218,7 @@ namespace CK.CodeGen
             return p;
         }
 
-        class Part : TypeDefinerPart, INamespaceScopePart
+        sealed class Part : TypeDefinerPart, INamespaceScopePart
         {
             public Part( INamespaceScope owner )
                 : base( owner )
@@ -230,6 +232,8 @@ namespace CK.CodeGen
             public IReadOnlyCollection<INamespaceScope> Namespaces => PartOwner.Namespaces;
 
             public ICodePart BeforeNamespace => PartOwner.BeforeNamespace;
+
+            ICodePart ICodePartFactory.CreatePart( bool top ) => CreatePart( top );
 
             public INamespaceScopePart CreatePart( bool top )
             {

@@ -7,7 +7,7 @@ namespace CK.CodeGen
     /// A namespace is a <see cref="ITypeDefinerScope"/> (it can define types).
     /// It handles "using" clauses and creates subordinated namespaces.
     /// </summary>
-    public interface INamespaceScope : ITypeDefinerScope
+    public interface INamespaceScope : ITypeDefinerScope, ICodePartFactory
     {
         /// <summary>
         /// Gets the parent namespace.
@@ -63,7 +63,7 @@ namespace CK.CodeGen
         /// current writing position in the code.
         /// </param>
         /// <returns>The namespace part to use.</returns>
-        INamespaceScopePart CreatePart( bool top = false );
+        new INamespaceScopePart CreatePart( bool top = false );
         
     }
 }

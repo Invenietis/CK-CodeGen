@@ -1,3 +1,4 @@
+using FluentAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -6,14 +7,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using CK.CodeGen;
-using FluentAssertions;
+using static CK.Testing.MonitorTestHelper;
 
 namespace System
 {
-    using System.Reflection;
     public static class CKFixDBNull
     {
         public static object Value = typeof( object ).Assembly.GetType( "System.DBNull" ).GetField( "Value" ).GetValue( null );
@@ -94,7 +91,7 @@ namespace CK.CodeGen.Roslyn.Tests
             gen.Modules.Add( new DoChangeDBNull() );
             gen.Modules.Add( new ThisModuleUsesTheRealDBNullValue() );
 
-            var r = gen.Generate( workspace, TestHelper.RandomDllPath, false, Assembly.LoadFrom );
+            var r = gen.Generate( workspace, LocalTestHelper.RandomDllPath, false, Assembly.LoadFrom );
             r.LogResult( TestHelper.Monitor );
             r.Success.Should().BeTrue();
             gen.Modules.Should().BeEmpty();

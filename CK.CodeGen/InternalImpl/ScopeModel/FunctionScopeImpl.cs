@@ -100,7 +100,7 @@ namespace CK.CodeGen
 
         public IFunctionScope? FindFunction( string key, bool analyzeHeader ) => _funcs.FindFunction( key, analyzeHeader );
 
-        class Part : CodePart, IFunctionScopePart
+        sealed class Part : CodePart, IFunctionScopePart
         {
             public Part( IFunctionScope owner )
                 : base( owner )
@@ -123,6 +123,8 @@ namespace CK.CodeGen
 
             public IFunctionScope CreateFunction( FunctionDefinition def ) => PartOwner.CreateFunction( def );
 
+            ICodePart ICodePartFactory.CreatePart( bool top ) => CreatePart( top );
+
             public IFunctionScopePart CreatePart( bool top ) 
             {
                 var p = new Part( this );
@@ -132,6 +134,7 @@ namespace CK.CodeGen
             }
 
             public IFunctionScope? FindFunction( string key, bool analyzeHeader ) => PartOwner.FindFunction( key, analyzeHeader );
+
         }
 
     }

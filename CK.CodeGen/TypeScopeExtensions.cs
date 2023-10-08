@@ -1,3 +1,4 @@
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -72,7 +73,7 @@ namespace CK.CodeGen
         /// <returns>The newly created function scope.</returns>
         public static IFunctionScope CreateOverride( this ITypeScope @this, MethodInfo method )
         {
-            if( @this == null ) throw new ArgumentNullException( nameof( @this ) );
+            Throw.CheckNotNullArgument( @this );
             Helper.CheckIsOverridable( method );
             return @this.CreateFunction( h => h.DoAppendSignature( AccessProtectionOption.ThrowOnPureInternal, "override ", method ) );
         }

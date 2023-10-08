@@ -77,7 +77,7 @@ namespace CK.CodeGen.Roslyn.Tests
 
             c.CreateOverride( t.GetMethod( "VerbatimParameters", BindingFlags.Instance | BindingFlags.NonPublic ) ).Append( " => @this + @operator;" );
 
-            Assembly a = TestHelper.CreateAssembly( workspace.GetGlobalSource(), workspace.AssemblyReferences );
+            Assembly a = LocalTestHelper.CreateAssembly( workspace.GetGlobalSource(), workspace.AssemblyReferences );
 
             Type tC = a.GetTypes().Single( n => n.Name == "Specialized" );
             BaseToBeOverridden gotIt = (BaseToBeOverridden)Activator.CreateInstance( tC, new object[] { 3712 * 3712 } );
@@ -110,7 +110,7 @@ namespace CK.CodeGen.Roslyn.Tests
             c.CreateOverride( t.GetMethod( "Simple2" ) )
                 .Append( "=> arg2 is T1;" );
 
-            Assembly a = TestHelper.CreateAssembly( workspace.GetGlobalSource(), workspace.AssemblyReferences );
+            Assembly a = LocalTestHelper.CreateAssembly( workspace.GetGlobalSource(), workspace.AssemblyReferences );
 
             Type tC = a.GetTypes().Single( n => n.Name == "Specialized`1" ).MakeGenericType( typeof( int ) );
             ContainsGenericMethods<int> gotIt = (ContainsGenericMethods<int>)Activator.CreateInstance( tC );

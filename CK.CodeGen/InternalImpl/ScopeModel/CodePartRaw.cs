@@ -4,7 +4,7 @@ using System.Text;
 
 namespace CK.CodeGen
 {
-    class CodePartRaw : BaseCodePart, ICodePart
+    sealed class CodePartRaw : BaseCodePart, ICodePart
     {
         public ICodePart CreatePart( bool top = false )
         {

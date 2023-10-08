@@ -1,3 +1,4 @@
+using CK.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -51,7 +52,8 @@ namespace CK.CodeGen
         /// <returns>This workspace to enable fluent syntax.</returns>
         public static T EnsureAssemblyReference<T>( this T @this, Type t, params Type[] others ) where T : ICodeWorkspace
         {
-            if( t == null ) throw new ArgumentNullException( nameof( t ) );
+            Throw.CheckNotNullArgument( @this );
+            Throw.CheckNotNullArgument( t );
             @this.DoEnsureAssemblyReference( t.Assembly );
             foreach( var o in others )
             {
@@ -69,6 +71,7 @@ namespace CK.CodeGen
         /// <returns>The current code source for this workspace.</returns>
         public static string GetGlobalSource( this ICodeWorkspace @this )
         {
+            Throw.CheckNotNullArgument( @this );
             return @this.Global.Build( new StringBuilder(), true ).ToString();
         }
 
@@ -79,6 +82,8 @@ namespace CK.CodeGen
         /// <param name="w">Target TextWriter.</param>
         public static void WriteGlobalSource( this ICodeWorkspace @this, TextWriter w )
         {
+            Throw.CheckNotNullArgument( @this );
+            Throw.CheckNotNullArgument( w );
             @this.Global.Build( w.Write, true );
         }
 

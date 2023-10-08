@@ -10,18 +10,17 @@ namespace CK.CodeGen
 {
     static class Helper
     {
-        internal static ICodeWriter DoAppendSignature(
-            this ICodeWriter @this,
-            AccessProtectionOption protection,
-            string frontModifier,
-            MethodInfo method )
+        internal static ICodeWriter DoAppendSignature( this ICodeWriter @this,
+                                                       AccessProtectionOption protection,
+                                                       string frontModifier,
+                                                       MethodInfo method )
         {
             Throw.CheckNotNullArgument( method );
             string name = method.Name;
             if( method.ContainsGenericParameters )
             {
                 name += '<';
-                name += String.Join( ",", method.GetGenericArguments().Select( a => a.Name ) );
+                name += string.Join( ",", method.GetGenericArguments().Select( a => a.Name ) );
                 name += '>';
             }
             if( protection != AccessProtectionOption.None ) @this.AppendAccessProtection( method, protection );

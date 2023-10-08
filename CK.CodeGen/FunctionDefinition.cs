@@ -15,112 +15,19 @@ namespace CK.CodeGen
     /// Captures a method or constructor definition.
     /// The <see cref="Key"/> identifies it.
     /// </summary>
-    public class FunctionDefinition
+    public partial class FunctionDefinition
     {
-        /// <summary>
-        /// Parameter's modifier.
-        /// </summary>
-        [Flags]
-        public enum ParameterModifier
-        {
-            /// <summary>
-            /// No modifiers.
-            /// </summary>
-            None,
 
-            /// <summary>
-            /// Out parameter.
-            /// </summary>
-            Out = 1<<0,
-
-            /// <summary>
-            /// Ref parameter.
-            /// </summary>
-            Ref = 1<<1,
-
-            /// <summary>
-            /// Multiple 'params' modifier. 
-            /// </summary>
-            Params = 1 << 2,
-
-            /// <summary>
-            /// This (extension method) modifier.
-            /// </summary>
-            This = 1 << 3,
-
-            /// <summary>
-            /// In modifier.
-            /// </summary>
-            In = 1 << 4
-        }
-
-        /// <summary>
-        /// Nearly immutable parameter definition: only the <see cref="Attributes"/> and the
-        /// <see cref="DefaultValue"/> are mutables.
-        /// </summary>
-        public class Parameter
-        {
-            /// <summary>
-            /// Initializes a new <see cref="Parameter"/>.
-            /// </summary>
-            /// <param name="attributes">The <see cref="Attributes"/>.</param>
-            /// <param name="modifiers">The <see cref="Modifiers"/>.</param>
-            /// <param name="type">The parameter's type.</param>
-            /// <param name="name">The parameter's name.</param>
-            /// <param name="defaultValue">The <see cref="DefaultValue"/>.</param>
-            public Parameter(
-                AttributeCollection? attributes,
-                ParameterModifier modifiers,
-                ExtendedTypeName type,
-                string name,
-                string? defaultValue
-                )
-            {
-                Attributes = attributes ?? new AttributeCollection();
-                Modifiers = modifiers;
-                Type = type;
-                Name = name;
-                DefaultValue = defaultValue;
-            }
-
-            /// <summary>
-            /// Gets the mutable set of parameter's attributes.
-            /// </summary>
-            public AttributeCollection Attributes { get; }
-
-            /// <summary>
-            /// Gets the parameter's modifiers (.
-            /// </summary>
-            public ParameterModifier Modifiers { get; }
-
-            /// <summary>
-            /// Gets the type name.
-            /// </summary>
-            public ExtendedTypeName Type { get; }
-
-            /// <summary>
-            /// Gets the parameter name.
-            /// </summary>
-            public string Name { get; }
-
-            /// <summary>
-            /// Gets or sets the parameter's default value.
-            /// </summary>
-            public string? DefaultValue { get; set; }
-        }
-
-        internal FunctionDefinition(
-            AttributeCollection? attributes,
-            Modifiers modifiers,
-            ExtendedTypeName? returnType,
-            TypeName methodName,
-            CallConstructor thisOrBaseConstructorCall,
-            string? thisOrBaseConstructorParameters,
-            bool isIndexer,
-            IReadOnlyList<Parameter>? parameters,
-            IReadOnlyList<TypeParameterConstraint>? constraints,
-            StringBuilder buffer
-            )
+        internal FunctionDefinition( AttributeCollection? attributes,
+                                     Modifiers modifiers,
+                                     ExtendedTypeName? returnType,
+                                     TypeName methodName,
+                                     CallConstructor thisOrBaseConstructorCall,
+                                     string? thisOrBaseConstructorParameters,
+                                     bool isIndexer,
+                                     IReadOnlyList<Parameter>? parameters,
+                                     IReadOnlyList<TypeParameterConstraint>? constraints,
+                                     StringBuilder buffer )
         {
             Attributes = attributes ?? new AttributeCollection();
             Modifiers = modifiers;
@@ -148,6 +55,10 @@ namespace CK.CodeGen
                 {
                     if( atLeastOne ) buffer.Append( ',' );
                     else atLeastOne = true;
+                    if( (p.Modifiers & ParameterModifier.Scoped) != 0 )
+                    {
+                        buffer.Append( "scoped" );
+                    }
                     if( (p.Modifiers & (ParameterModifier.In | ParameterModifier.Ref | ParameterModifier.Out)) != 0 )
                     {
                         buffer.Append( '&' );
