@@ -45,7 +45,7 @@ namespace CodeCake
                 .Does( () =>
                 {
                     
-                  globalInfo.GetDotnetSolution().Test();
+                  globalInfo.GetDotnetSolution().SolutionTest();
                 } );
 
             Task( "Create-NuGet-Packages" )

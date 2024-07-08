@@ -152,25 +152,14 @@ namespace CK.CodeGen.Tests
 
         [TestCase( "ref" )]
         [TestCase( "val" )]
-        public void in_NET6_ref_properties_are_NOT_handled_by_NullabilityInfoContext( string mode )
+        public void ref_properties_are_handled_by_NullabilityInfoContext( string mode )
         {
             var pTuple = (mode == "ref" ? typeof( IPocoLikeRef ) : typeof( IPocoLike )).GetProperty( "Tuple" );
             Debug.Assert( pTuple != null );
             pTuple.PropertyType.IsByRef.Should().Be( mode == "ref" );
 
             var nInfo = (new NullabilityInfoContext()).Create( pTuple );
-            if( mode == "ref" )
-            {
-                nInfo.Type.IsByRef.Should().BeTrue();
-                nInfo.ReadState.Should().Be( NullabilityState.Unknown );
-                nInfo.WriteState.Should().Be( NullabilityState.Unknown );
-                nInfo.ElementType.Should().BeNull( null );
-                nInfo.GenericTypeArguments.Should().BeEmpty();
-            }
-            else
-            {
-                CheckCorrectTupleNulabilities( nInfo );
-            }
+            CheckCorrectTupleNulabilities( nInfo );
         }
 
         static void CheckCorrectTupleNulabilities( NullabilityInfo nInfo )
