@@ -10,6 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CSemVer" Version="11.1.0" />
-    <PackageReference Include="CK.Core" Version="0.0.0--04zrc62-develop" />
+    <PackageReference Include="CK.Core" Version="0.0.0--051ie60-develop" />
   </ItemGroup>
 </Project>
