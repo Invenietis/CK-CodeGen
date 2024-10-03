@@ -9,7 +9,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
-    <PackageReference Include="CK.Testing.Nunit" Version="0.0.0--052zkui-develop" />
+    <PackageReference Include="CK.Testing.Nunit" Version="0.0.0--053bu1w-develop" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
   </ItemGroup>
