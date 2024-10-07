@@ -9,20 +9,6 @@ namespace CK.CodeGen;
 
 /// <summary>
 /// Full immutable representation of a Nullable Type with its <see cref="RawSubTypes"/>.
-/// This does not capture nesting/enclosing generic types: this can be computed only for top level types or types nested in non generic types.
-/// <para>
-/// The extension method <see cref="NullabilityTypeExtensions.GetNullableTypeTree(Type, NullabilityTypeInfo)"/> is the factory method to use
-/// to obtain this detailed information...
-/// </para>
-/// <para>
-/// ...or one of the other extension methods that first obtain the <see cref="NullabilityTypeInfo"/>:
-/// <see cref="NullabilityTypeExtensions.GetNullableTypeTree(System.Reflection.PropertyInfo)"/>, <see cref="NullabilityTypeExtensions.GetNullableTypeTree(System.Reflection.ParameterInfo)"/>
-/// or <see cref="NullabilityTypeExtensions.GetNullableTypeTree(System.Reflection.FieldInfo)"/>.
-/// </para>
-/// <para>
-/// When no Nullable Reference Type (NRT) context is available (oblivious context), the basic <see cref="NullabilityTypeExtensions.GetNullableTypeTree(Type)"/>
-/// can be used.
-/// </para>
 /// </summary>
 public readonly struct NullableTypeTree : IEquatable<NullableTypeTree>
 {
@@ -192,11 +178,11 @@ public readonly struct NullableTypeTree : IEquatable<NullableTypeTree>
     /// </remarks>
     public (NullableTypeTree Result, bool HasChanged) WithSubTypeAt( int idx, NullableTypeTree newOne )
     {
-        if( idx < 0 ) throw new ArgumentOutOfRangeException( nameof( idx ) );
+        Throw.CheckOutOfRangeArgument( idx >= 0 );
         var s = _rawSubTypes;
         if( !IsLongValueTuple || idx < 7 )
         {
-            if( idx >= _rawSubTypes.Length ) throw new ArgumentOutOfRangeException( nameof( idx ) );
+            Throw.CheckOutOfRangeArgument( idx < _rawSubTypes.Length );
             if( _rawSubTypes[idx] != newOne )
             {
                 s = (NullableTypeTree[])_rawSubTypes.Clone();
@@ -228,7 +214,7 @@ public readonly struct NullableTypeTree : IEquatable<NullableTypeTree>
     /// </remarks>
     public (NullableTypeTree Result, bool HasChanged) Transform( Func<NullableTypeTree, NullableTypeTree?> transformer, bool subTypesOnly = false )
     {
-        if( transformer == null ) throw new ArgumentNullException( nameof( transformer ) );
+        Throw.CheckNotNullArgument( transformer );
         var s = _rawSubTypes;
         for( int idx = 0; idx < _rawSubTypes.Length; ++idx )
         {

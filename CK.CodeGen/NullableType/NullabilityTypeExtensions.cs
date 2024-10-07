@@ -34,7 +34,7 @@ public static partial class NullabilityTypeExtensions
     /// <returns>The nullability kind.</returns>
     public static NullabilityTypeKind GetNullabilityKind( this Type @this )
     {
-        if( @this == null ) throw new ArgumentNullException( nameof( @this ) );
+        Throw.CheckNotNullArgument( @this );
         if( @this.IsInterface || @this.IsClass )
         {
             return @this.IsGenericType ? NullabilityTypeKind.NullableGenericReferenceType : NullabilityTypeKind.NullableReferenceType;

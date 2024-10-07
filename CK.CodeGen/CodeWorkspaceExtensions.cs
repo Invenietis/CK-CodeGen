@@ -22,7 +22,7 @@ public static class CodeWorkspaceExtensions
     /// <returns>This workspace to enable fluent syntax.</returns>
     public static T EnsureAssemblyReference<T>( this T @this, Assembly assembly, params Assembly[] others ) where T : ICodeWorkspace
     {
-        if( assembly == null ) throw new ArgumentNullException( nameof( assembly ) );
+        Throw.CheckNotNullArgument( assembly );
         @this.DoEnsureAssemblyReference( assembly );
         foreach( var a in others ) @this.DoEnsureAssemblyReference( a );
         return @this;
@@ -37,7 +37,7 @@ public static class CodeWorkspaceExtensions
     /// <returns>This workspace to enable fluent syntax.</returns>
     public static T EnsureAssemblyReference<T>( this T @this, IEnumerable<Assembly> assemblies ) where T : ICodeWorkspace
     {
-        if( assemblies == null ) throw new ArgumentNullException( nameof( assemblies ) );
+        Throw.CheckNotNullArgument( assemblies );
         foreach( var a in assemblies ) @this.DoEnsureAssemblyReference( a );
         return @this;
     }

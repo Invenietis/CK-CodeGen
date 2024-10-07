@@ -13,30 +13,10 @@ public class TupleTypeName
     /// <summary>
     /// Defines a tuple field.
     /// </summary>
-    public readonly struct Field
+    /// <param name="FieldType"> Gets the type of the field (that may be itself a <see cref="TupleTypeName"/>). </param>
+    /// <param name="FieldName"> Gets the optional field name. </param>
+    public readonly record struct Field( ExtendedTypeName FieldType, string? FieldName = null )
     {
-        /// <summary>
-        /// Gets the type of the field (that may be itself a <see cref="TupleTypeName"/>).
-        /// </summary>
-        public ExtendedTypeName FieldType { get; }
-
-        /// <summary>
-        /// Gets the optional field name.
-        /// </summary>
-        public string? FieldName { get; }
-
-        /// <summary>
-        /// Initializes a new <see cref="Field"/>.
-        /// </summary>
-        /// <param name="fieldType">The field type.</param>
-        /// <param name="fieldName">The optional field name.</param>
-        public Field( ExtendedTypeName fieldType, string? fieldName = null )
-        {
-            FieldType = fieldType;
-            FieldName = fieldName;
-        }
-
-
         /// <summary>
         /// Writes this Field into the provided StringBuilder.
         /// </summary>
@@ -52,26 +32,6 @@ public class TupleTypeName
                 b.Append( FieldName );
             }
             return b;
-        }
-
-        public override bool Equals( object obj )
-        {
-            throw new NotImplementedException();
-        }
-
-        public override int GetHashCode()
-        {
-            throw new NotImplementedException();
-        }
-
-        public static bool operator ==( Field left, Field right )
-        {
-            return left.Equals( right );
-        }
-
-        public static bool operator !=( Field left, Field right )
-        {
-            return !(left == right);
         }
     }
 
