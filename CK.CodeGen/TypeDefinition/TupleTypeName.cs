@@ -3,98 +3,116 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CK.CodeGen
+namespace CK.CodeGen;
+
+/// <summary>
+/// Defines a list of <see cref="Field"/>.
+/// </summary>
+public class TupleTypeName
 {
     /// <summary>
-    /// Defines a list of <see cref="Field"/>.
+    /// Defines a tuple field.
     /// </summary>
-    public class TupleTypeName
+    public readonly struct Field
     {
         /// <summary>
-        /// Defines a tuple field.
+        /// Gets the type of the field (that may be itself a <see cref="TupleTypeName"/>).
         /// </summary>
-        public readonly struct Field
+        public ExtendedTypeName FieldType { get; }
+
+        /// <summary>
+        /// Gets the optional field name.
+        /// </summary>
+        public string? FieldName { get; }
+
+        /// <summary>
+        /// Initializes a new <see cref="Field"/>.
+        /// </summary>
+        /// <param name="fieldType">The field type.</param>
+        /// <param name="fieldName">The optional field name.</param>
+        public Field( ExtendedTypeName fieldType, string? fieldName = null )
         {
-            /// <summary>
-            /// Gets the type of the field (that may be itself a <see cref="TupleTypeName"/>).
-            /// </summary>
-            public ExtendedTypeName FieldType { get; }
-
-            /// <summary>
-            /// Gets the optional field name.
-            /// </summary>
-            public string? FieldName { get; }
-
-            /// <summary>
-            /// Initializes a new <see cref="Field"/>.
-            /// </summary>
-            /// <param name="fieldType">The field type.</param>
-            /// <param name="fieldName">The optional field name.</param>
-            public Field( ExtendedTypeName fieldType, string? fieldName = null )
-            {
-                FieldType = fieldType;
-                FieldName = fieldName;
-            }
-
-
-            /// <summary>
-            /// Writes this Field into the provided StringBuilder.
-            /// </summary>
-            /// <param name="b">The target.</param>
-            /// <param name="typeNameReplacer">Optional naked type name replacer function.</param>
-            /// <returns>The StringBuilder to enable fluent syntax.</returns>
-            public StringBuilder Write( StringBuilder b, Func<string, string>? typeNameReplacer = null )
-            {
-                FieldType.Write( b, typeNameReplacer );
-                if( !String.IsNullOrEmpty( FieldName ) )
-                {
-                    b.Append( ' ' );
-                    b.Append( FieldName );
-                }
-                return b;
-            }
-
+            FieldType = fieldType;
+            FieldName = fieldName;
         }
 
-        /// <summary>
-        /// Gets the mutable list of fields.
-        /// </summary>
-        public IList<Field> Fields { get; }
 
         /// <summary>
-        /// Initializes a new <see cref="TupleTypeName"/> with an optional initial <see cref="Fields"/> list.
-        /// </summary>
-        /// <param name="fields">Optional initial <see cref="Fields"/> list.</param>
-        public TupleTypeName( IList<Field>? fields = null )
-        {
-            Fields = fields ?? new List<Field>();
-        }
-
-        /// <summary>
-        /// Writes this ExtendedTypeName into the provided StringBuilder.
+        /// Writes this Field into the provided StringBuilder.
         /// </summary>
         /// <param name="b">The target.</param>
         /// <param name="typeNameReplacer">Optional naked type name replacer function.</param>
         /// <returns>The StringBuilder to enable fluent syntax.</returns>
         public StringBuilder Write( StringBuilder b, Func<string, string>? typeNameReplacer = null )
         {
-            Throw.CheckNotNullArgument( b );
-            b.Append( '(' );
-            bool atLeastOne = false;
-            foreach( var f in Fields )
+            FieldType.Write( b, typeNameReplacer );
+            if( !String.IsNullOrEmpty( FieldName ) )
             {
-                if( atLeastOne ) b.Append( ',' );
-                else atLeastOne = true;
-                f.Write( b, typeNameReplacer );
+                b.Append( ' ' );
+                b.Append( FieldName );
             }
-            return b.Append( ')' );
+            return b;
         }
 
-        /// <summary>
-        /// Overridden to return the <see cref="Write"/> result.
-        /// </summary>
-        /// <returns>The type string.</returns>
-        public override string ToString() => Write( new StringBuilder() ).ToString();
+        public override bool Equals( object obj )
+        {
+            throw new NotImplementedException();
+        }
 
+        public override int GetHashCode()
+        {
+            throw new NotImplementedException();
+        }
+
+        public static bool operator ==( Field left, Field right )
+        {
+            return left.Equals( right );
+        }
+
+        public static bool operator !=( Field left, Field right )
+        {
+            return !(left == right);
+        }
     }
+
+    /// <summary>
+    /// Gets the mutable list of fields.
+    /// </summary>
+    public IList<Field> Fields { get; }
+
+    /// <summary>
+    /// Initializes a new <see cref="TupleTypeName"/> with an optional initial <see cref="Fields"/> list.
+    /// </summary>
+    /// <param name="fields">Optional initial <see cref="Fields"/> list.</param>
+    public TupleTypeName( IList<Field>? fields = null )
+    {
+        Fields = fields ?? new List<Field>();
+    }
+
+    /// <summary>
+    /// Writes this ExtendedTypeName into the provided StringBuilder.
+    /// </summary>
+    /// <param name="b">The target.</param>
+    /// <param name="typeNameReplacer">Optional naked type name replacer function.</param>
+    /// <returns>The StringBuilder to enable fluent syntax.</returns>
+    public StringBuilder Write( StringBuilder b, Func<string, string>? typeNameReplacer = null )
+    {
+        Throw.CheckNotNullArgument( b );
+        b.Append( '(' );
+        bool atLeastOne = false;
+        foreach( var f in Fields )
+        {
+            if( atLeastOne ) b.Append( ',' );
+            else atLeastOne = true;
+            f.Write( b, typeNameReplacer );
+        }
+        return b.Append( ')' );
+    }
+
+    /// <summary>
+    /// Overridden to return the <see cref="Write"/> result.
+    /// </summary>
+    /// <returns>The type string.</returns>
+    public override string ToString() => Write( new StringBuilder() ).ToString();
+
 }
