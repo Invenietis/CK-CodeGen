@@ -1,4 +1,3 @@
-using CK.CodeGen;
 using CK.CodeGen.SimpleParser;
 using CK.Core;
 using System;

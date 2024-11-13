@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using CK.Core;
-using System.Text.RegularExpressions;
 using System.Globalization;
 using System.Linq;
 using System.Diagnostics.CodeAnalysis;
-using CK.CodeGen;
 using CK.CodeGen.SimpleParser;
 using System.Diagnostics;
 

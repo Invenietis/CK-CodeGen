@@ -1,6 +1,4 @@
-using CK.Core;
 using FluentAssertions;
-using FluentAssertions.Equivalency;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -8,7 +6,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
 
 namespace CK.CodeGen.Tests;
 

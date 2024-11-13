@@ -1,12 +1,8 @@
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Data.SqlClient;
 using System.Reflection;
 using System.Linq;
 using FluentAssertions;
-using CK.CodeGen;
 
 namespace CK.CodeGen.Roslyn.Tests;
 

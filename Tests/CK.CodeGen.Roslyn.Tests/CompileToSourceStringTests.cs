@@ -3,12 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using FluentAssertions;
-using System.Threading.Tasks;
 using CK.Core;
-using CK.CodeGen;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NUnit.Framework.Internal;
 
 namespace CK.CodeGen.Roslyn.Tests;

@@ -1,13 +1,8 @@
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using FluentAssertions;
-using System.Threading.Tasks;
-using CK.Core;
-using CK.CodeGen;
 
 namespace CK.CodeGen.Roslyn.Tests;
 

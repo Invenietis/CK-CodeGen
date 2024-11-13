@@ -1,12 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq;
-using System.Reflection;
-using System.Collections;
-using System.Globalization;
-using System.Diagnostics;
-using CK.CodeGen;
 
 namespace CK.CodeGen;
 

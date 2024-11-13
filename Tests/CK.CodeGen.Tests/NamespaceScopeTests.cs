@@ -1,5 +1,3 @@
-using System;
-using CK.CodeGen;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Reflection;

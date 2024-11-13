@@ -1,7 +1,5 @@
-using CK.CodeGen;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace CK.CodeGen;
 

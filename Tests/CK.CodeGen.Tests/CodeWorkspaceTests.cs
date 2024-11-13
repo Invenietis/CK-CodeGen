@@ -1,13 +1,5 @@
-using System;
-using CK.CodeGen;
 using NUnit.Framework;
 using FluentAssertions;
-using static CK.Testing.MonitorTestHelper;
-using CK.Core;
-using System.IO;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 
 namespace CK.CodeGen.Tests;
 

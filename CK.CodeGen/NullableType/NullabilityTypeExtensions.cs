@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace CK.CodeGen;
 
@@ -161,6 +160,7 @@ public static partial class NullabilityTypeExtensions
     /// that corrects this.
     /// </summary>
     /// <param name="this">This type.</param>
+    /// <param name="builder">Optional builder.</param>
     /// <returns>The detailed, recursive, <see cref="NullableTypeTree"/>.</returns>
     [DebuggerStepThrough]
     public static NullableTypeTree GetNullableTypeTree( this Type @this, INullableTypeTreeBuilder? builder = null )
