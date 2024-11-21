@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Description></Description>
   </PropertyGroup>
   <!-- See https://docs.microsoft.com/en-us/dotnet/standard/base-types/string-comparison-net-5-plus -->
@@ -9,7 +9,7 @@
     <WarningsAsErrors>$(WarningsAsErrors);CA1307;CA1309;CA1310</WarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CSemVer" Version="11.0.1" />
-    <PackageReference Include="CK.Core" Version="20.0.0" />
+    <PackageReference Include="CSemVer" Version="12.0.2" />
+    <PackageReference Include="CK.Core" Version="21.0.0" />
   </ItemGroup>
 </Project>

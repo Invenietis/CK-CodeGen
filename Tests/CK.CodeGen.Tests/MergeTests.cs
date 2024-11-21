@@ -1,94 +1,89 @@
 using FluentAssertions;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CK.CodeGen;
-using CK.Core;
 
-namespace CK.CodeGen.Tests
+namespace CK.CodeGen.Tests;
+
+[TestFixture]
+public class MergeTests
 {
-    [TestFixture]
-    public class MergeTests
+    [Test]
+    public void merging_code_space_with_one_type()
     {
-        [Test]
-        public void merging_code_space_with_one_type()
+        var c1 = CodeWorkspace.Create();
+        var c2 = CodeWorkspace.Create();
+
+        c1.EnsureAssemblyReference( typeof( object ), typeof( MergeTests ) );
+        c2.EnsureAssemblyReference( typeof( Enumerable ), typeof( TestFixtureAttribute ), typeof( MergeTests ) );
+
+        c1.Global.EnsureUsing( "A" );
+
+        var ns1 = c1.Global.FindOrCreateNamespace( "Sub" );
+        var t1 = ns1.CreateType( h => h.Append( "class C {//t1-Code" ).NewLine() );
+        t1.Append( "//t1-MoreCode" );
+
+        c2.Global.EnsureUsing( "B" );
+        var ns2 = c2.Global.FindOrCreateNamespace( "Sub" );
+        var t2 = ns2.CreateType( "class C {//t2-Code" + Environment.NewLine );
+        t2.Append( "//t2-MoreCode" );
+
+        c1.MergeWith( c2 );
+
+        c1.AssemblyReferences.Should().BeEquivalentTo( new[]
         {
-            var c1 = CodeWorkspace.Create();
-            var c2 = CodeWorkspace.Create();
+            typeof( object ).Assembly,
+            typeof( Enumerable ).Assembly,
+            typeof( TestFixtureAttribute ).Assembly,
+            typeof( MergeTests ).Assembly
+        } );
 
-            c1.EnsureAssemblyReference( typeof( object ), typeof( MergeTests ) );
-            c2.EnsureAssemblyReference( typeof( Enumerable ), typeof( TestFixtureAttribute ), typeof( MergeTests ) );
+        string code = c1.GetGlobalSource();
+        code.Should().Be(
+            "namespace Sub" + Environment.NewLine +
+            "{" + Environment.NewLine +
+            "using A;" + Environment.NewLine +
+            "using B;" + Environment.NewLine +
+            "class C" + Environment.NewLine +
+            "{" + Environment.NewLine +
+            "//t1-Code" + Environment.NewLine +
+            "//t1-MoreCode" + "//t2-Code" + Environment.NewLine +
+            "//t2-MoreCode" + Environment.NewLine +
+            "}" + Environment.NewLine +
+            "}" );
+    }
 
-            c1.Global.EnsureUsing( "A" );
+    [Test]
+    public void merging_code_space_with_parts()
+    {
+        var c1 = CodeWorkspace.Create();
+        var c2 = CodeWorkspace.Create();
 
-            var ns1 = c1.Global.FindOrCreateNamespace( "Sub" );
-            var t1 = ns1.CreateType( h => h.Append( "class C {//t1-Code" ).NewLine() );
-            t1.Append( "//t1-MoreCode" );
+        INamespaceScopePart c1Part1 = c1.Global.CreatePart();
+        INamespaceScope c1Part1Sub = c1Part1.CreatePart();
 
-            c2.Global.EnsureUsing( "B" );
-            var ns2 = c2.Global.FindOrCreateNamespace( "Sub" );
-            var t2 = ns2.CreateType( "class C {//t2-Code" + Environment.NewLine );
-            t2.Append( "//t2-MoreCode" );
+        c1.Global.Append( "n°0 (but after having created the 2 parts!)" ).NewLine();
+        INamespaceScope c1Part2 = c1.Global.CreatePart();
+        c1Part2.Append( "2 - n°0" ).NewLine();
+        c1Part2.Append( "2 - n°1" ).NewLine();
+        c1Part1.Append( "1 - n°0" ).NewLine();
+        c1Part1.Append( "1 - n°1" ).NewLine();
+        c1.Global.Append( "n°1" ).NewLine();
+        c1Part1Sub.Append( "Hop! (Later but in a sup part of the first part)." ).NewLine();
 
-            c1.MergeWith( c2 );
+        INamespaceScope c2Part1 = c1.Global.CreatePart();
+        INamespaceScope c2Part2 = c1.Global.CreatePart();
+        c2.Global.Append( "!n°0" ).NewLine();
+        c2Part2.Append( "!2 - n°0" ).NewLine();
+        c2Part2.Append( "!2 - n°1" ).NewLine();
+        c2Part1.Append( "!1 - n°0" ).NewLine();
+        c2Part1.Append( "!1 - n°1" ).NewLine();
+        c2.Global.Append( "!n°1" ).NewLine();
 
-            c1.AssemblyReferences.Should().BeEquivalentTo( new[]
-            {
-                typeof( object ).Assembly,
-                typeof( Enumerable ).Assembly,
-                typeof( TestFixtureAttribute ).Assembly,
-                typeof( MergeTests ).Assembly
-            } );
+        c1.MergeWith( c2 );
 
-            string code = c1.GetGlobalSource();
-            code.Should().Be(
-                "namespace Sub" + Environment.NewLine +
-                "{" + Environment.NewLine +
-                "using A;" + Environment.NewLine +
-                "using B;" + Environment.NewLine +
-                "class C" + Environment.NewLine +
-                "{" + Environment.NewLine +
-                "//t1-Code" + Environment.NewLine +
-                "//t1-MoreCode" + "//t2-Code" + Environment.NewLine +
-                "//t2-MoreCode" + Environment.NewLine +
-                "}" + Environment.NewLine +
-                "}" );
-        }
-
-        [Test]
-        public void merging_code_space_with_parts()
-        {
-            var c1 = CodeWorkspace.Create();
-            var c2 = CodeWorkspace.Create();
-
-            INamespaceScopePart c1Part1 = c1.Global.CreatePart();
-            INamespaceScope c1Part1Sub = c1Part1.CreatePart();
-
-            c1.Global.Append( "n°0 (but after having created the 2 parts!)" ).NewLine();
-            INamespaceScope c1Part2 = c1.Global.CreatePart();
-            c1Part2.Append( "2 - n°0" ).NewLine();
-            c1Part2.Append( "2 - n°1" ).NewLine();
-            c1Part1.Append( "1 - n°0" ).NewLine();
-            c1Part1.Append( "1 - n°1" ).NewLine();
-            c1.Global.Append( "n°1" ).NewLine();
-            c1Part1Sub.Append( "Hop! (Later but in a sup part of the first part)." ).NewLine();
-
-            INamespaceScope c2Part1 = c1.Global.CreatePart();
-            INamespaceScope c2Part2 = c1.Global.CreatePart();
-            c2.Global.Append( "!n°0" ).NewLine();
-            c2Part2.Append( "!2 - n°0" ).NewLine();
-            c2Part2.Append( "!2 - n°1" ).NewLine();
-            c2Part1.Append( "!1 - n°0" ).NewLine();
-            c2Part1.Append( "!1 - n°1" ).NewLine();
-            c2.Global.Append( "!n°1" ).NewLine();
-
-            c1.MergeWith( c2 );
-
-            string code = c1.GetGlobalSource().Trim();
-            code.Should().Be( @"
+        string code = c1.GetGlobalSource().Trim();
+        code.Should().Be( @"
 Hop! (Later but in a sup part of the first part).
 1 - n°0
 1 - n°1
@@ -103,6 +98,5 @@ n°1
 !n°0
 !n°1
 ".Trim().ReplaceLineEndings() );
-        }
     }
 }
