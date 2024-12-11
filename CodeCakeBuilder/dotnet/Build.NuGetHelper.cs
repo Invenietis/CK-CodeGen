@@ -9,6 +9,7 @@ using NuGet.Credentials;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Plugins;
 using NuGet.Versioning;
 using System;
 using System.Collections.Generic;
@@ -371,7 +372,7 @@ public partial class Build
                 await updater.Push(
                     fullPaths.ToList(),
                     string.Empty, // no Symbol source.
-                    20, //20 seconds timeout
+                    2*60, // 2 minutes timeout
                     disableBuffering: false,
                     getApiKey: endpoint => apiKey,
                     getSymbolApiKey: symbolsEndpoint => null,
