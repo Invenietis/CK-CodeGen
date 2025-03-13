@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using FluentAssertions;
+using Shouldly;
 
 namespace CK.CodeGen.Tests;
 
@@ -32,17 +32,17 @@ public class CodeWorkspaceTests
         var ws = CodeWorkspace.Create();
         var tracker = new Tracker( ws );
         INamespaceScope g = ws.Global;
-        tracker.AllCount.Should().Be( 0 );
+        tracker.AllCount.ShouldBe( 0 );
         var t1 = g.CreateType( "public class C1" );
         var ns1 = g.FindOrCreateNamespace( "Yop.Yup.Yip" );
-        tracker.NamespaceCount.Should().Be( 3 );
-        tracker.TypeCount.Should().Be( 1 );
+        tracker.NamespaceCount.ShouldBe( 3 );
+        tracker.TypeCount.ShouldBe( 1 );
         var t2 = ns1.CreateType( t => t.Append( "private ref readonly struct XRQ { public readonly int X = 3; }" ) );
-        tracker.TypeCount.Should().Be( 2 );
+        tracker.TypeCount.ShouldBe( 2 );
         var f1 = t2.CreateFunction( "static public void Func() => X;" );
-        tracker.NamespaceCount.Should().Be( 3 );
-        tracker.TypeCount.Should().Be( 2 );
-        tracker.FunctionCount.Should().Be( 1 );
+        tracker.NamespaceCount.ShouldBe( 3 );
+        tracker.TypeCount.ShouldBe( 2 );
+        tracker.FunctionCount.ShouldBe( 1 );
     }
 
     [Test]
@@ -55,8 +55,8 @@ public class CodeWorkspaceTests
 
         var text = g.ToString();
         // Here we add the a "Name" property (the real StObjGenAttribute has no parameters nor properties).
-        text.Should().Contain( @"[type: StObjGen(Name = @""XRQ"")]readonly ref struct XRQ" );
-        text.Should().Contain( @"[type: StObjGen(Name = @""C1"")]public class C1" );
+        text.ShouldContain( @"[type: StObjGen(Name = @""XRQ"")]readonly ref struct XRQ" );
+        text.ShouldContain( @"[type: StObjGen(Name = @""C1"")]public class C1" );
     }
 
     void Workspace_TypeCreated( ITypeScope t )

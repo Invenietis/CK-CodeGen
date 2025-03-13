@@ -1,4 +1,4 @@
-using FluentAssertions;
+using Shouldly;
 using NUnit.Framework;
 using System;
 
@@ -13,14 +13,14 @@ public class CodePartTests
         {
             var g = CodeWorkspace.Create().Global;
             g.EnsureUsing( "A.Name.Space" );
-            g.ToString().Should().StartWith( "using", "All the code is INSIDE the namespace and AFTER the usings." );
+            g.ToString().ShouldStartWith( "using", Case.Sensitive, "All the code is INSIDE the namespace and AFTER the usings." );
         }
         {
             var g = CodeWorkspace.Create().Global;
             g.Append( "AFTER" );
             g.BeforeNamespace.Append( "BEFORE" );
             g.EnsureUsing( "A.Name.Space" );
-            g.ToString().Should().StartWith( "BEFORE" );
+            g.ToString().ShouldStartWith( "BEFORE" );
         }
     }
 
@@ -31,12 +31,12 @@ public class CodePartTests
         g.Append( "AFTER" );
         g.BeforeNamespace.Append( "BEFORE" );
         g.EnsureUsing( "A.Name.Space" );
-        g.ToString().Should().StartWith( "BEFORE" );
+        g.ToString().ShouldStartWith( "BEFORE" );
 
         g.BeforeNamespace.CreatePart().Append( "POST" );
         g.BeforeNamespace.CreatePart( top: true ).Append( "ANTE" );
 
-        g.ToString().Should().StartWith( "ANTE" + Environment.NewLine + "BEFORE" + Environment.NewLine + "POST" );
+        g.ToString().ShouldStartWith( "ANTE" + Environment.NewLine + "BEFORE" + Environment.NewLine + "POST" );
 
     }
 
@@ -46,11 +46,11 @@ public class CodePartTests
         var t = CodeWorkspace.Create().Global.CreateType( "class C" );
         var block = t.CreateFunction( "int B()" );
         block.Append( " " ).Append( " return 3;" );
-        block.ToString().Replace( "\r", "" ).Replace( "\n", "" ).Should().Be( "int B(){  return 3;}" );
+        block.ToString().Replace( "\r", "" ).Replace( "\n", "" ).ShouldBe( "int B(){  return 3;}" );
 
         var lambda = t.CreateFunction( "int L()" );
         lambda.Append( " " ).Append( " => 3;" );
-        lambda.ToString().Replace( "\r", "" ).Replace( "\n", "" ).Should().Be( "int L()  => 3;" );
+        lambda.ToString().Replace( "\r", "" ).Replace( "\n", "" ).ShouldBe( "int L()  => 3;" );
     }
 
     [Test]
@@ -76,7 +76,7 @@ public class CodePartTests
         gSub2Type1Part2F1Part1.Append( "gSub2Type1Part2F1Part1:" );
 
         var s = g.ToString().Trim();
-        s.Should().Be( @"
+        s.ShouldBe( @"
 gSub2:
 gSub:
 g:

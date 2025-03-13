@@ -1,5 +1,5 @@
 using CK.Core;
-using FluentAssertions;
+using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,7 +28,7 @@ static partial class LocalTestHelper
     static Assembly HandleCreateResult( string sourceCode, GenerateResult result )
     {
         result.LogResult( TestHelper.Monitor, LogLevel.Info );
-        result.Success.Should().BeTrue();
+        result.Success.ShouldBeTrue();
         return result.Assembly;
     }
 

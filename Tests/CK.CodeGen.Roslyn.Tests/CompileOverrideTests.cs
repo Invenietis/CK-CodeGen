@@ -2,7 +2,7 @@ using NUnit.Framework;
 using System;
 using System.Reflection;
 using System.Linq;
-using FluentAssertions;
+using Shouldly;
 
 namespace CK.CodeGen.Roslyn.Tests;
 
@@ -77,13 +77,13 @@ public class CompileOverrideTests
 
         Type tC = a.GetTypes().Single( n => n.Name == "Specialized" );
         BaseToBeOverridden gotIt = (BaseToBeOverridden)Activator.CreateInstance( tC, new object[] { 3712 * 3712 } );
-        gotIt.ValFromCtor.Should().Be( 3712 * 3712 );
-        gotIt.Simple1().Should().Be( 3712 );
+        gotIt.ValFromCtor.ShouldBe( 3712 * 3712 );
+        gotIt.Simple1().ShouldBe( 3712 );
         string s;
         Guid g = Guid.Empty;
-        gotIt.Simple3( out s, ref g, 9 ).Should().BeSameAs( gotIt );
-        s.Should().Be( "Hello World!YES-" + g.ToString() );
-        g.Should().NotBeEmpty();
+        gotIt.Simple3( out s, ref g, 9 ).ShouldBeSameAs( gotIt );
+        s.ShouldBe( "Hello World!YES-" + g.ToString() );
+        g.ShouldNotBe( Guid.Empty );
     }
 
     [Test]
@@ -110,7 +110,7 @@ public class CompileOverrideTests
 
         Type tC = a.GetTypes().Single( n => n.Name == "Specialized`1" ).MakeGenericType( typeof( int ) );
         ContainsGenericMethods<int> gotIt = (ContainsGenericMethods<int>)Activator.CreateInstance( tC );
-        gotIt.Simple1<bool>( 25 ).Should().BeFalse();
-        gotIt.Simple2( new object(), "test" ).Should().BeTrue();
+        gotIt.Simple1<bool>( 25 ).ShouldBeFalse();
+        gotIt.Simple2( new object(), "test" ).ShouldBeTrue();
     }
 }

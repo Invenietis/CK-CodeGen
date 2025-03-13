@@ -1,5 +1,6 @@
 using CK.Core;
-using FluentAssertions;
+using CK.Testing;
+using Shouldly;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -25,14 +26,14 @@ public partial class NullableTypeTests
             case "NonNullableRef":
             {
                 var tRef = GetNullableTypeTree( nameof( ListInt ) );
-                tRef.Kind.IsNullable().Should().BeFalse();
+                tRef.Kind.IsNullable().ShouldBeFalse();
 
                 var tNormal = tRef.ToNormalNull();
-                tNormal.Kind.IsNullable().Should().BeTrue();
-                tNormal.Should().NotBe( tRef );
+                tNormal.Kind.IsNullable().ShouldBeTrue();
+                tNormal.ShouldNotBe( tRef );
 
                 var tAbnormal = tRef.ToAbnormalNull();
-                tAbnormal.Should().Be( tRef );
+                tAbnormal.ShouldBe( tRef );
 
                 CheckMirror( tNormal, tAbnormal );
                 break;
@@ -40,14 +41,14 @@ public partial class NullableTypeTests
             case "Ref":
             {
                 var t = GetNullableTypeTree( nameof( NListNInt ) );
-                t.Kind.IsNullable().Should().BeTrue();
+                t.Kind.IsNullable().ShouldBeTrue();
 
                 var tNormal = t.ToNormalNull();
-                tNormal.Should().Be( t );
+                tNormal.ShouldBe( t );
 
                 var tAbnormal = t.ToAbnormalNull();
-                tAbnormal.Kind.IsNullable().Should().BeFalse();
-                tAbnormal.Should().NotBe( t );
+                tAbnormal.Kind.IsNullable().ShouldBeFalse();
+                tAbnormal.ShouldNotBe( t );
 
                 CheckMirror( tNormal, tAbnormal );
                 break;
@@ -55,14 +56,14 @@ public partial class NullableTypeTests
             case "NullableValueType":
             {
                 var t = GetNullableTypeTree( nameof( NVT ) );
-                t.Kind.IsNullable().Should().BeTrue();
+                t.Kind.IsNullable().ShouldBeTrue();
 
                 var tNormal = t.ToNormalNull();
-                tNormal.Should().NotBe( t );
+                tNormal.ShouldNotBe( t );
 
                 var tAbnormal = t.ToAbnormalNull();
-                tAbnormal.Kind.IsNullable().Should().BeTrue();
-                tAbnormal.Should().Be( t );
+                tAbnormal.Kind.IsNullable().ShouldBeTrue();
+                tAbnormal.ShouldBe( t );
 
                 CheckMirror( tNormal, tAbnormal );
                 break;
@@ -70,14 +71,14 @@ public partial class NullableTypeTests
             case "ValueType":
             {
                 var t = GetNullableTypeTree( nameof( VT ) );
-                t.Kind.IsNullable().Should().BeFalse();
+                t.Kind.IsNullable().ShouldBeFalse();
 
                 var tNormal = t.ToNormalNull();
-                tNormal.Should().Be( t );
+                tNormal.ShouldBe( t );
 
                 var tAbnormal = t.ToAbnormalNull();
-                tAbnormal.Kind.IsNullable().Should().BeTrue();
-                tAbnormal.Should().NotBe( t );
+                tAbnormal.Kind.IsNullable().ShouldBeTrue();
+                tAbnormal.ShouldNotBe( t );
 
                 CheckMirror( tNormal, tAbnormal );
                 break;
@@ -86,8 +87,8 @@ public partial class NullableTypeTests
         }
         static void CheckMirror( NullableTypeTree normal, NullableTypeTree abnormal )
         {
-            normal.ToAbnormalNull().ToNormalNull().Should().Be( normal );
-            abnormal.ToNormalNull().ToAbnormalNull().Should().Be( abnormal );
+            normal.ToAbnormalNull().ToNormalNull().ShouldBe( normal );
+            abnormal.ToNormalNull().ToAbnormalNull().ShouldBe( abnormal );
         }
     }
 
@@ -98,44 +99,44 @@ public partial class NullableTypeTests
         var t1 = typeof( List<string?> );
         var t2 = typeof( List<string> );
 
-        t1.Should().BeSameAs( t2, "No difference at all, same reference... :(" );
+        t1.ShouldBeSameAs( t2, "No difference at all, same reference... :(" );
 
         var a = t1.CustomAttributes.Single( a => a.AttributeType.Name == "NullableAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
         object? data = a.ConstructorArguments[0].Value;
         // A single value means "apply to everything in the type", e.g. 1 for Dictionary<string, string>, 2 for Dictionary<string?, string?>?
         // Here, we have a single 0 (oblivious).
-        data.Should().Be( (byte)0 );
+        data.ShouldBe( (byte)0 );
 
         var aCtx = t1.CustomAttributes.Single( a => a.AttributeType.Name == "NullableContextAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
-        aCtx.ConstructorArguments[0].Value.Should().Be( (byte)1, "The type is a also marked with NullableContextAttribute(1). Why?" );
+        aCtx.ConstructorArguments[0].Value.ShouldBe( (byte)1, "The type is a also marked with NullableContextAttribute(1). Why?" );
 
         var pA = t1.GetGenericArguments()[0].CustomAttributes.Single( a => a.AttributeType.Name == "NullableAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
-        pA.ConstructorArguments[0].Value.Should().Be( (byte)0, "The <string> parameter is marked with NullableAttribute(0)..." );
+        pA.ConstructorArguments[0].Value.ShouldBe( (byte)0, "The <string> parameter is marked with NullableAttribute(0)..." );
         var pACtx = t1.GetGenericArguments()[0].CustomAttributes.Single( a => a.AttributeType.Name == "NullableContextAttribute" && a.AttributeType.Namespace == "System.Runtime.CompilerServices" );
-        pACtx.ConstructorArguments[0].Value.Should().Be( (byte)1, "...and also with a NullableContextAttribute(1)." );
+        pACtx.ConstructorArguments[0].Value.ShouldBe( (byte)1, "...and also with a NullableContextAttribute(1)." );
 
         var n2 = t2.GetNullableTypeTree();
-        n2.ToString().Should().Be( "List<string?>?", "The basic extension methods (oblivious context): all reference types are nullable." );
+        n2.ToString().ShouldBe( "List<string?>?", "The basic extension methods (oblivious context): all reference types are nullable." );
 
         // This is the same as a null NRT profile (every reference types are nullable).
         NullableTypeTree n1 = t1.GetNullableTypeTree( new NullabilityTypeInfo( t1.GetNullabilityKind(), null, false ) );
-        n1.ToString().Should().Be( "List<string?>?" );
+        n1.ToString().ShouldBe( "List<string?>?" );
 
-        n1.Equals( n2 ).Should().BeTrue( "NullableTypeTree has a value semantics." );
-        n1.GetHashCode().Should().Be( n2.GetHashCode() );
+        n1.Equals( n2 ).ShouldBeTrue( "NullableTypeTree has a value semantics." );
+        n1.GetHashCode().ShouldBe( n2.GetHashCode() );
     }
 
     [Test]
     public void typeof_void_NullableTypeTree_can_be_obtained_and_is_a_NonNullableValueType_that_cannot_be_transformed_to_nullable()
     {
         var tree = typeof( void ).GetNullableTypeTree();
-        tree.Kind.IsNullable().Should().BeFalse();
-        tree.Kind.IsNonGenericValueType().Should().BeTrue();
-        tree.ToString().Should().Be( "void" );
+        tree.Kind.IsNullable().ShouldBeFalse();
+        tree.Kind.IsNonGenericValueType().ShouldBeTrue();
+        tree.ToString().ShouldBe( "void" );
         var abnormal = tree.ToAbnormalNull();
-        abnormal.Kind.IsNullable().Should().BeFalse();
-        abnormal.Kind.IsNonGenericValueType().Should().BeTrue();
-        abnormal.ToString().Should().Be( "void" );
+        abnormal.Kind.IsNullable().ShouldBeFalse();
+        abnormal.Kind.IsNonGenericValueType().ShouldBeTrue();
+        abnormal.ToString().ShouldBe( "void" );
     }
 
     interface IDic<TKey, TValue> { }
@@ -151,13 +152,13 @@ public partial class NullableTypeTests
     {
         var s = GetTypeAndNullability( nameof( VeryLongValueTuple ) );
         var t = s.Type.GetNullableTypeTree( s.Nullability );
-        t.ToString().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,BigInteger,IEnumerable<int>,string?,List<string?>?,sbyte?,byte?,short?,ushort?,int?,uint?,long?,ulong?,decimal?)" );
-        t.SubTypes.ElementAt( 0 ).ToString().Should().Be( "sbyte" );
+        t.ToString().ShouldBe( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,BigInteger,IEnumerable<int>,string?,List<string?>?,sbyte?,byte?,short?,ushort?,int?,uint?,long?,ulong?,decimal?)" );
+        t.SubTypes.ElementAt( 0 ).ToString().ShouldBe( "sbyte" );
         for( int idx = 0; idx < t.SubTypes.Count(); ++idx )
         {
             var r = t.WithSubTypeAt( idx, GetType().GetNullableTypeTree() );
-            r.HasChanged.Should().BeTrue();
-            r.Result.SubTypes.ElementAt( idx ).ToString().Should().Be( "NullableTypeTests?" );
+            r.HasChanged.ShouldBeTrue();
+            r.Result.SubTypes.ElementAt( idx ).ToString().ShouldBe( "NullableTypeTests?" );
         }
     }
 
@@ -174,15 +175,15 @@ public partial class NullableTypeTests
     {
         {
             Type t = typeof( IDictionary<string, int> );
-            t.GetNullableTypeTree().RawSubTypes[0].Kind.IsNullable().Should().BeFalse();
+            t.GetNullableTypeTree().RawSubTypes[0].Kind.IsNullable().ShouldBeFalse();
 
-            t.GetNullableTypeTree( new NoFix() ).RawSubTypes[0].Kind.IsNullable().Should().BeTrue();
+            t.GetNullableTypeTree( new NoFix() ).RawSubTypes[0].Kind.IsNullable().ShouldBeTrue();
         }
         {
             Type t = typeof( Dictionary<NullableTypeTests, int> );
-            t.GetNullableTypeTree().RawSubTypes[0].Kind.IsNullable().Should().BeFalse();
+            t.GetNullableTypeTree().RawSubTypes[0].Kind.IsNullable().ShouldBeFalse();
 
-            t.GetNullableTypeTree( new NoFix() ).RawSubTypes[0].Kind.IsNullable().Should().BeTrue();
+            t.GetNullableTypeTree( new NoFix() ).RawSubTypes[0].Kind.IsNullable().ShouldBeTrue();
         }
 
     }
@@ -192,22 +193,22 @@ public partial class NullableTypeTests
     {
         var s = GetTypeAndNullability( nameof( VeryLongValueTuple ) );
         var t = s.Type.GetNullableTypeTree( s.Nullability );
-        t.ToString().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,BigInteger,IEnumerable<int>,string?,List<string?>?,sbyte?,byte?,short?,ushort?,int?,uint?,long?,ulong?,decimal?)" );
-        t.SubTypes.ElementAt( 0 ).ToString().Should().Be( "sbyte" );
+        t.ToString().ShouldBe( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,BigInteger,IEnumerable<int>,string?,List<string?>?,sbyte?,byte?,short?,ushort?,int?,uint?,long?,ulong?,decimal?)" );
+        t.SubTypes.ElementAt( 0 ).ToString().ShouldBe( "sbyte" );
 
         var r = t.Transform( s =>
         {
             return s.Type.IsValueTuple() ? null : GetType().GetNullableTypeTree();
         } );
-        r.HasChanged.Should().BeTrue();
+        r.HasChanged.ShouldBeTrue();
         for( int idx = 0; idx < t.SubTypes.Count(); ++idx )
         {
-            r.Result.SubTypes.ElementAt( idx ).ToString().Should().Be( "NullableTypeTests?" );
+            r.Result.SubTypes.ElementAt( idx ).ToString().ShouldBe( "NullableTypeTests?" );
         }
 
         var noChange = t.Transform( s => null );
-        noChange.HasChanged.Should().BeFalse();
-        noChange.Result.Should().Be( t );
+        noChange.HasChanged.ShouldBeFalse();
+        noChange.Result.ShouldBe( t );
     }
 
 #pragma warning disable IDE0044 // Add readonly modifier
@@ -278,8 +279,8 @@ public partial class NullableTypeTests
         var (type2, info2) = GetTypeAndNullability( m2 );
         var n2 = type2.GetNullableTypeTree( info2 );
 
-        n1.Should().NotBe( n2, "We handle nullability profile." );
-        type1.Should().BeSameAs( type2 );
+        n1.ShouldNotBe( n2, "We handle nullability profile." );
+        type1.ShouldBeSameAs( type2 );
     }
 
 
@@ -386,19 +387,25 @@ public partial class NullableTypeTests
     public void NullableTypeTree_throws_on_generic_nesting_type()
     {
         var ns = GetTypeAndNullability( nameof( NotSupported ) );
-        ns.Invoking( sut => sut.Type.GetNullableTypeTree( ns.Nullability ) ).Should().Throw<ArgumentException>().WithMessage( "*Only nested types in non generic types are supported.*" );
+        Util.Invokable( () => ns.Type.GetNullableTypeTree( ns.Nullability ) )
+            .ShouldThrow<ArgumentException>()
+            .Message.ShouldMatch( @".*Only nested types in non generic types are supported\..*" );
 
         var nsA = GetTypeAndNullability( nameof( AlsoNotSupported ) );
-        nsA.Invoking( sut => sut.Type.GetNullableTypeTree( nsA.Nullability ) ).Should().Throw<ArgumentException>().WithMessage( "*Only nested types in non generic types are supported.*" );
+        Util.Invokable( () => nsA.Type.GetNullableTypeTree( nsA.Nullability ) )
+            .ShouldThrow<ArgumentException>()
+            .Message.ShouldMatch( @".*Only nested types in non generic types are supported\..*" );
 
         var nsi = GetTypeAndNullability( nameof( NotSupportedInner ) );
-        nsi.Invoking( sut => sut.Type.GetNullableTypeTree( nsi.Nullability ) ).Should().Throw<ArgumentException>().WithMessage( "*Only nested types in non generic types are supported.*" );
+        Util.Invokable(() => nsi.Type.GetNullableTypeTree(nsi.Nullability))
+            .ShouldThrow<ArgumentException>()
+            .Message.ShouldMatch( @".*Only nested types in non generic types are supported\..*" );
 
         var s = GetTypeAndNullability( nameof( Supported ) );
-        s.Invoking( sut => sut.Type.GetNullableTypeTree( s.Nullability ) ).Should().NotThrow();
+        Util.Invokable( () => s.Type.GetNullableTypeTree( s.Nullability ) ).ShouldNotThrow();
 
         var si = GetTypeAndNullability( nameof( SupportedInner ) );
-        si.Invoking( sut => sut.Type.GetNullableTypeTree( si.Nullability ) ).Should().NotThrow();
+        Util.Invokable( () => si.Type.GetNullableTypeTree( si.Nullability ) ).ShouldNotThrow();
     }
 
     [Test]
@@ -407,22 +414,22 @@ public partial class NullableTypeTests
         {
             var s = GetTypeAndNullability( nameof( Supported ) );
             var t = s.Type.GetNullableTypeTree( s.Nullability );
-            t.ToString( true ).Should().Be( "CK.CodeGen.Tests.NullableTypeTests.NotGeneric.NestedSupported" );
+            t.ToString( true ).ShouldBe( "CK.CodeGen.Tests.NullableTypeTests.NotGeneric.NestedSupported" );
         }
         {
             var s = GetTypeAndNullability( nameof( SupportedInner ) );
             var t = s.Type.GetNullableTypeTree( s.Nullability );
-            t.ToString( true ).Should().Be( "CK.CodeGen.Tests.NullableTypeTests.NotGeneric.LevelDoesNotMatter2.NestedSupported" );
+            t.ToString( true ).ShouldBe( "CK.CodeGen.Tests.NullableTypeTests.NotGeneric.LevelDoesNotMatter2.NestedSupported" );
         }
         {
             var s = GetTypeAndNullability( nameof( SupportedInside ) );
             var t = s.Type.GetNullableTypeTree( s.Nullability );
-            t.ToString( true ).Should().Be( "System.Collections.Generic.ISet<CK.CodeGen.Tests.NullableTypeTests.NotGeneric.NestedSupported?>" );
+            t.ToString( true ).ShouldBe( "System.Collections.Generic.ISet<CK.CodeGen.Tests.NullableTypeTests.NotGeneric.NestedSupported?>" );
         }
         {
             var s = GetTypeAndNullability( nameof( SupportedInnerInside ) );
             var t = s.Type.GetNullableTypeTree( s.Nullability );
-            t.ToString( true ).Should().Be( "System.Collections.Generic.Dictionary<CK.CodeGen.Tests.NullableTypeTests.NotGeneric.LevelDoesNotMatter2.NestedSupported,CK.CodeGen.Tests.NullableTypeTests.NotGeneric.NestedSupported?>" );
+            t.ToString( true ).ShouldBe( "System.Collections.Generic.Dictionary<CK.CodeGen.Tests.NullableTypeTests.NotGeneric.LevelDoesNotMatter2.NestedSupported,CK.CodeGen.Tests.NullableTypeTests.NotGeneric.NestedSupported?>" );
         }
     }
 
@@ -443,28 +450,28 @@ public partial class NullableTypeTests
         var s3 = GetTypeAndNullability( nameof( LongValueTuple3 ) );
         var t3 = s3.Type.GetNullableTypeTree( s3.Nullability );
 
-        t1.Should().NotBe( t2 );
+        t1.ShouldNotBe( t2 );
 
-        t1.IsLongValueTuple.Should().BeTrue();
-        t1.RawSubTypes.Should().HaveCount( 8 );
-        t1.RawSubTypes[^1].Type.Name.Should().Be( "ValueTuple`4" );
-        t1.SubTypes.Should().HaveCount( 11, "SubTypes lifts the 8th ValueTuple." );
-        t1.ToString().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,BigInteger,string)" );
+        t1.IsLongValueTuple.ShouldBeTrue();
+        t1.RawSubTypes.Count.ShouldBe( 8 );
+        t1.RawSubTypes[^1].Type.Name.ShouldBe( "ValueTuple`4" );
+        t1.SubTypes.Count().ShouldBe( 11, "SubTypes lifts the 8th ValueTuple." );
+        t1.ToString().ShouldBe( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,BigInteger,string)" );
 
-        t2.IsLongValueTuple.Should().BeTrue();
-        t2.RawSubTypes.Count.Should().Be( 8 );
-        t2.RawSubTypes[^1].Type.Name.Should().Be( "ValueTuple`1", "The last 8th possible index, is wrapped in a ValueTuple<T> ('singleton' tuple)." );
-        t2.RawSubTypes[^1].RawSubTypes[0].Type.Name.Should().Be( "ValueTuple`3" );
-        t2.SubTypes.Should().HaveCount( 8 );
-        t2.ToString().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,(ulong,decimal,BigInteger))" );
+        t2.IsLongValueTuple.ShouldBeTrue();
+        t2.RawSubTypes.Count.ShouldBe( 8 );
+        t2.RawSubTypes[^1].Type.Name.ShouldBe( "ValueTuple`1", "The last 8th possible index, is wrapped in a ValueTuple<T> ('singleton' tuple)." );
+        t2.RawSubTypes[^1].RawSubTypes[0].Type.Name.ShouldBe( "ValueTuple`3" );
+        t2.SubTypes.Count().ShouldBe( 8 );
+        t2.ToString().ShouldBe( "(sbyte,byte,short,ushort,int,uint,long,(ulong,decimal,BigInteger))" );
 
-        t3.RawSubTypes.Count.Should().Be( 8 );
-        t3.RawSubTypes[2].Type.Name.Should().Be( "ValueTuple`3" );
-        t3.IsLongValueTuple.Should().BeTrue();
-        t3.SubTypes.Should().HaveCount( 8 );
-        t3.RawSubTypes.Last().Type.Name.Should().Be( "ValueTuple`1" );
-        t3.SubTypes.Last().Type.Should().Be( typeof( System.Numerics.BigInteger ) );
-        t3.ToString().Should().Be( "(sbyte,byte,(short,ushort,int),uint,long,ulong,decimal,BigInteger)" );
+        t3.RawSubTypes.Count.ShouldBe( 8 );
+        t3.RawSubTypes[2].Type.Name.ShouldBe( "ValueTuple`3" );
+        t3.IsLongValueTuple.ShouldBeTrue();
+        t3.SubTypes.Count().ShouldBe( 8 );
+        t3.RawSubTypes.Last().Type.Name.ShouldBe( "ValueTuple`1" );
+        t3.SubTypes.Last().Type.ShouldBe( typeof( System.Numerics.BigInteger ) );
+        t3.ToString().ShouldBe( "(sbyte,byte,(short,ushort,int),uint,long,ulong,decimal,BigInteger)" );
 
     }
 
@@ -476,14 +483,14 @@ public partial class NullableTypeTests
         var s = GetTypeAndNullability( nameof( VeryLongValueTuple ) );
         var t = s.Type.GetNullableTypeTree( s.Nullability );
 
-        t.IsLongValueTuple.Should().BeTrue();
-        t.RawSubTypes.Should().HaveCount( 8 );
-        t.SubTypes.Should().HaveCount( 22 );
-        t.ToString().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,BigInteger,IEnumerable<int>,string?,List<string?>?,sbyte?,byte?,short?,ushort?,int?,uint?,long?,ulong?,decimal?)" );
+        t.IsLongValueTuple.ShouldBeTrue();
+        t.RawSubTypes.Count.ShouldBe( 8 );
+        t.SubTypes.Count().ShouldBe( 22 );
+        t.ToString().ShouldBe( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,BigInteger,IEnumerable<int>,string?,List<string?>?,sbyte?,byte?,short?,ushort?,int?,uint?,long?,ulong?,decimal?)" );
 
         var rawType = s.Type;
-        rawType.ToCSharpName( true, true, true ).Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,System.Numerics.BigInteger,System.Collections.Generic.IEnumerable<int>,string,System.Collections.Generic.List<string>,sbyte?,byte?,short?,ushort?,int?,uint?,long?,ulong?,decimal?)" );
-        rawType.ToCSharpName( true, true, useValueTupleParentheses: false ).Should().Be( "System.ValueTuple<sbyte,byte,short,ushort,int,uint,long,System.ValueTuple<ulong,decimal,System.Numerics.BigInteger,System.Collections.Generic.IEnumerable<int>,string,System.Collections.Generic.List<string>,sbyte?,System.ValueTuple<byte?,short?,ushort?,int?,uint?,long?,ulong?,System.ValueTuple<decimal?>>>>" );
+        rawType.ToCSharpName( true, true, true ).ShouldBe( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,System.Numerics.BigInteger,System.Collections.Generic.IEnumerable<int>,string,System.Collections.Generic.List<string>,sbyte?,byte?,short?,ushort?,int?,uint?,long?,ulong?,decimal?)" );
+        rawType.ToCSharpName( true, true, useValueTupleParentheses: false ).ShouldBe( "System.ValueTuple<sbyte,byte,short,ushort,int,uint,long,System.ValueTuple<ulong,decimal,System.Numerics.BigInteger,System.Collections.Generic.IEnumerable<int>,string,System.Collections.Generic.List<string>,sbyte?,System.ValueTuple<byte?,short?,ushort?,int?,uint?,long?,ulong?,System.ValueTuple<decimal?>>>>" );
     }
 
     [Test]
@@ -492,12 +499,12 @@ public partial class NullableTypeTests
         var t1 = GetTypeAndNullability( nameof( LongValueTuple1 ) ).Type;
         var t2 = GetTypeAndNullability( nameof( LongValueTuple2 ) ).Type;
         var t3 = GetTypeAndNullability( nameof( LongValueTuple3 ) ).Type;
-        t1.ToCSharpName().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,System.Numerics.BigInteger,string)" );
-        t2.ToCSharpName().Should().Be( "(sbyte,byte,short,ushort,int,uint,long,(ulong,decimal,System.Numerics.BigInteger))" );
-        t3.ToCSharpName().Should().Be( "(sbyte,byte,(short,ushort,int),uint,long,ulong,decimal,System.Numerics.BigInteger)" );
-        t1.ToCSharpName( useValueTupleParentheses: false ).Should().Be( "System.ValueTuple<sbyte,byte,short,ushort,int,uint,long,System.ValueTuple<ulong,decimal,System.Numerics.BigInteger,string>>" );
-        t2.ToCSharpName( useValueTupleParentheses: false ).Should().Be( "System.ValueTuple<sbyte,byte,short,ushort,int,uint,long,System.ValueTuple<System.ValueTuple<ulong,decimal,System.Numerics.BigInteger>>>" );
-        t3.ToCSharpName( useValueTupleParentheses: false ).Should().Be( "System.ValueTuple<sbyte,byte,System.ValueTuple<short,ushort,int>,uint,long,ulong,decimal,System.ValueTuple<System.Numerics.BigInteger>>" );
+        t1.ToCSharpName().ShouldBe( "(sbyte,byte,short,ushort,int,uint,long,ulong,decimal,System.Numerics.BigInteger,string)" );
+        t2.ToCSharpName().ShouldBe( "(sbyte,byte,short,ushort,int,uint,long,(ulong,decimal,System.Numerics.BigInteger))" );
+        t3.ToCSharpName().ShouldBe( "(sbyte,byte,(short,ushort,int),uint,long,ulong,decimal,System.Numerics.BigInteger)" );
+        t1.ToCSharpName( useValueTupleParentheses: false ).ShouldBe( "System.ValueTuple<sbyte,byte,short,ushort,int,uint,long,System.ValueTuple<ulong,decimal,System.Numerics.BigInteger,string>>" );
+        t2.ToCSharpName( useValueTupleParentheses: false ).ShouldBe( "System.ValueTuple<sbyte,byte,short,ushort,int,uint,long,System.ValueTuple<System.ValueTuple<ulong,decimal,System.Numerics.BigInteger>>>" );
+        t3.ToCSharpName( useValueTupleParentheses: false ).ShouldBe( "System.ValueTuple<sbyte,byte,System.ValueTuple<short,ushort,int>,uint,long,ulong,decimal,System.ValueTuple<System.Numerics.BigInteger>>" );
     }
 
     interface ICommand<T> { }
@@ -569,12 +576,12 @@ public partial class NullableTypeTests
     void CheckAll( string member, string result, string info )
     {
         var n = GetTypeAndNullability( member );
-        n.Nullability.ToString().Should().Be( info );
+        n.Nullability.ToString().ShouldBe( info );
 
         TestHelper.Monitor.Info( $"Type {n.Type}." );
 
         var t = n.Type.GetNullableTypeTree( n.Nullability );
-        t.ToString().Should().Be( result );
+        t.ToString().ShouldBe( result );
     }
 
     [DebuggerStepThrough]

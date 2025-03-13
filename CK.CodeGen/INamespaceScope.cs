@@ -38,10 +38,10 @@ public interface INamespaceScope : ITypeDefinerScope, ICodePartFactory
     /// If an alias is already defined in this namespace but with a different definition
     /// a <see cref="ArgumentException"/> is thrown.
     /// </summary>
-    /// <param name="alias">The alias name. Can not be null or empty.</param>
+    /// <param name="aliasName">The alias name. Can not be null or empty.</param>
     /// <param name="definition">The definition. Can not be null or empty nor ends with the ';'.</param>
     /// <returns>This namespace to enable fluent syntax.</returns>
-    INamespaceScope EnsureUsingAlias( string alias, string definition );
+    INamespaceScope EnsureUsingAlias( string aliasName, string definition );
 
     /// <summary>
     /// Ensures that a subordinate namespace exists (can be a composite name).
@@ -64,5 +64,11 @@ public interface INamespaceScope : ITypeDefinerScope, ICodePartFactory
     /// </param>
     /// <returns>The namespace part to use.</returns>
     new INamespaceScopePart CreatePart( bool top = false );
+
+    /// <summary>
+    /// Returns the whole namespace content.
+    /// </summary>
+    /// <returns>The namespace code.</returns>
+    string ToString();
 
 }
