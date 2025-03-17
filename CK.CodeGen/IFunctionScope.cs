@@ -35,4 +35,10 @@ public interface IFunctionScope : IFunctionDefinerScope, ICodeWriter
     /// </param>
     /// <returns>The function part to use.</returns>
     IFunctionScopePart CreatePart( bool top = false );
+
+    /// <summary>
+    /// Returns the body of the function.
+    /// </summary>
+    /// <returns>The function body.</returns>
+    string ToString();
 }

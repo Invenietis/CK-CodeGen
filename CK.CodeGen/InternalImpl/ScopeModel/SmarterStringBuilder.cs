@@ -7,7 +7,7 @@ namespace CK.CodeGen;
 /// Internal class that handles new lines and unifies the output to a StringBuilder
 /// or an Action{string}.
 /// </summary>
-class SmarterStringBuilder
+sealed class SmarterStringBuilder
 {
     readonly Action<string> _collector;
 

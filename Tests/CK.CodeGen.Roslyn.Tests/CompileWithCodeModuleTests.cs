@@ -1,4 +1,4 @@
-using FluentAssertions;
+using Shouldly;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -93,16 +93,16 @@ namespace CK.CodeGen.Roslyn.Tests
 
             var r = gen.Generate( workspace, LocalTestHelper.RandomDllPath, false, Assembly.LoadFrom );
             r.LogResult( TestHelper.Monitor );
-            r.Success.Should().BeTrue();
-            gen.Modules.Should().BeEmpty();
+            r.Success.ShouldBeTrue();
+            gen.Modules.ShouldBeEmpty();
 
             var replaced = r.Assembly.ExportedTypes.Single( t => t.FullName == "Original.DBNullWillBeReplaced" );
             replaced.GetField( "V", BindingFlags.Static | BindingFlags.Public ).GetValue( null )
-                .Should().Be( "I'm the DBNull." );
+                .ShouldBe( "I'm the DBNull." );
 
             var real = r.Assembly.ExportedTypes.Single( t => t.FullName == "RealDBNull" );
             real.GetField( "V", BindingFlags.Static | BindingFlags.Public ).GetValue( null )
-                .Should().Be( DBNull.Value );
+                .ShouldBe( DBNull.Value );
 
         }
     }

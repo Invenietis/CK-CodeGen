@@ -1,4 +1,4 @@
-using FluentAssertions;
+using Shouldly;
 using NUnit.Framework;
 using System.Collections.Generic;
 
@@ -61,10 +61,10 @@ public partial class NullableTypeTests
         var t2 = GetNullableTypeTree( n2 );
         var tM = GetNullableTypeTree( merged );
 
-        t1.Should().NotBe( t2 );
+        t1.ShouldNotBe( t2 );
 
-        t1.MergeReferenceTypesNullability( t2 ).Should().Be( tM );
-        t2.MergeReferenceTypesNullability( t1 ).Should().Be( tM );
+        t1.MergeReferenceTypesNullability( t2 ).ShouldBe( tM );
+        t2.MergeReferenceTypesNullability( t1 ).ShouldBe( tM );
     }
 
     decimal? Va1 = new();
@@ -122,15 +122,15 @@ public partial class NullableTypeTests
     {
         var t1 = GetNullableTypeTree( n1 );
         var t2 = GetNullableTypeTree( n2 );
-        t1.Should().NotBe( t2 );
+        t1.ShouldNotBe( t2 );
 
         var tM = merged != null ? GetNullableTypeTree( merged ) : (NullableTypeTree?)null;
 
         var m1 = t1.TryMergeNullabilities( t2 );
-        m1.Should().Be( tM );
+        m1.ShouldBe( tM );
 
         var m2 = t2.TryMergeNullabilities( t1 );
-        m2.Should().Be( tM );
+        m2.ShouldBe( tM );
 
     }
 

@@ -1,9 +1,10 @@
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Reflection;
-using FluentAssertions;
+using Shouldly;
 using System.Text.RegularExpressions;
 using System.Linq;
+using CK.Core;
 
 namespace CK.CodeGen.Tests;
 
@@ -15,11 +16,11 @@ public class NamespaceScopeTests : CommonTypeDefinerScopeTests
     {
         INamespaceScope sut = CreateWorkspace().Global;
 
-        sut.Parent.Should().BeNull();
-        sut.FullName.Should().BeEmpty();
-        sut.Name.Should().BeEmpty();
-        sut.Namespaces.Should().BeEmpty();
-        sut.Types.Should().BeEmpty();
+        sut.Parent.ShouldBeNull();
+        sut.FullName.ShouldBeEmpty();
+        sut.Name.ShouldBeEmpty();
+        sut.Namespaces.ShouldBeEmpty();
+        sut.Types.ShouldBeEmpty();
     }
 
     [Test]
@@ -27,26 +28,28 @@ public class NamespaceScopeTests : CommonTypeDefinerScopeTests
     {
         INamespaceScope sut = CreateWorkspace().Global;
         INamespaceScope ns3 = sut.FindOrCreateNamespace( "X.Y.Z" );
-        INamespaceScope ns2 = ns3.Parent;
-        INamespaceScope ns1 = ns2.Parent;
+        INamespaceScope? ns2 = ns3.Parent;
+        ns2.ShouldNotBeNull();
+        INamespaceScope? ns1 = ns2.Parent;
+        ns1.ShouldNotBeNull();
 
-        ns3.FullName.Should().Be( "X.Y.Z" );
-        ns3.Name.Should().Be( "Z" );
-        ns3.Namespaces.Should().BeEmpty();
-        ns3.Types.Should().BeEmpty();
+        ns3.FullName.ShouldBe( "X.Y.Z" );
+        ns3.Name.ShouldBe( "Z" );
+        ns3.Namespaces.ShouldBeEmpty();
+        ns3.Types.ShouldBeEmpty();
 
-        ns2.FullName.Should().Be( "X.Y" );
-        ns2.Name.Should().Be( "Y" );
-        ns2.Namespaces.Should().ContainSingle( x => x == ns3 );
-        ns2.Types.Should().BeEmpty();
+        ns2.FullName.ShouldBe( "X.Y" );
+        ns2.Name.ShouldBe( "Y" );
+        ns2.Namespaces.ShouldContain( ns3 );
+        ns2.Types.ShouldBeEmpty();
 
-        ns1.FullName.Should().Be( "X" );
-        ns1.Name.Should().Be( "X" );
-        ns1.Namespaces.Should().ContainSingle( x => x == ns2 );
-        ns1.Types.Should().BeEmpty();
+        ns1.FullName.ShouldBe( "X" );
+        ns1.Name.ShouldBe( "X" );
+        ns1.Namespaces.ShouldHaveSingleItem().ShouldBe( ns2 );
+        ns1.Types.ShouldBeEmpty();
 
-        sut.Namespaces.Should().ContainSingle( x => x == ns1 );
-        sut.Types.Should().BeEmpty();
+        sut.Namespaces.ShouldHaveSingleItem().ShouldBe( ns1 );
+        sut.Types.ShouldBeEmpty();
     }
 
     [Test]
@@ -56,11 +59,11 @@ public class NamespaceScopeTests : CommonTypeDefinerScopeTests
         INamespaceScope sut = global.FindOrCreateNamespace( "X.Y" );
         INamespaceScope nested = sut.FindOrCreateNamespace( "Z" );
 
-        sut.Namespaces.Should().BeEquivalentTo( new[] { nested } );
-        nested.Parent.Should().BeSameAs( sut );
-        nested.FullName.Should().Be( "X.Y.Z" );
-        nested.Name.Should().Be( "Z" );
-        global.Namespaces.Select( ns => ns.FullName ).Single().Should().Be( "X" );
+        sut.Namespaces.ShouldBe( new[] { nested } );
+        nested.Parent.ShouldBeSameAs( sut );
+        nested.FullName.ShouldBe( "X.Y.Z" );
+        nested.Name.ShouldBe( "Z" );
+        global.Namespaces.Select( ns => ns.FullName ).Single().ShouldBe( "X" );
     }
 
     [Test]
@@ -70,7 +73,7 @@ public class NamespaceScopeTests : CommonTypeDefinerScopeTests
         INamespaceScope namespace1 = sut.FindOrCreateNamespace( "X.Y" );
         INamespaceScope namespace2 = sut.FindOrCreateNamespace( "X.Y" );
 
-        namespace1.Should().BeSameAs( namespace2 );
+        namespace1.ShouldBeSameAs( namespace2 );
     }
 
     [Test]
@@ -88,25 +91,25 @@ public class NamespaceScopeTests : CommonTypeDefinerScopeTests
         nAX.EnsureUsing( "EveryWhere" );
         nA.EnsureUsing( "EveryWhere" );
         nAXb.EnsureUsing( "EveryWhere" );
-        ExtractNamespaces( nAXa ).Should().BeEmpty();
-        ExtractNamespaces( nAXb ).Should().BeEmpty();
-        ExtractNamespaces( nAX ).Should().BeEmpty();
-        ExtractNamespaces( nA ).Should().BeEmpty();
-        ExtractNamespaces( global ).Should().OnlyContain( x => x == "EveryWhere" );
+        ExtractNamespaces( nAXa ).ShouldBeEmpty();
+        ExtractNamespaces( nAXb ).ShouldBeEmpty();
+        ExtractNamespaces( nAX ).ShouldBeEmpty();
+        ExtractNamespaces( nA ).ShouldBeEmpty();
+        ExtractNamespaces( global ).ShouldAllBe( x => x == "EveryWhere" );
 
         nAXb.EnsureUsing( "Local" );
-        ExtractNamespaces( nAXa ).Should().BeEmpty();
-        ExtractNamespaces( nAXb ).Should().OnlyContain( x => x == "Local" );
-        ExtractNamespaces( nAX ).Should().BeEmpty();
-        ExtractNamespaces( nA ).Should().BeEmpty();
-        ExtractNamespaces( global ).Should().OnlyContain( x => x == "EveryWhere" );
+        ExtractNamespaces( nAXa ).ShouldBeEmpty();
+        ExtractNamespaces( nAXb ).ShouldAllBe( x => x == "Local" );
+        ExtractNamespaces( nAX ).ShouldBeEmpty();
+        ExtractNamespaces( nA ).ShouldBeEmpty();
+        ExtractNamespaces( global ).ShouldAllBe( x => x == "EveryWhere" );
 
         nAXa.EnsureUsing( "Local" );
-        ExtractNamespaces( nAXa ).Should().OnlyContain( x => x == "Local" );
-        ExtractNamespaces( nAXb ).Should().OnlyContain( x => x == "Local" );
-        ExtractNamespaces( nAX ).Should().BeEmpty();
-        ExtractNamespaces( nA ).Should().BeEmpty();
-        ExtractNamespaces( global ).Should().OnlyContain( x => x == "EveryWhere" );
+        ExtractNamespaces( nAXa ).ShouldAllBe( x => x == "Local" );
+        ExtractNamespaces( nAXb ).ShouldAllBe( x => x == "Local" );
+        ExtractNamespaces( nAX ).ShouldBeEmpty();
+        ExtractNamespaces( nA ).ShouldBeEmpty();
+        ExtractNamespaces( global ).ShouldAllBe( x => x == "EveryWhere" );
     }
 
     [Test]
@@ -122,11 +125,11 @@ public class NamespaceScopeTests : CommonTypeDefinerScopeTests
         global.EnsureUsingAlias( "INT", "System.UInt8" );
         nAXa.EnsureUsingAlias( "INT", "System . UInt8" );
 
-        ExtractNamespaces( global ).Should().OnlyContain( x => x == "INT" );
-        ExtractNamespaces( nAXa ).Should().BeEmpty();
+        ExtractNamespaces( global ).ShouldAllBe( x => x == "INT" );
+        ExtractNamespaces( nAXa ).ShouldBeEmpty();
 
         var source = workspace.GetGlobalSource();
-        Normalize( source ).Should().Be( Normalize(
+        Normalize( source ).ShouldBe( Normalize(
             @"namespace A
 {
 using INT = System.UInt8;
@@ -142,12 +145,12 @@ namespace X
         nAXa.EnsureUsingAlias( "CNode", "SNode<STRING, BOOL>" );
         nAXa.Append( "// The 2 CNode definition differ." ).NewLine();
 
-        ExtractNamespaces( global ).Should().HaveCount( 2 ).And.OnlyContain( x => x == "INT" || x == "CNode" );
-        ExtractNamespaces( nAXa ).Should().OnlyContain( x => x == "CNode" );
+        ExtractNamespaces( global ).ShouldAllBe( x => x == "INT" || x == "CNode" );
+        ExtractNamespaces( nAXa ).ShouldAllBe( x => x == "CNode" );
 
         global.FindOrCreateNamespace( "ToShowTheTopLevelUsingsCopy" );
         source = workspace.GetGlobalSource();
-        Normalize( source ).Should().Be( Normalize(
+        Normalize( source ).ShouldBe( Normalize(
             @"namespace A {
                     using INT = System.UInt8;
                     using CNode = SNode<string,bool>;
@@ -170,7 +173,8 @@ namespace ToShowTheTopLevelUsingsCopy
 
     static IReadOnlyCollection<string> ExtractNamespaces( INamespaceScope n )
     {
-        var d = (Dictionary<string, KeyValuePair<string, string>>)n.GetType().GetField( "_usings", BindingFlags.NonPublic | BindingFlags.Instance ).GetValue( n );
+        var d = (Dictionary<string, KeyValuePair<string, string>>?)n.GetType().GetField( "_usings", BindingFlags.NonPublic | BindingFlags.Instance )!.GetValue( n );
+        Throw.DebugAssert( d != null );
         return d.Keys;
     }
 

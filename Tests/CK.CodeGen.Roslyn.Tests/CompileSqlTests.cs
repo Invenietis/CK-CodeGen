@@ -1,4 +1,4 @@
-using FluentAssertions;
+using Shouldly;
 using Microsoft.Data.SqlClient;
 using NUnit.Framework;
 using System;
@@ -47,8 +47,8 @@ public class CompileSqlTests
         SimpleBase gotIt = (SimpleBase)Activator.CreateInstance( t );
         int? k = 67;
         SqlCommand cmd = gotIt.Do( ref k );
-        k.Should().Be( 67 * 67 );
-        cmd.CommandText.Should().Be( "p" + k );
-        cmd.Parameters.Cast<SqlParameter>().Single().Value.Should().Be( k );
+        k.ShouldBe( 67 * 67 );
+        cmd.CommandText.ShouldBe( "p" + k );
+        cmd.Parameters.Cast<SqlParameter>().Single().Value.ShouldBe( k );
     }
 }

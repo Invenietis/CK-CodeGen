@@ -1,4 +1,4 @@
-using FluentAssertions;
+using Shouldly;
 using NUnit.Framework;
 using System;
 using System.Linq;
@@ -30,16 +30,13 @@ public class MergeTests
 
         c1.MergeWith( c2 );
 
-        c1.AssemblyReferences.Should().BeEquivalentTo( new[]
-        {
-            typeof( object ).Assembly,
-            typeof( Enumerable ).Assembly,
-            typeof( TestFixtureAttribute ).Assembly,
-            typeof( MergeTests ).Assembly
-        } );
+        c1.AssemblyReferences.ShouldAllBe( a => a == typeof( object ).Assembly
+                                             || a == typeof( Enumerable ).Assembly
+                                             || a == typeof( TestFixtureAttribute ).Assembly
+                                             || a == typeof( MergeTests ).Assembly );
 
         string code = c1.GetGlobalSource();
-        code.Should().Be(
+        code.ShouldBe(
             "namespace Sub" + Environment.NewLine +
             "{" + Environment.NewLine +
             "using A;" + Environment.NewLine +
@@ -83,7 +80,7 @@ public class MergeTests
         c1.MergeWith( c2 );
 
         string code = c1.GetGlobalSource().Trim();
-        code.Should().Be( @"
+        code.ShouldBe( @"
 Hop! (Later but in a sup part of the first part).
 1 - n°0
 1 - n°1

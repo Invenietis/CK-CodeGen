@@ -1,6 +1,7 @@
 using System;
+using CK.Core;
 using NUnit.Framework;
-using FluentAssertions;
+using Shouldly;
 
 namespace CK.CodeGen.Tests;
 
@@ -17,9 +18,9 @@ public class TypeScopeTests : CommonTypeDefinerScopeTests
     {
         var t = CreateTypeScope();
         var f = t.CreateFunction( header );
-        f.Should().NotBeNull();
-        f.IsConstructor.Should().Be( returnType == null );
-        if( !f.IsConstructor ) f.Definition.ReturnType!.ToString().Should().Be( returnType );
+        f.ShouldNotBeNull();
+        f.IsConstructor.ShouldBe( returnType == null );
+        if( !f.IsConstructor ) f.Definition.ReturnType!.ToString().ShouldBe( returnType );
     }
 
 
@@ -31,8 +32,8 @@ public class TypeScopeTests : CommonTypeDefinerScopeTests
     {
         var t = CreateTypeScope();
         var f = t.CreateFunction( original );
-        f.Should().NotBeNull();
-        t.Invoking( x => x.CreateFunction( clash ) ).Should().Throw<ArgumentException>();
+        f.ShouldNotBeNull();
+        Util.Invokable( () => t.CreateFunction( clash ) ).ShouldThrow<ArgumentException>();
     }
 
     [TestCase( "M(int i)" )]
@@ -40,26 +41,26 @@ public class TypeScopeTests : CommonTypeDefinerScopeTests
     public void CreateFunction_with_FunctionDefinition( string original )
     {
         var t = CreateTypeScope();
-        FunctionDefinition.TryParse( original, out var def ).Should().BeTrue();
+        FunctionDefinition.TryParse( original, out var def ).ShouldBeTrue();
         var f = t.CreateFunction( def );
-        f.Should().NotBeNull();
-        t.Invoking( x => x.CreateFunction( def ) ).Should().Throw<ArgumentException>();
+        f.ShouldNotBeNull();
+        Util.Invokable( () => t.CreateFunction( def ) ).ShouldThrow<ArgumentException>();
     }
 
     [Test]
     public void using_FindOrCreateFunction_on_ctor_forbids_this_or_base_clause()
     {
         var t = CreateTypeScope();
-        t.Invoking( x => x.FindOrCreateFunction( "C() : this()" ) ).Should().Throw<ArgumentException>();
-        t.Invoking( x => x.FindOrCreateFunction( "C( int a ) : base( a )" ) ).Should().Throw<ArgumentException>();
+        Util.Invokable(() => t.FindOrCreateFunction("C() : this()")).ShouldThrow<ArgumentException>();
+        Util.Invokable(() => t.FindOrCreateFunction("C( int a ) : base( a )")).ShouldThrow<ArgumentException>();
     }
 
     [Test]
     public void using_FindOrCreateFunction_on_functions_forbids_any_body_start()
     {
         var t = CreateTypeScope();
-        t.Invoking( x => x.FindOrCreateFunction( "int M() => 3;" ) ).Should().Throw<ArgumentException>();
-        t.Invoking( x => x.FindOrCreateFunction( "int M( int a ) { // some code" ) ).Should().Throw<ArgumentException>();
+        Util.Invokable(() => t.FindOrCreateFunction("int M() => 3;")).ShouldThrow<ArgumentException>();
+        Util.Invokable(() => t.FindOrCreateFunction("int M( int a ) { // some code")).ShouldThrow<ArgumentException>();
     }
 
     [Test]
@@ -67,10 +68,10 @@ public class TypeScopeTests : CommonTypeDefinerScopeTests
     {
         var t = CreateTypeScope();
         var f1 = t.CreateFunction( "int M() => 3;" );
-        f1.ToString().Should().Contain( "=> 3;" );
+        f1.ToString().ShouldContain( "=> 3;" );
 
         var f2 = t.CreateFunction( "int M( int a ) { int a; (on a new line)." );
-        f2.ToString().Should().Contain( "int a;" );
+        f2.ToString().ShouldContain( "int a;" );
     }
 
 
@@ -89,9 +90,9 @@ new StObjServiceParameterInfo( typeof(ISBase), 0, @""next"", I0)
         {
             ctor.Append( text );
         } );
-        c.IsConstructor.Should().BeTrue();
+        c.IsConstructor.ShouldBeTrue();
         string result = text + Environment.NewLine + "{" + Environment.NewLine + "}";
-        c.ToString().Should().Be( result );
+        c.ToString().ShouldBe( result );
     }
 
     protected override ITypeDefinerScope CreateTypeDefinerScope() => CreateTypeScope();

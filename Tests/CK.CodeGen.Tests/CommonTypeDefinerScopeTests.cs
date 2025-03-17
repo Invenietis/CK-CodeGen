@@ -1,6 +1,7 @@
 using System;
-using FluentAssertions;
+using Shouldly;
 using NUnit.Framework;
+using CK.Core;
 
 namespace CK.CodeGen.Tests;
 
@@ -23,12 +24,12 @@ public abstract class CommonTypeDefinerScopeTests
         ITypeDefinerScope scope = CreateTypeDefinerScope();
         ITypeScope type = scope.CreateType( h => h.Append( decl ) );
 
-        type.Name.Should().Be( typeName );
-        type.FullName.Should().Be( $"{scope.FullName}.{typeName}" );
+        type.Name.ShouldBe( typeName );
+        type.FullName.ShouldBe( $"{scope.FullName}.{typeName}" );
 
-        scope.FindType( typeName ).Should().BeSameAs( type );
+        scope.FindType( typeName ).ShouldBeSameAs( type );
 
-        scope.Invoking( sut => sut.CreateType( decl ) ).Should().Throw<ArgumentException>();
+        Util.Invokable( () => scope.CreateType( decl ) ).ShouldThrow<ArgumentException>();
     }
 
     [TestCase( "interface I<T1,out T2> : Z, B, A {", "I`2" )]
@@ -43,7 +44,7 @@ public abstract class CommonTypeDefinerScopeTests
         ITypeDefinerScope scope = CreateTypeDefinerScope();
         ITypeScope type = scope.CreateType( decl );
 
-        type.Definition.Name.Key.Should().Be( typeDefinitionKey );
+        type.Definition.Name.Key.ShouldBe( typeDefinitionKey );
     }
 
     [TestCase( "public interface I<in T1, out T2> where T1 : struct { //...", "I<TKey,TValue>" )]
@@ -56,9 +57,9 @@ public abstract class CommonTypeDefinerScopeTests
         ITypeDefinerScope scope = CreateTypeDefinerScope();
         ITypeScope type = scope.CreateType( decl );
 
-        scope.FindType( finder ).Should().BeSameAs( type );
+        scope.FindType( finder ).ShouldBeSameAs( type );
 
-        scope.Invoking( sut => sut.CreateType( decl ) ).Should().Throw<ArgumentException>();
+        Util.Invokable( () => scope.CreateType( decl ) ).ShouldThrow<ArgumentException>();
     }
 
     [TestCase( "public sealed MissingKind" )]
@@ -74,8 +75,8 @@ public abstract class CommonTypeDefinerScopeTests
     public void create_type_with_invalid_header( string header )
     {
         ITypeDefinerScope scope = CreateTypeDefinerScope();
-        scope.Invoking( sut => sut.CreateType( h => h.Append( header ) ) )
-                 .Should().Throw<InvalidOperationException>();
+        Util.Invokable( () => scope.CreateType( h => h.Append( header ) ) )
+                 .ShouldThrow<InvalidOperationException>();
     }
 
     [Test]
@@ -85,7 +86,7 @@ public abstract class CommonTypeDefinerScopeTests
         ITypeScope t1 = scope.CreateType( s => s.Append( "public class C1" ) );
         ITypeScope t2 = scope.CreateType( s => s.Append( "public class C2" ) );
 
-        scope.Types.Should().BeEquivalentTo( new[] { t1, t2 } );
+        scope.Types.ShouldBe( new[] { t1, t2 } );
     }
 
     [TestCase( "public class C", "[A(1,2,P=\"A\"),B]internal class C" )]
@@ -100,7 +101,7 @@ public abstract class CommonTypeDefinerScopeTests
     {
         ITypeDefinerScope scope = CreateTypeDefinerScope();
         scope.CreateType( original );
-        scope.Invoking( sut => sut.CreateType( clash ) ).Should().Throw<ArgumentException>();
+        Util.Invokable( () => scope.CreateType( clash ) ).ShouldThrow<ArgumentException>();
     }
 
     protected abstract ITypeDefinerScope CreateTypeDefinerScope();

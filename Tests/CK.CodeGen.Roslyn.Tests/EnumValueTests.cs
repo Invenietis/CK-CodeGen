@@ -2,7 +2,7 @@ using NUnit.Framework;
 using System;
 using System.Linq;
 using System.Reflection;
-using FluentAssertions;
+using Shouldly;
 
 namespace CK.CodeGen.Roslyn.Tests;
 
@@ -130,11 +130,12 @@ public class EnumValueTests
 
         string source = workspace.GetGlobalSource();
         Assembly a = LocalTestHelper.CreateAssembly( source, workspace.AssemblyReferences );
-        a.Should().NotBeNull();
+        a.ShouldNotBeNull();
 
-        object tester = Activator.CreateInstance( a.ExportedTypes.Single( t => t.Name == "Tester" ) );
-        bool success = (bool)tester.GetType().GetMethod( "CheckTypes" ).Invoke( tester, Array.Empty<object>() );
-        success.Should().BeTrue( source );
+        object? tester = Activator.CreateInstance( a.ExportedTypes.Single( t => t.Name == "Tester" ) );
+        tester.ShouldNotBeNull();
+        bool success = (bool)tester.GetType().GetMethod( "CheckTypes" )!.Invoke( tester, Array.Empty<object>() )!;
+        success.ShouldBeTrue( source );
     }
 
     [Test]
@@ -150,6 +151,6 @@ public class EnumValueTests
                    .Append( (object)EShort.Min ).Append( ';' ).Append( (object)EShort.Max ).Append( ';' )
                    .Append( (object)EULong.Min ).Append( ';' ).Append( (object)EULong.Max ).Append( ';' ).ToString();
 
-        t2.Should().Be( t1 );
+        t2.ShouldBe( t1 );
     }
 }

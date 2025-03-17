@@ -1,4 +1,4 @@
-using FluentAssertions;
+using Shouldly;
 using NUnit.Framework;
 
 namespace CK.CodeGen.Tests;
@@ -9,21 +9,21 @@ public class FunctionDefinitionTests
     [Test]
     public void FunctionDefinition_are_identified_by_their_keys()
     {
-        FunctionDefinition.TryParse( "void Print( int i )", out var m1 ).Should().BeTrue();
-        FunctionDefinition.TryParse( "Other Print(int notI)", out var m2 ).Should().BeTrue();
-        m1.Key.Should().Be( m2.Key );
-        FunctionDefinition.TryParse( "void print( int notI )", out var m3 ).Should().BeTrue();
-        m1.Key.Should().NotBe( m3.Key );
-        FunctionDefinition.TryParse( "void Print( uint i )", out var m4 ).Should().BeTrue();
-        m1.Key.Should().NotBe( m4.Key );
+        FunctionDefinition.TryParse( "void Print( int i )", out var m1 ).ShouldBeTrue();
+        FunctionDefinition.TryParse( "Other Print(int notI)", out var m2 ).ShouldBeTrue();
+        m1.Key.ShouldBe( m2.Key );
+        FunctionDefinition.TryParse( "void print( int notI )", out var m3 ).ShouldBeTrue();
+        m1.Key.ShouldNotBe( m3.Key );
+        FunctionDefinition.TryParse( "void Print( uint i )", out var m4 ).ShouldBeTrue();
+        m1.Key.ShouldNotBe( m4.Key );
     }
 
     [Test]
     public void FunctionDefinition_Keys_normalize_the_generic_names()
     {
-        FunctionDefinition.TryParse( "void M<T,U>( T i, List<U> j )", out var m1 ).Should().BeTrue();
-        FunctionDefinition.TryParse( "int M<I,J>(I x,List<J> y)", out var m2 ).Should().BeTrue();
-        m1.Key.Should().Be( m2.Key );
+        FunctionDefinition.TryParse( "void M<T,U>( T i, List<U> j )", out var m1 ).ShouldBeTrue();
+        FunctionDefinition.TryParse( "int M<I,J>(I x,List<J> y)", out var m2 ).ShouldBeTrue();
+        m1.Key.ShouldBe( m2.Key );
     }
 
     [TestCase( "M(Nullable<int> i)", "M(int?)" )]
@@ -41,7 +41,7 @@ public class FunctionDefinitionTests
     public void CreateFunction_normalizes_its_key( string header, string key )
     {
         FunctionDefinition.TryParse( header, out var f );
-        f.Key.Should().Be( key );
+        f.Key.ShouldBe( key );
     }
 
     [TestCase( "M(Nullable<int> i)", "M(int?)" )]
@@ -52,6 +52,6 @@ public class FunctionDefinitionTests
     public void Function_Keys_are_nullable_sensitive( string header, string key )
     {
         FunctionDefinition.TryParse( header, out var f );
-        f.Key.Should().Be( key );
+        f.Key.ShouldBe( key );
     }
 }

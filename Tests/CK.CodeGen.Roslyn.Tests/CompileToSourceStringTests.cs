@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using FluentAssertions;
+using Shouldly;
 using CK.Core;
 using NUnit.Framework.Internal;
 
@@ -22,12 +22,12 @@ public class CompileToSourceStringTests
                  .Append( "public bool OK => true;" ).NewLine();
 
         Assembly a = LocalTestHelper.CreateAssembly( workspace.GetGlobalSource(), workspace.AssemblyReferences );
-        a.Should().NotBeNull();
+        a.ShouldNotBeNull();
 
         var g = new CodeGenerator( CodeWorkspace.Factory );
         var r = g.Generate( workspace, null, skipCompilation: true );
-        r.Success.Should().BeTrue();
-        r.Sources.Should().HaveCount( 1 );
+        r.Success.ShouldBeTrue();
+        r.Sources.Count.ShouldBe( 1 );
     }
 
     [Test]
@@ -35,15 +35,15 @@ public class CompileToSourceStringTests
     {
         {
             var r = CodeGenerator.Generate( "class P {}", null );
-            r.Success.Should().BeTrue();
-            r.Sources.Should().HaveCount( 1 );
-            r.ParseDiagnostics.Should().BeEmpty();
+            r.Success.ShouldBeTrue();
+            r.Sources.Count.ShouldBe( 1 );
+            r.ParseDiagnostics.ShouldBeEmpty();
         }
         {
             var r = CodeGenerator.Generate( "class P }", null );
-            r.Success.Should().BeFalse();
-            r.Sources.Should().HaveCount( 1 );
-            r.ParseDiagnostics.Should().NotBeEmpty();
+            r.Success.ShouldBeFalse();
+            r.Sources.Count.ShouldBe( 1 );
+            r.ParseDiagnostics.ShouldNotBeEmpty();
         }
     }
 
@@ -160,7 +160,7 @@ public class CompileToSourceStringTests
         Assembly a = LocalTestHelper.CreateAssembly( source, references );
         object tester = Activator.CreateInstance( a.ExportedTypes.Single( t => t.Name == "Tester" ) );
         string diff = (string)tester.GetType().GetMethod( "Run" ).Invoke( tester, Array.Empty<object>() );
-        diff.Should().BeEmpty();
+        diff.ShouldBeEmpty();
     }
 
     public class Nested<T>
@@ -216,36 +216,36 @@ public class CompileToSourceStringTests
         Type memberFinder = a.ExportedTypes.Single( t => t.Name == "MemberFinder" );
 
         var eThisTestMethod = (MethodInfo)memberFinder.GetField( "ThisTestMethod" ).GetValue( null );
-        eThisTestMethod.Should().BeSameAs( thisTestMethod );
+        eThisTestMethod.ShouldBeSameAs( thisTestMethod );
 
         var eValIGen = (MethodInfo)memberFinder.GetField( "ValIGen" ).GetValue( null );
-        eValIGen.Should().BeSameAs( ValIGen );
+        eValIGen.ShouldBeSameAs( ValIGen );
 
         var eValSGen = (MethodInfo)memberFinder.GetField( "ValSGen" ).GetValue( null );
-        eValSGen.Should().BeSameAs( ValSGen );
+        eValSGen.ShouldBeSameAs( ValSGen );
 
         var ePropGen = (PropertyInfo)memberFinder.GetField( "PropGen" ).GetValue( null );
-        ePropGen.Should().BeSameAs( PropGen );
+        ePropGen.ShouldBeSameAs( PropGen );
 
         var eEventGen = (EventInfo)memberFinder.GetField( "EventGen" ).GetValue( null );
-        eEventGen.Should().BeSameAs( EventGen );
+        eEventGen.ShouldBeSameAs( EventGen );
 
         var eCtorGen = (ConstructorInfo)memberFinder.GetField( "CtorGen" ).GetValue( null );
-        eCtorGen.Should().BeSameAs( CtorGen );
+        eCtorGen.ShouldBeSameAs( CtorGen );
 
         var eValI = (MethodInfo)memberFinder.GetField( "ValI" ).GetValue( null );
-        eValI.Should().BeSameAs( ValI );
+        eValI.ShouldBeSameAs( ValI );
 
         var eValS = (MethodInfo)memberFinder.GetField( "ValS" ).GetValue( null );
-        eValS.Should().BeSameAs( ValS );
+        eValS.ShouldBeSameAs( ValS );
 
         var eProp = (PropertyInfo)memberFinder.GetField( "Prop" ).GetValue( null );
-        eProp.Should().BeSameAs( Prop );
+        eProp.ShouldBeSameAs( Prop );
 
         var eEvent = (EventInfo)memberFinder.GetField( "Event" ).GetValue( null );
-        eEvent.Should().BeSameAs( Event );
+        eEvent.ShouldBeSameAs( Event );
 
         var eCtor = (ConstructorInfo)memberFinder.GetField( "Ctor" ).GetValue( null );
-        eCtor.Should().BeSameAs( Ctor );
+        eCtor.ShouldBeSameAs( Ctor );
     }
 }

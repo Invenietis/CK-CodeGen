@@ -1,5 +1,5 @@
 using NUnit.Framework;
-using FluentAssertions;
+using Shouldly;
 using static CK.Testing.MonitorTestHelper;
 using System.IO;
 using CK.Core;
@@ -29,7 +29,7 @@ public class CodeProjectTests
 
         var projectFolder = WriteProjectFolder( f, project );
         Run( projectFolder, "dotnet", "run", out string output );
-        output.Should().Contain( "Hop!" );
+        output.ShouldContain( "Hop!" );
     }
 
     NormalizedPath WriteProjectFolder( NormalizedPath folder, ICodeProject project )
